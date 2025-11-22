@@ -6,7 +6,7 @@ import {
 import { glob } from "glob";
 import path from "node:path";
 import prettierModule from "prettier";
-import { matchers } from "./matchers";
+import { checkPrettierFormatted } from "./checks";
 import type { PrettierPluginApi, PrettierSelectorApi } from "./types";
 
 const DEFAULT_GLOBS = [
@@ -89,7 +89,7 @@ function scheduleFormatting(
         : null;
 
       const filesToCheck = await resolveFiles(baseDir, selection);
-      const result = await matchers.toBePrettierFormatted(filesToCheck, {
+      const result = await checkPrettierFormatted(filesToCheck, {
         config,
         root: baseDir,
       });

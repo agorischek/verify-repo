@@ -3,7 +3,7 @@ import {
   createPluginEntry,
   type VerificationBuilder,
 } from "@verify-repo/engine";
-import { matchers } from "./matchers";
+import { checkFileContains, checkFileExists } from "./checks";
 import type { FilePluginApi } from "./types";
 
 type FileRoot = (filePath: string) => FilePluginApi;
@@ -16,11 +16,11 @@ export const file = () => {
       filePath?: string,
     ): FileEntrypoint => {
       if (filePath) {
-        return createPluginEntry(
-          builder,
-          createFileMethods(builder, filePath),
-          undefined,
-        ) as FilePluginApi;
+        const methods = createFileMethods(builder, filePath);
+        const api = createPluginEntry(builder, methods.positive, undefined);
+        const notApi = createPluginEntry(builder, methods.negative, undefined);
+
+        return Object.assign(api, { not: notApi }) as unknown as FilePluginApi;
       }
 
       return createPluginEntry(
@@ -42,32 +42,63 @@ export const file = () => {
   };
 };
 
-function createFileMethods(
-  builder: VerificationBuilder,
-  filePath: string,
-) {
+function createFileMethods(builder: VerificationBuilder, filePath: string) {
   return {
-    exists: async () => {
-      const description = `File "${filePath}" should exist`;
-      builder.schedule(description, async ({ pass, fail }) => {
-        const result = await matchers.toExistAsFile(filePath, builder.cwd);
-        if (result.pass) {
-          pass(result.message());
-        } else {
-          fail(result.message());
-        }
-      });
+    positive: {
+      exists: async (_: VerificationBuilder) => {
+        const description = `File "${filePath}" should exist`;
+        builder.schedule(description, async ({ pass, fail }) => {
+          const result = await checkFileExists(filePath, builder.cwd);
+          if (result.pass) {
+            pass(result.message());
+          } else {
+            fail(result.message());
+          }
+        });
+      },
+      contains: async (_: VerificationBuilder, needle: string | RegExp) => {
+        const description = `File "${filePath}" should contain ${String(
+          needle,
+        )}`;
+        builder.schedule(description, async ({ pass, fail }) => {
+          const result = await checkFileContains(filePath, needle, builder.cwd);
+          if (result.pass) {
+            pass(result.message());
+          } else {
+            fail(result.message());
+          }
+        });
+      },
     },
-    contains: async (_: VerificationBuilder, needle: string | RegExp) => {
-      const description = `File "${filePath}" should contain ${String(needle)}`;
-      builder.schedule(description, async ({ pass, fail }) => {
-        const result = await matchers.toContainText(filePath, needle, builder.cwd);
-        if (result.pass) {
-          pass(result.message());
-        } else {
-          fail(result.message());
-        }
-      });
+    negative: {
+      exists: async (_: VerificationBuilder) => {
+        const description = `File "${filePath}" should not exist`;
+        builder.schedule(description, async ({ pass, fail }) => {
+          const result = await checkFileExists(filePath, builder.cwd);
+          if (!result.pass) {
+            pass(`File "${filePath}" does not exist.`);
+          } else {
+            fail(`Expected file "${filePath}" to not exist, but it does.`);
+          }
+        });
+      },
+      contains: async (_: VerificationBuilder, needle: string | RegExp) => {
+        const description = `File "${filePath}" should not contain ${String(
+          needle,
+        )}`;
+        builder.schedule(description, async ({ pass, fail }) => {
+          const result = await checkFileContains(filePath, needle, builder.cwd);
+          if (!result.pass) {
+            pass(`File "${filePath}" does not contain ${String(needle)}.`);
+          } else {
+            fail(
+              `Expected file "${filePath}" to not contain ${String(
+                needle,
+              )}, but it does.`,
+            );
+          }
+        });
+      },
     },
   };
 }

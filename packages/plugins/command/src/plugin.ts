@@ -3,7 +3,7 @@ import {
   createPluginEntry,
   type VerificationBuilder,
 } from "@verify-repo/engine";
-import { matchers } from "./matchers";
+import { checkOutputContainsLine } from "./checks";
 import {
   runCommand,
   runCommandStreaming,
@@ -125,7 +125,7 @@ function createCommandMethods(
             }
 
             const timeout = options?.timeoutMs ?? 15000;
-            const result = await matchers.toContainLineMatching(
+            const result = await checkOutputContainsLine(
               stdout,
               regex,
               timeout,
