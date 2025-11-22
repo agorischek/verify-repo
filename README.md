@@ -5,11 +5,11 @@ Unit test your repo state. Great for helping coding agents prove they're "done" 
 ```ts
 import { file } from "@repo-tests/plugin-file";
 import { RepoTests } from "../packages/core/src";
-import { scripts } from "../packages/plugins/scripts/src";
+import { script } from "../packages/plugins/script/src";
 import { expect, test } from "bun:test";
 
 const verify = new RepoTests({
-  plugins: [scripts(), file()],
+  plugins: [script(), file()],
   test,
   expect,
 });

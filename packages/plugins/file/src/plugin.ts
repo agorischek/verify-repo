@@ -1,10 +1,10 @@
 import { FilePluginApi } from './types';
 import { PluginContext } from '@repo-tests/core';
-import { fileMatchers } from './matchers';
+import { matchers } from './matchers';
 
 export const file = () => {
   return ({ test, expect, root }: PluginContext) => {
-    expect.extend(fileMatchers);
+    expect.extend(matchers);
     const api = function file(filePath: string): FilePluginApi {
       return {
         exists() {

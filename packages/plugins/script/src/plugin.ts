@@ -1,11 +1,11 @@
 import { ScriptPluginApi } from "./types";
 import { PluginContext } from "@repo-tests/core";
-import { scriptMatchers } from "./matchers";
+import { matchers } from "./matchers";
 import { runScript, runScriptStreaming } from "./helpers";
 
-export const scripts = () => {
+export const script = () => {
   return ({ test, expect, root }: PluginContext) => {
-    expect.extend(scriptMatchers);
+    expect.extend(matchers);
     const api = function script(name: string): ScriptPluginApi {
       return {
         runs() {

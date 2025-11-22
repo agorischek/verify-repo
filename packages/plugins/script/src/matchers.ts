@@ -1,4 +1,4 @@
-export const scriptMatchers = {
+export const matchers = {
   async toHaveScriptSucceeded(received: any) {
     const pass = received.exitCode === 0;
     return {

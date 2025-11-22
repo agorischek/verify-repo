@@ -1,7 +1,7 @@
 import { existsSync } from 'fs';
 import * as path from 'path';
 
-export const fileMatchers = {
+export const matchers = {
   async toExistAsFile(filePath: string, root?: string) {
     const baseDir = root || process.cwd();
     const fullPath = path.resolve(baseDir, filePath);

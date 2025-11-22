@@ -25,8 +25,8 @@
         "@repo-tests/core": "*",
       },
     },
-    "packages/plugins/scripts": {
-      "name": "@repo-tests/plugin-scripts",
+    "packages/plugins/script": {
+      "name": "@repo-tests/plugin-script",
       "version": "0.1.0",
       "devDependencies": {
         "@repo-tests/core": "workspace:*",
@@ -41,7 +41,7 @@
 
     "@repo-tests/plugin-file": ["@repo-tests/plugin-file@workspace:packages/plugins/file"],
 
-    "@repo-tests/plugin-scripts": ["@repo-tests/plugin-scripts@workspace:packages/plugins/scripts"],
+    "@repo-tests/plugin-script": ["@repo-tests/plugin-script@workspace:packages/plugins/script"],
 
     "@types/bun": ["@types/bun@1.3.3", "", { "dependencies": { "bun-types": "1.3.3" } }, "sha512-ogrKbJ2X5N0kWLLFKeytG0eHDleBYtngtlbu9cyBKFtNL3cnpDZkNdQj8flVf6WTZUX5ulI9AY1oa7ljhSrp+g=="],
 

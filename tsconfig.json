@@ -41,7 +41,7 @@
 		"baseUrl": ".",
         "paths": {
             "@repo-tests/core": ["./packages/core/src/index.ts"],
-            "@repo-tests/plugin-scripts": ["./packages/plugins/scripts/src/index.ts"],
+            "@repo-tests/plugin-script": ["./packages/plugins/script/src/index.ts"],
             "@repo-tests/plugin-file": ["./packages/plugins/file/src/index.ts"]
           }
 	},
