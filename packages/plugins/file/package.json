@@ -1,5 +1,5 @@
 {
-  "name": "@repo-tests/plugin-file",
+  "name": "@verify-repo/plugin-file",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -8,9 +8,9 @@
     "dist"
   ],
   "peerDependencies": {
-    "@repo-tests/core": "*"
+    "@verify-repo/engine": "*"
   },
   "devDependencies": {
-    "@repo-tests/core": "workspace:*"
+    "@verify-repo/engine": "workspace:*"
   }
 }

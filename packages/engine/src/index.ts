@@ -1,4 +1,4 @@
 export * from "./types";
-export * from "./RepoTesterBase";
+export * from "./RepoVerificationEngine";
 export * from "./VerificationBuilder";
 export * from "./createPluginEntry";

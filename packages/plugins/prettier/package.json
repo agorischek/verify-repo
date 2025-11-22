@@ -1,5 +1,5 @@
 {
-  "name": "@repo-tests/plugin-prettier",
+  "name": "@verify-repo/plugin-prettier",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -8,14 +8,14 @@
     "dist"
   ],
   "peerDependencies": {
-    "@repo-tests/core": "*",
+    "@verify-repo/engine": "*",
     "prettier": "^3.0.0"
   },
   "dependencies": {
     "glob": "^13.0.0"
   },
   "devDependencies": {
-    "@repo-tests/core": "workspace:*",
+    "@verify-repo/engine": "workspace:*",
     "prettier": "^3.6.2"
   }
 }

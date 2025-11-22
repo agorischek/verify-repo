@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 /**
- * Demo script showing how to use the run() function from repo-tests
+ * Demo script showing how to use the run() function from verify-repo
  * 
  * This script demonstrates:
  * - Running verify files with default settings
@@ -10,10 +10,11 @@
  * - Error handling
  */
 
-import { run, RepoTestsFailedError } from "./packages/bundle/src";
+import { run, RepoVerificationFailedError } from "./packages/bundle/src";
+import type { RepoTestRunSummary } from "@verify-repo/engine";
 
 async function main() {
-  console.log("🚀 Running repo-tests demo...\n");
+  console.log("🚀 Running verify-repo demo...\n");
 
   try {
     // Example 1: Run with default settings (finds **/*.verify.{js,ts})
@@ -24,7 +25,7 @@ async function main() {
       });
       console.log(`✅ Completed: ${summary1.passed} passed, ${summary1.failed} failed\n`);
     } catch (error) {
-      if (error instanceof RepoTestsFailedError) {
+      if (error instanceof RepoVerificationFailedError) {
         console.log(`⚠️  Some tests failed: ${error.summary.failed}/${error.summary.total} failed\n`);
       } else {
         throw error;
@@ -40,7 +41,7 @@ async function main() {
       });
       console.log(`✅ Completed: ${summary2.passed} passed, ${summary2.failed} failed\n`);
     } catch (error) {
-      if (error instanceof RepoTestsFailedError) {
+      if (error instanceof RepoVerificationFailedError) {
         console.log(`⚠️  Some tests failed: ${error.summary.failed}/${error.summary.total} failed\n`);
       } else {
         throw error;
@@ -51,7 +52,7 @@ async function main() {
     console.log("📋 Example 3: Running with custom reporter");
     const summary3 = await run({
       pattern: "repo.verify.ts",
-      reporter: (summary) => {
+      reporter: (summary: RepoTestRunSummary) => {
         console.log("📊 Custom Report:");
         console.log(`   Total: ${summary.total}`);
         console.log(`   Passed: ${summary.passed}`);
@@ -79,8 +80,8 @@ async function main() {
     console.log("🎉 All demos completed successfully!");
 
   } catch (error) {
-    if (error instanceof RepoTestsFailedError) {
-      console.error(`\n❌ RepoTestsFailedError: ${error.message}`);
+    if (error instanceof RepoVerificationFailedError) {
+      console.error(`\n❌ RepoVerificationFailedError: ${error.message}`);
       console.error(`   Failed: ${error.summary.failed}/${error.summary.total}`);
       process.exit(1);
     } else if (error instanceof Error) {

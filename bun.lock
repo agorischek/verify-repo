@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "repo-tests-root",
+      "name": "verify-repo-root",
       "dependencies": {
         "@types/bun": "^1.3.3",
       },
@@ -17,66 +17,66 @@
       },
     },
     "packages/bundle": {
-      "name": "repo-tests",
+      "name": "verify-repo",
       "version": "0.0.0",
       "dependencies": {
-        "@repo-tests/core": "workspace:*",
-        "@repo-tests/plugin-file": "workspace:*",
-        "@repo-tests/plugin-git": "workspace:*",
-        "@repo-tests/plugin-prettier": "workspace:*",
-        "@repo-tests/plugin-script": "workspace:*",
+        "@verify-repo/engine": "workspace:*",
+        "@verify-repo/plugin-file": "workspace:*",
+        "@verify-repo/plugin-git": "workspace:*",
+        "@verify-repo/plugin-prettier": "workspace:*",
+        "@verify-repo/plugin-script": "workspace:*",
         "glob": "^13.0.0",
       },
     },
-    "packages/core": {
-      "name": "@repo-tests/core",
+    "packages/engine": {
+      "name": "@verify-repo/engine",
     },
     "packages/plugins/file": {
-      "name": "@repo-tests/plugin-file",
+      "name": "@verify-repo/plugin-file",
       "version": "0.1.0",
       "devDependencies": {
-        "@repo-tests/core": "workspace:*",
+        "@verify-repo/engine": "workspace:*",
       },
       "peerDependencies": {
-        "@repo-tests/core": "*",
+        "@verify-repo/engine": "*",
       },
     },
     "packages/plugins/git": {
-      "name": "@repo-tests/plugin-git",
+      "name": "@verify-repo/plugin-git",
       "version": "0.1.0",
       "dependencies": {
         "simple-git": "^3.24.0",
       },
       "devDependencies": {
-        "@repo-tests/core": "workspace:*",
+        "@verify-repo/engine": "workspace:*",
       },
       "peerDependencies": {
-        "@repo-tests/core": "*",
+        "@verify-repo/engine": "*",
       },
     },
     "packages/plugins/prettier": {
-      "name": "@repo-tests/plugin-prettier",
+      "name": "@verify-repo/plugin-prettier",
       "version": "0.1.0",
       "dependencies": {
         "glob": "^13.0.0",
       },
       "devDependencies": {
-        "@repo-tests/core": "workspace:*",
+        "@verify-repo/engine": "workspace:*",
         "prettier": "^3.6.2",
       },
       "peerDependencies": {
-        "@repo-tests/core": "*",
+        "@verify-repo/engine": "*",
         "prettier": "^3.0.0",
       },
     },
     "packages/plugins/script": {
-      "name": "@repo-tests/plugin-script",
+      "name": "@verify-repo/plugin-script",
       "version": "0.1.0",
       "devDependencies": {
-        "@repo-tests/core": "workspace:*",
+        "@verify-repo/engine": "workspace:*",
       },
       "peerDependencies": {
-        "@repo-tests/core": "*",
+        "@verify-repo/engine": "*",
       },
     },
   },
@@ -167,15 +167,15 @@
 
     "@quansync/fs": ["@quansync/fs@0.1.5", "", { "dependencies": { "quansync": "^0.2.11" } }, "sha512-lNS9hL2aS2NZgNW7BBj+6EBl4rOf8l+tQ0eRY6JWCI8jI2kc53gSoqbjojU0OnAWhzoXiOjFyGsHcDGePB3lhA=="],
 
-    "@repo-tests/core": ["@repo-tests/core@workspace:packages/core"],
+    "@verify-repo/engine": ["@verify-repo/engine@workspace:packages/engine"],
 
-    "@repo-tests/plugin-file": ["@repo-tests/plugin-file@workspace:packages/plugins/file"],
+    "@verify-repo/plugin-file": ["@verify-repo/plugin-file@workspace:packages/plugins/file"],
 
-    "@repo-tests/plugin-git": ["@repo-tests/plugin-git@workspace:packages/plugins/git"],
+    "@verify-repo/plugin-git": ["@verify-repo/plugin-git@workspace:packages/plugins/git"],
 
-    "@repo-tests/plugin-prettier": ["@repo-tests/plugin-prettier@workspace:packages/plugins/prettier"],
+    "@verify-repo/plugin-prettier": ["@verify-repo/plugin-prettier@workspace:packages/plugins/prettier"],
 
-    "@repo-tests/plugin-script": ["@repo-tests/plugin-script@workspace:packages/plugins/script"],
+    "@verify-repo/plugin-script": ["@verify-repo/plugin-script@workspace:packages/plugins/script"],
 
     "@rolldown/binding-darwin-arm64": ["@rolldown/binding-darwin-arm64@1.0.0-beta.8-commit.151352b", "", { "os": "darwin", "cpu": "arm64" }, "sha512-2F4bhDtV6CHBx7JMiT9xvmxkcZLHFmonfbli36RyfvgThDOAu92bis28zDTdguDY85lN/jBRKX/eOvX+T5hMkg=="],
 
@@ -297,7 +297,7 @@
 
     "readdirp": ["readdirp@4.1.2", "", {}, "sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg=="],
 
-    "repo-tests": ["repo-tests@workspace:packages/bundle"],
+    "verify-repo": ["verify-repo@workspace:packages/bundle"],
 
     "resolve-pkg-maps": ["resolve-pkg-maps@1.0.0", "", {}, "sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw=="],
 

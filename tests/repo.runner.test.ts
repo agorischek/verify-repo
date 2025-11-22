@@ -1,7 +1,7 @@
 import { test, expect } from "bun:test";
 import path from "node:path";
 import { writeFile, rm } from "node:fs/promises";
-import { run, RepoTestsFailedError } from "../packages/bundle/src";
+import { run, RepoVerificationFailedError } from "../packages/bundle/src";
 
 const fixtureRoot = path.join(import.meta.dir, "fixtures/my-app");
 
@@ -33,7 +33,7 @@ verify.file("totally-missing.txt").exists();
         pattern: ["*.verify.ts"],
         reporter: false,
       }),
-    ).rejects.toThrow(RepoTestsFailedError);
+    ).rejects.toThrow(RepoVerificationFailedError);
   } finally {
     await rm(failingFile, { force: true });
   }

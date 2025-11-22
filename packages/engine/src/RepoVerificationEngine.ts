@@ -7,16 +7,16 @@ import {
   RepoTestHandler,
   RepoTestResult,
   RepoTestRunSummary,
-  RepoTestsConfig,
-  RepoTestsExtensions,
+  RepoVerification,
+  RepoVerificationEngineConfig,
   VerificationMetadata,
 } from "./types";
 import { VerificationBuilder } from "./VerificationBuilder";
 
 // Use declaration merging to mix in extensions defined by plugins.
-export interface RepoTesterBase extends RepoTestsExtensions {}
+export interface RepoVerificationEngine extends RepoVerification {}
 
-export class RepoTesterBase {
+export class RepoVerificationEngine {
   // Allow plugins to assign arbitrary APIs on the instance through declaration merging.
   [key: string]: any;
 
@@ -27,7 +27,7 @@ export class RepoTesterBase {
   private activeSource?: string;
   private readonly pluginEntries = new Map<PropertyKey, PluginEntrypointFactory>();
 
-  constructor(config: RepoTestsConfig) {
+  constructor(config: RepoVerificationEngineConfig) {
     const { plugins = [], root, defaultConcurrency } = config;
     this.root = root;
     this.defaultConcurrency = defaultConcurrency;

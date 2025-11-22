@@ -1,12 +1,12 @@
-import type { RepoTestRunSummary } from "@repo-tests/core";
+import type { RepoTestRunSummary } from "@verify-repo/engine";
 
-export class RepoTestsFailedError extends Error {
+export class RepoVerificationFailedError extends Error {
   public readonly summary: RepoTestRunSummary;
 
   constructor(summary: RepoTestRunSummary) {
     const failed = summary.failed;
-    super(`${failed} repo test${failed === 1 ? "" : "s"} failed.`);
-    this.name = "RepoTestsFailedError";
+    super(`${failed} verification${failed === 1 ? "" : "s"} failed.`);
+    this.name = "RepoVerificationFailedError";
     this.summary = summary;
   }
 }

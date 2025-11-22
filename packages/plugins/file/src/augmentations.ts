@@ -1,6 +1,6 @@
-// Module augmentation to add 'file' to RepoTests
-declare module "repo-tests" {
-  interface RepoTestsExtensions {
+// Module augmentation to add 'file' to RepoVerification
+declare module "verify-repo" {
+  interface RepoVerification {
     file: (filePath: string) => import("./types").FilePluginApi;
   }
 }

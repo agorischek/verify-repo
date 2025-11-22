@@ -2,7 +2,7 @@ import {
   PluginContext,
   createPluginEntry,
   type VerificationBuilder,
-} from "@repo-tests/core";
+} from "@verify-repo/engine";
 import simpleGit from "simple-git";
 import type { GitBranchPluginApi, GitPluginApi } from "./types";
 

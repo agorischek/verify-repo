@@ -2,7 +2,7 @@ import {
   PluginContext,
   createPluginEntry,
   type VerificationBuilder,
-} from "@repo-tests/core";
+} from "@verify-repo/engine";
 import { glob } from "glob";
 import path from "node:path";
 import prettierModule from "prettier";

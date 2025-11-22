@@ -1,4 +1,4 @@
-# Repo Tests
+# verify-repo
 
 Unit test the state of a repository without depending on a third-party test runner.
 
@@ -9,7 +9,7 @@ Create files that match `**/*?.verify.{js,ts}`. Each file has access to the shar
 
 ```ts
 // repo.verify.ts
-import { verify } from "repo-tests";
+import { verify } from "verify-repo";
 
 verify.file("package.json").exists();
 verify.command("npm run build").runs();
@@ -35,7 +35,7 @@ Built-in plugins:
 ## Run them
 
 ```ts
-import { run } from "repo-tests";
+import { run } from "verify-repo";
 
 await run({
   root: process.cwd(), // default
@@ -44,7 +44,7 @@ await run({
 ```
 
 `run` discovers every `*.verify.ts`/`*.verify.js` file, loads them, and executes all
-checks in parallel. A non-zero exit (or thrown `RepoTestsFailedError`) indicates a failure.
+checks in parallel. A non-zero exit (or thrown `RepoVerificationFailedError`) indicates a failure.
 
 ## Authoring plugins
 
@@ -55,7 +55,7 @@ import {
   PluginContext,
   createPluginEntry,
   type VerificationBuilder,
-} from "@repo-tests/core";
+} from "@verify-repo/engine";
 
 export const hello = () => {
   return ({ root }: PluginContext) => ({

@@ -1,5 +1,5 @@
 {
-  "name": "@repo-tests/plugin-git",
+  "name": "@verify-repo/plugin-git",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -11,9 +11,9 @@
     "simple-git": "^3.24.0"
   },
   "peerDependencies": {
-    "@repo-tests/core": "*"
+    "@verify-repo/engine": "*"
   },
   "devDependencies": {
-    "@repo-tests/core": "workspace:*"
+    "@verify-repo/engine": "workspace:*"
   }
 }

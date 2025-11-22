@@ -1,5 +1,5 @@
-declare module "repo-tests" {
-  interface RepoTestsExtensions {
+declare module "verify-repo" {
+  interface RepoVerification {
     eslint: import("./types").EslintPluginApi;
   }
 }

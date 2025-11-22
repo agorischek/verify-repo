@@ -1,17 +1,17 @@
-import { RepoTesterBase, RepoPlugin } from "@repo-tests/core";
-import { file } from "@repo-tests/plugin-file";
-import { command } from "@repo-tests/plugin-command";
-import { prettier } from "@repo-tests/plugin-prettier";
-import { git } from "@repo-tests/plugin-git";
-import { ts as tsPlugin } from "@repo-tests/plugin-ts";
-import { eslint as eslintPlugin } from "@repo-tests/plugin-eslint";
-import { docker } from "@repo-tests/plugin-docker";
-import { RepoTesterConfig } from "./RepoTesterConfig";
+import { RepoVerificationEngine, RepoPlugin } from "@verify-repo/engine";
+import { file } from "@verify-repo/plugin-file";
+import { command } from "@verify-repo/plugin-command";
+import { prettier } from "@verify-repo/plugin-prettier";
+import { git } from "@verify-repo/plugin-git";
+import { ts as tsPlugin } from "@verify-repo/plugin-ts";
+import { eslint as eslintPlugin } from "@verify-repo/plugin-eslint";
+import { docker } from "@verify-repo/plugin-docker";
+import { RepoVerifierConfig } from "./RepoVerifierConfig";
 
-export class RepoTester extends RepoTesterBase {
+export class RepoVerificationRuntime extends RepoVerificationEngine {
   private readonly _plugins: RepoPlugin[];
 
-  constructor(config: RepoTesterConfig = {}) {
+  constructor(config: RepoVerifierConfig = {}) {
     const { plugins = [], root, concurrency } = config;
 
     const builtIns: RepoPlugin[] = [
@@ -35,7 +35,7 @@ export class RepoTester extends RepoTesterBase {
   }
 
   /**
-   * Extend this RepoTester instance with additional plugins.
+   * Extend this runtime instance with additional plugins.
    * This mutates the instance in place by adding new methods from the plugins.
    */
   extend(...plugins: RepoPlugin[]): this {

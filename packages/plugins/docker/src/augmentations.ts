@@ -1,5 +1,5 @@
-declare module "repo-tests" {
-  interface RepoTestsExtensions {
+declare module "verify-repo" {
+  interface RepoVerification {
     docker: import("./types").DockerPluginApi;
   }
 }

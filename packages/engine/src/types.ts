@@ -55,7 +55,7 @@ export type RepoPlugin<T extends RepoPluginResult = RepoPluginResult> = (
   context: PluginContext,
 ) => T;
 
-export interface RepoTestsConfig {
+export interface RepoVerificationEngineConfig {
   plugins?: RepoPlugin[];
   root?: string;
   defaultConcurrency?: number;
@@ -66,11 +66,11 @@ export interface RepoTestsConfig {
  * Plugins should add their property definitions here.
  *
  * Example:
- * declare module 'repo-tests' {
- *   interface RepoTestsExtensions {
+ * declare module 'verify-repo' {
+ *   interface RepoVerification {
  *     myPlugin: MyPluginApi;
  *   }
  * }
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface RepoTestsExtensions {}
+export interface RepoVerification {}

@@ -2,7 +2,7 @@ import {
   PluginContext,
   createPluginEntry,
   type VerificationBuilder,
-} from "@repo-tests/core";
+} from "@verify-repo/engine";
 import { spawn } from "node:child_process";
 import type { DockerBuildOptions, DockerPluginApi } from "./types";
 

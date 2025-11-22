@@ -31,13 +31,14 @@ export function createPluginEntry<
   methods: TMethods,
   callHandler?: TCallable,
 ): CallableEntry<TMethods, TCallable> {
-  const target: Record<string, unknown> =
+  const target: Record<string, unknown> | ((...args: any[]) => unknown) =
     typeof callHandler === "function"
       ? (...args: any[]) => (callHandler as PluginCallHandler)(builder, ...args)
       : {};
+  const targetObject = target as Record<string, unknown>;
 
   for (const [name, method] of Object.entries(methods)) {
-    target[name] = (...args: any[]) =>
+    targetObject[name] = (...args: any[]) =>
       builder.register(() =>
         (method as PluginMethod)(builder, ...(args as any[])),
       );

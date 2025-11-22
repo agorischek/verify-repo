@@ -1,6 +1,6 @@
-// Module augmentation to add 'git' to RepoTests
-declare module "repo-tests" {
-  interface RepoTestsExtensions {
+// Module augmentation to add 'git' to RepoVerification
+declare module "verify-repo" {
+  interface RepoVerification {
     git: import("./types").GitPluginApi;
   }
 }

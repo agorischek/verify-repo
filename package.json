@@ -1,9 +1,9 @@
 {
-  "name": "@repo-tests/root",
+  "name": "@verify-repo/root",
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/core",
+    "packages/engine",
     "packages/plugins/*",
     "packages/bundle"
   ],

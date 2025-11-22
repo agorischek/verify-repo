@@ -1,10 +1,10 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { glob } from "glob";
-import type { RepoTestRunSummary } from "@repo-tests/core";
-import { RepoTesterConfig } from "./RepoTesterConfig";
+import type { RepoTestRunSummary } from "@verify-repo/engine";
+import { RepoVerifierConfig } from "./RepoVerifierConfig";
 import { configure } from "./verify";
-import { RepoTestsFailedError } from "./errors";
+import { RepoVerificationFailedError } from "./errors";
 
 const DEFAULT_PATTERN = "**/*?.verify.{js,ts}";
 const DEFAULT_IGNORE = [
@@ -14,7 +14,7 @@ const DEFAULT_IGNORE = [
   "**/.git/**",
 ];
 
-export interface RunOptions extends RepoTesterConfig {
+export interface RunOptions extends RepoVerifierConfig {
   pattern?: string | string[];
   ignore?: string[];
   /**
@@ -62,7 +62,7 @@ export async function run(options: RunOptions = {}) {
   reporter?.(summary);
 
   if (summary.failed > 0) {
-    throw new RepoTestsFailedError(summary);
+    throw new RepoVerificationFailedError(summary);
   }
 
   return summary;
@@ -93,7 +93,7 @@ async function discoverVerifyFiles(
 
 function defaultReporter(summary: RepoTestRunSummary, root: string) {
   if (summary.total === 0) {
-    console.log("repo-tests: no checks were scheduled.");
+    console.log("verify-repo: no checks were scheduled.");
     return;
   }
 
@@ -116,7 +116,7 @@ function defaultReporter(summary: RepoTestRunSummary, root: string) {
   }
 
   console.log(
-    `repo-tests: ${summary.passed}/${summary.total} passed, ${summary.failed} failed in ${formatDuration(summary.durationMs)}`,
+    `verify-repo: ${summary.passed}/${summary.total} passed, ${summary.failed} failed in ${formatDuration(summary.durationMs)}`,
   );
 }
 

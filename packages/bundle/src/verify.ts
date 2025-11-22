@@ -1,25 +1,25 @@
 import {
-  type RepoTestsExtensions,
+  type RepoVerification,
   type VerificationMetadata,
-} from "@repo-tests/core";
-import { RepoTester } from "./RepoTester";
-import type { RepoTesterConfig } from "./RepoTesterConfig";
+} from "@verify-repo/engine";
+import { RepoVerificationRuntime } from "./RepoVerificationRuntime";
+import type { RepoVerifierConfig } from "./RepoVerifierConfig";
 
-export type Verify = RepoTestsExtensions & {
-  with(meta: VerificationMetadata): Verify;
+export type RepoVerifier = RepoVerification & {
+  with(meta: VerificationMetadata): RepoVerifier;
 };
 
-let verifyInstance: RepoTester | null = null;
+let verifyInstance: RepoVerificationRuntime | null = null;
 
 const ensureInstance = () => {
   if (!verifyInstance) {
-    verifyInstance = new RepoTester();
+    verifyInstance = new RepoVerificationRuntime();
   }
   return verifyInstance;
 };
 
-export const configure = (config: RepoTesterConfig = {}) => {
-  verifyInstance = new RepoTester(config);
+export const configure = (config: RepoVerifierConfig = {}) => {
+  verifyInstance = new RepoVerificationRuntime(config);
   return verifyInstance;
 };
 
@@ -27,7 +27,7 @@ export const getVerifyInstance = () => ensureInstance();
 
 const RESERVED = new Set<PropertyKey>(["with"]);
 
-function createVerifyProxy(meta: VerificationMetadata = {}): Verify {
+function createVerifyProxy(meta: VerificationMetadata = {}): RepoVerifier {
   const normalizedMeta = { ...meta };
 
   const handler: ProxyHandler<Record<string, unknown>> = {
@@ -103,8 +103,8 @@ function createVerifyProxy(meta: VerificationMetadata = {}): Verify {
   };
 
   const proxyTarget: Record<string, unknown> = {};
-  return new Proxy(proxyTarget, handler) as Verify;
+  return new Proxy(proxyTarget, handler) as RepoVerifier;
 }
 
-export const verify: Verify = createVerifyProxy();
+export const verify: RepoVerifier = createVerifyProxy();
 export default verify;
