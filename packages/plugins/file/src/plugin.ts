@@ -6,7 +6,8 @@ import {
 import { matchers } from "./matchers";
 import type { FilePluginApi } from "./types";
 
-type FileEntrypoint = ((filePath: string) => FilePluginApi) & FilePluginApi;
+type FileRoot = (filePath: string) => FilePluginApi;
+type FileEntrypoint = FileRoot | FilePluginApi;
 
 export const file = () => {
   return ({ root }: PluginContext) => {
@@ -14,20 +15,27 @@ export const file = () => {
       builder: VerificationBuilder,
       filePath?: string,
     ): FileEntrypoint => {
-      const entry = createPluginEntry(
-        builder,
-        filePath ? createFileMethods(builder, filePath, root) : {},
-        filePath
-          ? undefined
-          : (parent, target: string) =>
-              buildEntry(parent.createChild({ file: target }), target),
-      ) as FileEntrypoint;
+      if (filePath) {
+        return createPluginEntry(
+          builder,
+          createFileMethods(builder, filePath, root),
+          undefined,
+        ) as FilePluginApi;
+      }
 
-      return entry;
+      return createPluginEntry(
+        builder,
+        {},
+        (parent: VerificationBuilder, target: string) =>
+          buildEntry(
+            parent.createChild({ file: target }),
+            target,
+          ) as FilePluginApi,
+      ) as FileRoot;
     };
 
     return {
-      file(builder) {
+      file(builder: VerificationBuilder) {
         return buildEntry(builder);
       },
     };

@@ -9,7 +9,7 @@ import type { DockerBuildOptions, DockerPluginApi } from "./types";
 export const docker = () => {
   return ({ root }: PluginContext) => {
     return {
-      docker(builder) {
+      docker(builder: VerificationBuilder) {
         return createPluginEntry(builder, {
           builds: (
             _builder: VerificationBuilder,
