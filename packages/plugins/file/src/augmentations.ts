@@ -1,8 +1,8 @@
 import "@verify-repo/engine";
+import type { FilePluginApi } from "./types";
 
-// Module augmentation to add 'file' to RepoVerification
 declare module "@verify-repo/engine" {
   interface RepoVerification {
-    file: (filePath: string) => import("./types").FilePluginApi;
+    file: (filePath: string) => FilePluginApi;
   }
 }
