@@ -1,6 +1,12 @@
+export interface PluginContext {
+  test: any;
+  expect: any;
+  root?: string;
+}
+
 export interface RepoPlugin {
   name: string;
-  create: (context: { test: any; expect: any }) => any;
+  create: (context: PluginContext) => any;
   matchers?: Record<string, any>;
 }
 
@@ -8,6 +14,7 @@ export interface RepoTestsConfig {
   plugins: RepoPlugin[];
   test: any;
   expect: any;
+  root?: string;
 }
 
 /**

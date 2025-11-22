@@ -1,4 +1,4 @@
-import { RepoTestsConfig, RepoTestsExtensions } from './types';
+import { RepoTestsConfig, RepoTestsExtensions, PluginContext } from './types';
 
 // Use declaration merging to mixin the extensions
 export interface RepoTests extends RepoTestsExtensions {}
@@ -8,18 +8,23 @@ export class RepoTests {
   // but the interface declaration merging above provides the specific types for consumers.
   [key: string]: any;
 
+  public readonly rootDir?: string;
+
   constructor(config: RepoTestsConfig) {
-    const { plugins, test, expect } = config;
+    const { plugins, test, expect, root: rootDir } = config;
     
     if (!test || !expect) {
       throw new Error("RepoTests requires 'test' and 'expect' to be passed in the config.");
     }
 
+    this.rootDir = rootDir;
+
     for (const plugin of plugins) {
       if (plugin.matchers) {
         expect.extend(plugin.matchers);
       }
-      this[plugin.name] = plugin.create({ test, expect });
+      const context: PluginContext = { test, expect, root: rootDir };
+      this[plugin.name] = plugin.create(context);
     }
   }
 }

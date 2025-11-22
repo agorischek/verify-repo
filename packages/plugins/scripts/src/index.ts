@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import { ScriptPluginApi } from './types';
+import { PluginContext } from '@repo-tests/core';
 
 // Module augmentation to add 'script' to RepoTests
 declare module '@repo-tests/core' {
@@ -11,19 +12,20 @@ declare module '@repo-tests/core' {
 export function scripts() {
   return {
     name: "script",
-    create({ test, expect }: any) {
+    create({ test, expect, root }: PluginContext) {
       const api = function script(name: string): ScriptPluginApi {
         return {
           runs() {
             test(`script: ${name} runs`, async () => {
-              const { exitCode, stdout, stderr } = await runScript(name);
+              const { exitCode, stdout, stderr } = await runScript(name, root);
               expect({ exitCode, stdout, stderr }).toHaveScriptSucceeded();
             });
           },
           outputs(regex: RegExp) {
             test(`script: ${name} boots when ${regex}`, async () => {
               const { stdout, stderr } = await runScriptStreaming(name, {
-                timeout: 15000
+                timeout: 15000,
+                root
               });
               expect(stdout).toContainLineMatching(regex);
             });
@@ -60,11 +62,12 @@ export function scripts() {
 }
 
 // Helper to run a script and wait for it to finish
-function runScript(name: string): Promise<{ exitCode: number | null; stdout: string; stderr: string }> {
+function runScript(name: string, root?: string): Promise<{ exitCode: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve) => {
     // Assuming 'npm run <name>'
     const child = spawn('npm', ['run', name], { 
         shell: true,
+        cwd: root || process.cwd(),
         // env: { ...process.env, CI: 'true' } 
     });
     
@@ -86,9 +89,12 @@ function runScript(name: string): Promise<{ exitCode: number | null; stdout: str
 }
 
 // Helper to run a script streaming/with timeout
-function runScriptStreaming(name: string, options: { timeout: number }): Promise<{ stdout: string; stderr: string }> {
+function runScriptStreaming(name: string, options: { timeout: number; root?: string }): Promise<{ stdout: string; stderr: string }> {
   return new Promise((resolve) => {
-    const child = spawn('npm', ['run', name], { shell: true });
+    const child = spawn('npm', ['run', name], { 
+      shell: true,
+      cwd: options.root || process.cwd()
+    });
     
     let stdout = '';
     let stderr = '';
