@@ -1,10 +1,10 @@
 import { GitPluginApi } from "./types";
 import { PluginContext } from "@repo-tests/core";
-import simpleGit from "simple-git";
+import simpleGit, { type FileStatusResult } from "simple-git";
 
-const formatFiles = (files: { path: string; working: string; index: string }[]) =>
+const formatFiles = (files: FileStatusResult[]) =>
   files
-    .map((file) => `${file.index}${file.working} ${file.path}`.trim())
+    .map((file) => `${file.index}${file.working_dir} ${file.path}`.trim())
     .join("\n");
 
 export const git = () => {
