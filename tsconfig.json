@@ -45,7 +45,8 @@
       "@repo-tests/plugin-file": ["./packages/plugins/file/src/index.ts"],
       "@repo-tests/plugin-prettier": [
         "./packages/plugins/prettier/src/index.ts"
-      ]
+      ],
+      "@repo-tests/plugin-git": ["./packages/plugins/git/src/index.ts"]
     }
   },
   "exclude": ["node_modules"],

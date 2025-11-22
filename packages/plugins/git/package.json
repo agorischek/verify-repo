@@ -1,0 +1,19 @@
+{
+  "name": "@repo-tests/plugin-git",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "simple-git": "^3.24.0"
+  },
+  "peerDependencies": {
+    "@repo-tests/core": "*"
+  },
+  "devDependencies": {
+    "@repo-tests/core": "workspace:*"
+  }
+}

@@ -10,6 +10,7 @@
         "@types/node": "^20.0.0",
         "bun-types": "latest",
         "prettier": "^3.6.2",
+        "simple-git": "^3.30.0",
         "tsdown": "^0.9.0",
         "typescript": "^5.0.0",
       },
@@ -20,6 +21,7 @@
       "dependencies": {
         "@repo-tests/core": "workspace:*",
         "@repo-tests/plugin-file": "workspace:*",
+        "@repo-tests/plugin-git": "workspace:*",
         "@repo-tests/plugin-prettier": "workspace:*",
         "@repo-tests/plugin-script": "workspace:*",
       },
@@ -30,6 +32,19 @@
     "packages/plugins/file": {
       "name": "@repo-tests/plugin-file",
       "version": "0.1.0",
+      "devDependencies": {
+        "@repo-tests/core": "workspace:*",
+      },
+      "peerDependencies": {
+        "@repo-tests/core": "*",
+      },
+    },
+    "packages/plugins/git": {
+      "name": "@repo-tests/plugin-git",
+      "version": "0.1.0",
+      "dependencies": {
+        "simple-git": "^3.24.0",
+      },
       "devDependencies": {
         "@repo-tests/core": "workspace:*",
       },
@@ -94,6 +109,10 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
+    "@kwsites/file-exists": ["@kwsites/file-exists@1.1.1", "", { "dependencies": { "debug": "^4.1.1" } }, "sha512-m9/5YGR18lIwxSFDwfE3oA7bWuq9kdau6ugN4H2rJeyhFQZcG9AgSHkQtSD15a8WvTgfz9aikZMrKPHvbpqFiw=="],
+
+    "@kwsites/promise-deferred": ["@kwsites/promise-deferred@1.1.1", "", {}, "sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw=="],
+
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@0.2.12", "", { "dependencies": { "@emnapi/core": "^1.4.3", "@emnapi/runtime": "^1.4.3", "@tybys/wasm-util": "^0.10.0" } }, "sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ=="],
 
     "@oxc-project/types": ["@oxc-project/types@0.66.0", "", {}, "sha512-KF5Wlo2KzQ+jmuCtrGISZoUfdHom7qHavNfPLW2KkeYJfYMGwtiia8KjwtsvNJ49qRiXImOCkPeVPd4bMlbR7w=="],
@@ -149,6 +168,8 @@
     "@repo-tests/core": ["@repo-tests/core@workspace:packages/core"],
 
     "@repo-tests/plugin-file": ["@repo-tests/plugin-file@workspace:packages/plugins/file"],
+
+    "@repo-tests/plugin-git": ["@repo-tests/plugin-git@workspace:packages/plugins/git"],
 
     "@repo-tests/plugin-prettier": ["@repo-tests/plugin-prettier@workspace:packages/plugins/prettier"],
 
@@ -281,6 +302,8 @@
     "rolldown": ["rolldown@1.0.0-beta.8-commit.151352b", "", { "dependencies": { "@oxc-project/types": "0.66.0", "@valibot/to-json-schema": "1.0.0", "ansis": "^3.17.0", "valibot": "1.0.0" }, "optionalDependencies": { "@rolldown/binding-darwin-arm64": "1.0.0-beta.8-commit.151352b", "@rolldown/binding-darwin-x64": "1.0.0-beta.8-commit.151352b", "@rolldown/binding-freebsd-x64": "1.0.0-beta.8-commit.151352b", "@rolldown/binding-linux-arm-gnueabihf": "1.0.0-beta.8-commit.151352b", "@rolldown/binding-linux-arm64-gnu": "1.0.0-beta.8-commit.151352b", "@rolldown/binding-linux-arm64-musl": "1.0.0-beta.8-commit.151352b", "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.8-commit.151352b", "@rolldown/binding-linux-x64-musl": "1.0.0-beta.8-commit.151352b", "@rolldown/binding-wasm32-wasi": "1.0.0-beta.8-commit.151352b", "@rolldown/binding-win32-arm64-msvc": "1.0.0-beta.8-commit.151352b", "@rolldown/binding-win32-ia32-msvc": "1.0.0-beta.8-commit.151352b", "@rolldown/binding-win32-x64-msvc": "1.0.0-beta.8-commit.151352b" }, "peerDependencies": { "@oxc-project/runtime": "0.66.0" }, "optionalPeers": ["@oxc-project/runtime"], "bin": { "rolldown": "bin/cli.mjs" } }, "sha512-TCb6GVaFBk4wB0LERofFDxTO5X1/Sgahr7Yn5UA9XjuFtCwL1CyEhUHX5lUIstcMxjbkLjn2z4TAGwisr6Blvw=="],
 
     "rolldown-plugin-dts": ["rolldown-plugin-dts@0.9.11", "", { "dependencies": { "@babel/generator": "^7.27.1", "@babel/parser": "^7.27.1", "@babel/types": "^7.27.1", "ast-kit": "^1.4.3", "debug": "^4.4.0", "dts-resolver": "^1.0.1", "get-tsconfig": "^4.10.0", "oxc-transform": "^0.67.0" }, "peerDependencies": { "rolldown": "^1.0.0-beta.7", "typescript": "^5.0.0" }, "optionalPeers": ["typescript"] }, "sha512-iCIRKmvPLwRV4UKSxhaBo+5wDkvc3+MFiqYYvu7sGLSohzxoDn9WEsjN3y7A6xg3aCuxHh6rlRp8xbX98r1rSg=="],
+
+    "simple-git": ["simple-git@3.30.0", "", { "dependencies": { "@kwsites/file-exists": "^1.1.1", "@kwsites/promise-deferred": "^1.1.1", "debug": "^4.4.0" } }, "sha512-q6lxyDsCmEal/MEGhP1aVyQ3oxnagGlBDOVSIB4XUVLl1iZh0Pah6ebC9V4xBap/RfgP2WlI8EKs0WS0rMEJHg=="],
 
     "tinyexec": ["tinyexec@1.0.2", "", {}, "sha512-W/KYk+NFhkmsYpuHq5JykngiOCnxeVL8v8dFnqxSD8qEEdRfXk1SDM6JzNqcERbcGYj9tMrDQBYV9cjgnunFIg=="],
 

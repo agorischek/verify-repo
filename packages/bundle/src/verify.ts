@@ -17,7 +17,7 @@ const getVerifyInstance = (): RepoTester => {
     const { test, expect } = getGlobals();
     if (!test || !expect) {
       throw new Error(
-        "No test and expect found in globals. Use verify.with({ test, expect }) to provide them explicitly.",
+        "No test and expect found in globals. Use configure({ test, expect }) to provide them explicitly.",
       );
     }
     verifyInstance = new RepoTester({ test, expect });
@@ -26,60 +26,41 @@ const getVerifyInstance = (): RepoTester => {
 };
 
 /**
- * Type for the verify object with additional methods
+ * Configure the verify singleton.
+ * This mutates the verify instance in place or re-initializes it.
  */
-export interface Verify extends RepoTester {
-  /**
-   * Create a new RepoTester instance with custom test and expect functions.
-   * If not provided, defaults to globals.
-   */
-  with(config: { test?: any; expect?: any; root?: string }): this;
+export const configure = (config: {
+  test?: any;
+  expect?: any;
+  root?: string;
+  plugins?: RepoPlugin[];
+}) => {
+  const { test: configTest, expect: configExpect, root, plugins = [] } = config;
+  const { test: globalTest, expect: globalExpect } = getGlobals();
 
-  /**
-   * Extend the default verify instance with additional plugins.
-   * This mutates the verify instance in place.
-   */
-  extend(...plugins: RepoPlugin[]): this;
-}
+  const test = configTest ?? globalTest;
+  const expect = configExpect ?? globalExpect;
+
+  if (!test || !expect) {
+    throw new Error(
+      "test and expect must be provided either in config or available as globals",
+    );
+  }
+
+  // Create new instance with provided config
+  verifyInstance = new RepoTester({ test, expect, root, plugins });
+};
+
+/**
+ * Type for the verify object
+ */
+export interface Verify extends RepoTester {}
 
 // Create a proxy that lazily initializes the verify instance
 const createVerifyProxy = (): Verify => {
   return new Proxy({} as Verify, {
     get(target, prop) {
-      // Handle with method
-      if (prop === "with") {
-        return function (config: {
-          test?: any;
-          expect?: any;
-          root?: string;
-        }): typeof proxy {
-          const { test: configTest, expect: configExpect, root } = config;
-          const { test: globalTest, expect: globalExpect } = getGlobals();
-
-          const test = configTest ?? globalTest;
-          const expect = configExpect ?? globalExpect;
-
-          if (!test || !expect) {
-            throw new Error(
-              "test and expect must be provided either in config or available as globals",
-            );
-          }
-
-          // Replace the instance to mutate in place
-          verifyInstance = new RepoTester({ test, expect, root });
-          return proxy;
-        };
-      }
-
-      // Handle extend method
-      if (prop === "extend") {
-        return function (...plugins: RepoPlugin[]): typeof proxy {
-          getVerifyInstance().extend(...plugins);
-          return proxy;
-        };
-      }
-
-      // For all other properties, get from the lazily-initialized instance
+      // For all properties, get from the lazily-initialized instance
       return (getVerifyInstance() as any)[prop];
     },
     set(target, prop, value) {
@@ -87,9 +68,7 @@ const createVerifyProxy = (): Verify => {
       return true;
     },
     has(target, prop) {
-      return (
-        prop === "with" || prop === "extend" || prop in getVerifyInstance()
-      );
+      return prop in getVerifyInstance();
     },
     ownKeys(target) {
       return Reflect.ownKeys(getVerifyInstance());
@@ -103,6 +82,6 @@ const createVerifyProxy = (): Verify => {
 const proxy = createVerifyProxy();
 
 /**
- * Main verify object. Can be used directly or configured with .with()
+ * Main verify object. Use configure() to set up test runner and options.
  */
 export const verify: Verify = proxy;

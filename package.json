@@ -17,6 +17,7 @@
     "@types/node": "^20.0.0",
     "bun-types": "latest",
     "prettier": "^3.6.2",
+    "simple-git": "^3.30.0",
     "tsdown": "^0.9.0",
     "typescript": "^5.0.0"
   },

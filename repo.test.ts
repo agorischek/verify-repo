@@ -1,9 +1,12 @@
-import { verify } from "./packages/bundle/src";
+import { verify, configure } from "./packages/bundle/src";
 import { test, expect } from "bun:test";
 
-verify.with({ test, expect });
+configure({ test, expect });
 
 verify.file("package.json").exists();
-verify.file("bun.lock").exists();
+verify.file("hey.txt").exists();
 verify.prettier();
-verify.script("build").runs();
+
+verify.git.isClean();
+verify.git.hasNoConflicts();
+verify.git.isOnBranch("main");

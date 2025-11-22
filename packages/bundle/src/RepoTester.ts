@@ -7,6 +7,7 @@ import {
 import { file } from "@repo-tests/plugin-file";
 import { script } from "@repo-tests/plugin-script";
 import { prettier } from "@repo-tests/plugin-prettier";
+import { git } from "@repo-tests/plugin-git";
 import { RepoTesterConfig } from "./RepoTesterConfig";
 
 export class RepoTester extends RepoTesterBase {
@@ -18,7 +19,13 @@ export class RepoTester extends RepoTesterBase {
     const { plugins = [], test, expect, ...rest } = config;
 
     // Combine built-in plugins with additional plugins
-    const allPlugins: RepoPlugin[] = [file(), script(), prettier(), ...plugins];
+    const allPlugins: RepoPlugin[] = [
+      file(),
+      script(),
+      prettier(),
+      git(),
+      ...plugins,
+    ];
 
     const repoTestsConfig: RepoTestsConfig = {
       ...rest,
