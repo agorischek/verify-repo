@@ -2,8 +2,13 @@ import { GitPluginApi } from "./types";
 import { PluginContext } from "@repo-tests/core";
 import simpleGit from "simple-git";
 
+const formatFiles = (files: { path: string; working: string; index: string }[]) =>
+  files
+    .map((file) => `${file.index}${file.working} ${file.path}`.trim())
+    .join("\n");
+
 export const git = () => {
-  return ({ test, expect, root }: PluginContext) => {
+  return ({ schedule, root }: PluginContext) => {
     const git = simpleGit(root);
 
     const api: GitPluginApi = Object.assign(
@@ -12,38 +17,72 @@ export const git = () => {
       },
       {
         isClean() {
-          test("git status should be clean", async () => {
+          schedule("git status should be clean", async ({ pass, fail }) => {
             const status = await git.status();
-            expect(status.isClean()).toBe(true);
+            if (status.isClean()) {
+              pass("repository is clean");
+              return;
+            }
+            const dirty = formatFiles(
+              status.files.map((f) => ({
+                path: f.path,
+                working: f.working_dir || " ",
+                index: f.index || " ",
+              })),
+            );
+            fail(
+              dirty.length
+                ? `repository has dirty files:\n${dirty}`
+                : "repository has untracked changes",
+            );
           });
         },
         hasNoConflicts() {
-          test("git should have no conflicts", async () => {
+          schedule("git should have no conflicts", async ({ pass, fail }) => {
             const status = await git.status();
-            expect(status.conflicted.length).toBe(0);
+            if (status.conflicted.length === 0) {
+              pass("no conflicted files");
+            } else {
+              fail(
+                `conflicted files detected:\n${status.conflicted.join("\n")}`,
+              );
+            }
           });
         },
         hasStaged(path: string) {
-          test(`git should have staged changes for "${path}"`, async () => {
-            const status = await git.status();
-            const file = status.files.find((f) => f.path === path);
+          schedule(
+            `git should have staged changes for "${path}"`,
+            async ({ pass, fail }) => {
+              const status = await git.status();
+              const file = status.files.find((f) => f.path === path);
 
-            if (!file) {
-              throw new Error(`File "${path}" not found in git status`);
-            }
+              if (!file) {
+                fail(`File "${path}" not found in git status output.`);
+                return;
+              }
 
-            // In git status porcelain:
-            // X (index) can be 'M', 'A', 'D', 'R', 'C', 'U' for staged
-            // ' ' or '?' means not staged
-            expect(file.index).not.toBe(" ");
-            expect(file.index).not.toBe("?");
-          });
+              if (file.index && file.index !== " " && file.index !== "?") {
+                pass(`"${path}" is staged with status ${file.index}.`);
+              } else {
+                fail(`"${path}" is not staged (index status: "${file.index}").`);
+              }
+            },
+          );
         },
         isOnBranch(branch: string) {
-          test(`git should be on branch "${branch}"`, async () => {
-            const status = await git.status();
-            expect(status.current).toBe(branch);
-          });
+          schedule(
+            `git should be on branch "${branch}"`,
+            async ({ pass, fail }) => {
+              const status = await git.status();
+              if (status.current === branch) {
+                pass(`checked-out branch is "${branch}".`);
+              } else {
+                fail(
+                  `expected branch "${branch}" but was on "${status.current ?? "unknown"}".`,
+                );
+              }
+            },
+          );
         },
       },
     );

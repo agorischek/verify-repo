@@ -10,7 +10,7 @@ export const matchers = {
       pass,
       message: () =>
         pass
-          ? `Expected file "${filePath}" not to exist, but it does.`
+          ? `File "${filePath}" exists.`
           : `Expected file "${filePath}" to exist, but it was not found at ${fullPath}.`,
     };
   },

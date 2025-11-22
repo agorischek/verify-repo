@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "repo-tests-root",
@@ -24,6 +25,7 @@
         "@repo-tests/plugin-git": "workspace:*",
         "@repo-tests/plugin-prettier": "workspace:*",
         "@repo-tests/plugin-script": "workspace:*",
+        "glob": "^13.0.0",
       },
     },
     "packages/core": {

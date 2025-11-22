@@ -1,12 +1,13 @@
-import { verify, configure } from "./packages/bundle/src";
 import { test, expect } from "bun:test";
+import { run } from "./packages/bundle/src";
 
-configure({ test, expect });
+test("repo verify file passes", async () => {
+  const summary = await run({
+    root: process.cwd(),
+    pattern: ["repo.verify.ts"],
+    reporter: false,
+  });
 
-verify.file("package.json").exists();
-verify.file("hey.txt").exists();
-verify.prettier();
-
-verify.git.isClean();
-verify.git.hasNoConflicts();
-verify.git.isOnBranch("main");
+  expect(summary.failed).toBe(0);
+  expect(summary.passed).toBeGreaterThan(0);
+});

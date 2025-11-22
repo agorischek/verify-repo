@@ -1,18 +1,48 @@
 # Repo Tests
 
-Unit test your repo state. Great for helping coding agents prove they're "done" with a task.
+Unit test the state of a repository without depending on a third-party test runner.
+
+## Define checks
+
+Create files that match `**/*?.verify.{js,ts}`. Each file has access to the shared
+`verify` instance:
 
 ```ts
-import { file } from "@repo-tests/plugin-file";
-import { RepoTesterBase } from "../packages/core/src";
-import { script } from "../packages/plugins/script/src";
-import { expect, test } from "bun:test";
+// repo.verify.ts
+import { verify } from "repo-tests";
 
-const verify = new RepoTesterBase({
-  plugins: [script(), file()],
-  test,
-  expect,
+verify.file("package.json").exists();
+verify.script("build").runs();
+verify.git.isClean();
+```
+
+## Run them
+
+```ts
+import { run } from "repo-tests";
+
+await run({
+  root: process.cwd(), // default
+  // pattern, ignore, plugins, etc. are optional overrides
 });
+```
 
-verify.file("package.jsonn").exists();
+`run` discovers every `*.verify.ts`/`*.verify.js` file, loads them, and executes all
+checks in parallel. A non-zero exit (or thrown `RepoTestsFailedError`) indicates a failure.
+
+## Authoring plugins
+
+Plugins now receive `schedule(description, handler)`. Each handler gets `pass`
+and `fail` helpers so you can report rich status messages:
+
+```ts
+import { PluginContext } from "@repo-tests/core";
+
+export const myPlugin = () => ({ schedule }: PluginContext) => ({
+  hello(name: string) {
+    schedule(`says hello to ${name}`, async ({ pass }) => {
+      pass(`Hello, ${name}!`);
+    });
+  },
+});
 ```

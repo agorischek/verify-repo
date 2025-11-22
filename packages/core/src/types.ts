@@ -1,7 +1,45 @@
+export type MaybePromise<T> = T | Promise<T>;
+
+export type PassHandler = (message: string) => void;
+export type FailHandler = (message: string, error?: unknown) => void;
+
+export interface RepoTestControls {
+  pass: PassHandler;
+  fail: FailHandler;
+}
+
+export type RepoTestHandler = (controls: RepoTestControls) => MaybePromise<void>;
+
+export interface RepoTestDefinition {
+  id: number;
+  description: string;
+  handler: RepoTestHandler;
+  source?: string;
+}
+
+export type RepoTestStatus = "pending" | "passed" | "failed";
+
+export interface RepoTestResult {
+  id: number;
+  description: string;
+  source?: string;
+  status: RepoTestStatus;
+  message?: string;
+  error?: string;
+  durationMs: number;
+}
+
+export interface RepoTestRunSummary {
+  total: number;
+  passed: number;
+  failed: number;
+  durationMs: number;
+  results: RepoTestResult[];
+}
+
 export interface PluginContext {
-  test: any;
-  expect: any;
   root?: string;
+  schedule: (description: string, handler: RepoTestHandler) => void;
 }
 
 export type RepoPluginResult = Record<string, (...args: any[]) => any>;
@@ -11,10 +49,9 @@ export type RepoPlugin<T extends RepoPluginResult = RepoPluginResult> = (
 ) => T;
 
 export interface RepoTestsConfig {
-  plugins: RepoPlugin[];
-  test: any;
-  expect: any;
+  plugins?: RepoPlugin[];
   root?: string;
+  defaultConcurrency?: number;
 }
 
 /**

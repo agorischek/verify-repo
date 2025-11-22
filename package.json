@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "cd packages/bundle && bun run build",
-    "dev": "bun test ./tests/test.repo.ts --concurrent --max-concurrency 10",
+    "dev": "bun packages/bundle/src/run.ts",
     "test": "bun test",
     "format": "prettier --write ."
   },
