@@ -15,6 +15,7 @@
     "@repo-tests/plugin-file": "workspace:*",
     "@repo-tests/plugin-script": "workspace:*",
     "@repo-tests/plugin-prettier": "workspace:*",
-    "@repo-tests/plugin-git": "workspace:*"
+    "@repo-tests/plugin-git": "workspace:*",
+    "glob": "^13.0.0"
   }
 }

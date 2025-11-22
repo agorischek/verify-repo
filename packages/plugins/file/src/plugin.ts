@@ -3,13 +3,17 @@ import { PluginContext } from "@repo-tests/core";
 import { matchers } from "./matchers";
 
 export const file = () => {
-  return ({ test, expect, root }: PluginContext) => {
-    expect.extend(matchers);
+  return ({ schedule, root }: PluginContext) => {
     const api = function file(filePath: string): FilePluginApi {
       return {
         exists() {
-          test(`"${filePath}" file should exist`, async () => {
-            await expect(filePath).toExistAsFile(root);
+          schedule(`"${filePath}" file should exist`, async ({ pass, fail }) => {
+            const result = await matchers.toExistAsFile(filePath, root);
+            if (result.pass) {
+              pass(result.message());
+            } else {
+              fail(result.message());
+            }
           });
         },
       };

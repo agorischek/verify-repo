@@ -4,69 +4,49 @@ import { glob } from "glob";
 import prettierModule from "prettier";
 import { matchers } from "./matchers";
 
-export const prettier = () => {
-  return ({ test, expect, root }: PluginContext) => {
-    expect.extend(matchers);
+const DEFAULT_GLOBS = [
+  "**/*.{js,jsx,ts,tsx,json,css,scss,less,html,md,mdx,yml,yaml,graphql,gql}",
+];
+const DEFAULT_IGNORE = [
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/build/**",
+  "**/.git/**",
+];
 
+export const prettier = () => {
+  return ({ schedule, root }: PluginContext) => {
     const api: PrettierPluginApi = function prettier(globPattern?: string) {
-      test(
+      schedule(
         globPattern
           ? `files matching "${globPattern}" should be formatted`
           : "all files should be formatted",
-        async () => {
+        async ({ pass, fail }) => {
           const baseDir = root || process.cwd();
 
-          // Get Prettier config
           const configFile = await prettierModule.resolveConfigFile(baseDir);
           const config = configFile
             ? await prettierModule.resolveConfig(configFile)
             : null;
 
-          // Determine which files to check
-          let filesToCheck: string[];
-
-          if (globPattern) {
-            // Use provided glob pattern
-            filesToCheck = await glob(globPattern, {
-              cwd: baseDir,
-              absolute: true,
-              ignore: [
-                "**/node_modules/**",
-                "**/dist/**",
-                "**/build/**",
-                "**/.git/**",
-              ],
-            });
-          } else {
-            // Check all files that Prettier would normally format
-            // Default patterns from Prettier
-            const defaultPatterns = [
-              "**/*.{js,jsx,ts,tsx,json,css,scss,less,html,md,mdx,yml,yaml,graphql,gql}",
-            ];
-
-            filesToCheck = [];
-            for (const pattern of defaultPatterns) {
-              const matches = await glob(pattern, {
+          const filesToCheck = globPattern
+            ? await glob(globPattern, {
                 cwd: baseDir,
                 absolute: true,
-                ignore: [
-                  "**/node_modules/**",
-                  "**/dist/**",
-                  "**/build/**",
-                  "**/.git/**",
-                ],
-              });
-              filesToCheck.push(...matches);
-            }
+                ignore: DEFAULT_IGNORE,
+              })
+            : await collectDefaultFiles(baseDir);
 
-            // Remove duplicates
-            filesToCheck = [...new Set(filesToCheck)];
-          }
-
-          await expect(filesToCheck).toBePrettierFormatted({
+          const result = await matchers.toBePrettierFormatted(filesToCheck, {
             config,
             root: baseDir,
           });
+
+          if (result.pass) {
+            pass(result.message());
+          } else {
+            fail(result.message());
+          }
         },
       );
     };
@@ -74,3 +54,16 @@ export const prettier = () => {
     return { prettier: api };
   };
 };
+
+async function collectDefaultFiles(baseDir: string) {
+  const matches = await Promise.all(
+    DEFAULT_GLOBS.map((pattern) =>
+      glob(pattern, {
+        cwd: baseDir,
+        absolute: true,
+        ignore: DEFAULT_IGNORE,
+      }),
+    ),
+  );
+  return [...new Set(matches.flat())];
+}
