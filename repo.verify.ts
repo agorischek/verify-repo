@@ -1,4 +1,5 @@
-import { verify } from "./packages/bundle/src";
+import { verify } from "verify-repo";
 
 verify.file("package.json").exists();
 verify.file("README.md").exists();
+verify.ts.builds();

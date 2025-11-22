@@ -80,7 +80,11 @@ function createVerifyProxy(meta: VerificationMetadata = {}): RepoVerifier {
     ownKeys(target) {
       const tester = ensureInstance();
       const keys = new Set<string | symbol>(["with"]);
-      tester.getPluginNames().forEach((name) => keys.add(name));
+      tester.getPluginNames().forEach((name) => {
+        if (typeof name !== "number") {
+          keys.add(name);
+        }
+      });
       Reflect.ownKeys(tester).forEach((key) => {
         if (!RESERVED.has(key)) {
           keys.add(key);

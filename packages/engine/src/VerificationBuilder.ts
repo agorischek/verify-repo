@@ -73,7 +73,7 @@ export class VerificationBuilder {
     }
     this.finalized = true;
 
-    for (const child of this.children) {
+    for (const child of Array.from(this.children)) {
       child.finalize();
     }
     this.children.clear();
