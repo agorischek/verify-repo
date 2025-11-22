@@ -11,6 +11,7 @@
     "build": "cd packages/bundle && bun run build",
     "dev": "bun packages/bundle/src/run.ts",
     "test": "bun test",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write ."
   },
   "devDependencies": {

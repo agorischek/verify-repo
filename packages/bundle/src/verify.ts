@@ -70,7 +70,7 @@ function createVerifyProxy(meta: VerificationMetadata = {}): RepoVerifier {
       }
       return prop in ensureInstance();
     },
-    ownKeys() {
+    ownKeys(target) {
       const tester = ensureInstance();
       const keys = new Set<PropertyKey>(["with"]);
       tester.getPluginNames().forEach((name) => keys.add(name));
@@ -103,7 +103,7 @@ function createVerifyProxy(meta: VerificationMetadata = {}): RepoVerifier {
   };
 
   const proxyTarget: Record<string, unknown> = {};
-  return new Proxy(proxyTarget, handler) as RepoVerifier;
+  return new Proxy(proxyTarget, handler) as unknown as RepoVerifier;
 }
 
 export const verify: RepoVerifier = createVerifyProxy();
