@@ -8,7 +8,7 @@
     "packages/bundle"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "cd packages/bundle && bun run build",
     "dev": "bun test ./tests/test.repo.ts --concurrent --max-concurrency 10",
     "test": "bun test"
   },

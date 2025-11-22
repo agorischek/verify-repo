@@ -5,10 +5,16 @@ export * from '@repo-tests/core';
 export * from '@repo-tests/plugin-file';
 export * from '@repo-tests/plugin-script';
 
-// Export RepoTester as the main export (both default and named)
-export { RepoTester } from './RepoTester';
+import { RepoTester } from './RepoTester';
+export { RepoTester };
 export type { RepoTesterConfig } from './RepoTesterConfig';
+export { create } from './create';
 
-// Default export
-export { RepoTester as default } from './RepoTester';
+// Import and re-export verify to ensure tsdown can resolve it
+import { verify, type Verify } from './verify';
+export { verify };
+export type { Verify };
+
+export default verify;
+
 
