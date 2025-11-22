@@ -1,4 +1,5 @@
 import { performance } from "node:perf_hooks";
+import path from "node:path";
 import {
   PluginContext,
   PluginEntrypointFactory,
@@ -94,6 +95,7 @@ export class RepoVerificationEngine {
       pluginName,
       meta,
       root: this.root,
+      baseDir: this.activeSource ? path.dirname(this.activeSource) : undefined,
       schedule: (description, handler) => this.schedule(description, handler),
       autoFinalize: options?.autoFinalize,
     });

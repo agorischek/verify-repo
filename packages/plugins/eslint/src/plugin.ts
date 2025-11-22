@@ -15,7 +15,7 @@ export const eslint = () => {
       eslint(builder: VerificationBuilder) {
         return createPluginEntry(builder, {
           passes: (_builder: VerificationBuilder, options?: EslintOptions) =>
-            scheduleEslint(_builder, root, options),
+            scheduleEslint(_builder, options),
         }) as EslintPluginApi;
       },
     };
@@ -24,7 +24,6 @@ export const eslint = () => {
 
 function scheduleEslint(
   builder: VerificationBuilder,
-  root: string | undefined,
   options?: EslintOptions,
 ) {
   const files = normalizeFiles(options?.files);
@@ -35,7 +34,7 @@ function scheduleEslint(
 
   builder.schedule(description, async ({ pass, fail }) => {
     try {
-      const cwd = options?.cwd ?? root ?? process.cwd();
+      const cwd = options?.cwd ?? builder.cwd;
       const args = buildEslintArgs(files, options);
       const result = await runEslint(args, { cwd, timeoutMs: options?.timeoutMs });
       if (result.exitCode === 0) {

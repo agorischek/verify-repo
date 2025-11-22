@@ -17,7 +17,7 @@ export const docker = () => {
             explicitOptions?: DockerBuildOptions,
           ) => {
             const normalized = normalizeOptions(
-              root,
+              builder.cwd,
               dockerfileOrOptions,
               explicitOptions,
             );
@@ -40,7 +40,7 @@ interface NormalizedDockerOptions {
 }
 
 function normalizeOptions(
-  root: string | undefined,
+  cwd: string,
   dockerfileOrOptions?: string | DockerBuildOptions,
   explicitOptions?: DockerBuildOptions,
 ): NormalizedDockerOptions {
@@ -55,7 +55,7 @@ function normalizeOptions(
     tag: options.tag,
     args: options.args ?? [],
     buildArgs: options.buildArgs ?? {},
-    cwd: options.cwd ?? root ?? process.cwd(),
+    cwd: options.cwd ?? cwd,
     timeoutMs: options.timeoutMs,
   };
 }

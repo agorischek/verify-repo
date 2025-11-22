@@ -4,6 +4,7 @@ export interface VerificationBuilderOptions {
   pluginName: string;
   schedule: PluginContext["schedule"];
   root?: string;
+  baseDir?: string;
   meta?: VerificationMetadata;
   autoFinalize?: boolean;
   parent?: VerificationBuilder;
@@ -12,6 +13,7 @@ export interface VerificationBuilderOptions {
 export class VerificationBuilder {
   public readonly pluginName: string;
   public readonly root?: string;
+  public readonly baseDir?: string;
 
   private readonly scheduleFn: PluginContext["schedule"];
   private readonly parent?: VerificationBuilder;
@@ -27,6 +29,7 @@ export class VerificationBuilder {
       pluginName,
       schedule,
       root,
+      baseDir,
       meta,
       autoFinalize = true,
       parent,
@@ -35,6 +38,7 @@ export class VerificationBuilder {
     this.pluginName = pluginName;
     this.scheduleFn = schedule;
     this.root = root;
+    this.baseDir = baseDir;
     this.parent = parent;
     this.meta = { ...(meta ?? {}) };
     this.autoFinalize = autoFinalize;
@@ -48,6 +52,10 @@ export class VerificationBuilder {
         this.finalize();
       });
     }
+  }
+
+  public get cwd(): string {
+    return this.baseDir ?? this.root ?? process.cwd();
   }
 
   public get metadata(): Readonly<VerificationMetadata> {
@@ -91,6 +99,7 @@ export class VerificationBuilder {
       pluginName: this.pluginName,
       schedule: this.scheduleFn,
       root: this.root,
+      baseDir: this.baseDir,
       meta: { ...this.meta, ...(meta ?? {}) },
       autoFinalize: options?.autoFinalize ?? false,
       parent: this,

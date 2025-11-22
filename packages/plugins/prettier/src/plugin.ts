@@ -38,7 +38,7 @@ export const prettier = () => {
         return createPluginEntry(
           builder,
           {
-            isFormatted: () => scheduleFormatting(builder, root, selection),
+            isFormatted: () => scheduleFormatting(builder, selection),
           },
           undefined,
         ) as PrettierLeaf;
@@ -47,7 +47,7 @@ export const prettier = () => {
       const baseEntry = createPluginEntry(
         builder,
         {
-          isFormatted: () => scheduleFormatting(builder, root, selection),
+          isFormatted: () => scheduleFormatting(builder, selection),
         },
         (parent: VerificationBuilder, pattern: string) =>
           buildEntry(
@@ -77,13 +77,12 @@ export const prettier = () => {
 
 function scheduleFormatting(
   builder: VerificationBuilder,
-  root: string | undefined,
   selection: Selection,
 ) {
   const description = getDescription(selection);
   builder.schedule(description, async ({ pass, fail }) => {
     try {
-      const baseDir = root || process.cwd();
+      const baseDir = builder.cwd;
       const configFile = await prettierModule.resolveConfigFile(baseDir);
       const config = configFile
         ? await prettierModule.resolveConfig(configFile)

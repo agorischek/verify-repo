@@ -18,7 +18,7 @@ export const file = () => {
       if (filePath) {
         return createPluginEntry(
           builder,
-          createFileMethods(builder, filePath, root),
+          createFileMethods(builder, filePath),
           undefined,
         ) as FilePluginApi;
       }
@@ -45,13 +45,12 @@ export const file = () => {
 function createFileMethods(
   builder: VerificationBuilder,
   filePath: string,
-  root?: string,
 ) {
   return {
     exists: async () => {
       const description = `File "${filePath}" should exist`;
       builder.schedule(description, async ({ pass, fail }) => {
-        const result = await matchers.toExistAsFile(filePath, root);
+        const result = await matchers.toExistAsFile(filePath, builder.cwd);
         if (result.pass) {
           pass(result.message());
         } else {
@@ -62,7 +61,7 @@ function createFileMethods(
     contains: async (_: VerificationBuilder, needle: string | RegExp) => {
       const description = `File "${filePath}" should contain ${String(needle)}`;
       builder.schedule(description, async ({ pass, fail }) => {
-        const result = await matchers.toContainText(filePath, needle, root);
+        const result = await matchers.toContainText(filePath, needle, builder.cwd);
         if (result.pass) {
           pass(result.message());
         } else {

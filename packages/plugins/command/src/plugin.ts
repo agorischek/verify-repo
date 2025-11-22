@@ -34,7 +34,7 @@ export const command = () => {
       if (commandText) {
         return createPluginEntry(
           builder,
-          createCommandMethods(builder, commandText, root),
+          createCommandMethods(builder, commandText),
           undefined,
         ) as CommandLeaf;
       }
@@ -78,7 +78,6 @@ export const command = () => {
 function createCommandMethods(
   builder: VerificationBuilder,
   commandText: string,
-  root?: string,
 ) {
   return {
     runs: (_builder: VerificationBuilder, options?: CommandRunOptions) => {
@@ -87,7 +86,7 @@ function createCommandMethods(
         try {
           const result = await runCommand(
             commandText,
-            deriveRunOptions(root, options),
+            deriveRunOptions(builder.cwd, options),
           );
           const expected = options?.expectExitCode ?? 0;
           if (result.exitCode === expected) {
@@ -115,7 +114,7 @@ function createCommandMethods(
       builder.schedule(description, async ({ pass, fail }) => {
         try {
           const { child, stdout } = await runCommandStreaming(commandText, {
-            cwd: options?.cwd ?? root,
+            cwd: options?.cwd ?? builder.cwd,
             env: options?.env,
           });
 

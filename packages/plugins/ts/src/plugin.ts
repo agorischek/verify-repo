@@ -17,7 +17,6 @@ export const ts = () => {
           noErrors: (_builder: VerificationBuilder, options?: TsCheckOptions) =>
             scheduleTsc(
               _builder,
-              root,
               ["--noEmit", "--pretty", "false"],
               "TypeScript should have no errors",
               options,
@@ -25,7 +24,6 @@ export const ts = () => {
           builds: (_builder: VerificationBuilder, options?: TsCheckOptions) =>
             scheduleTsc(
               _builder,
-              root,
               ["--pretty", "false"],
               "TypeScript project should build",
               options,
@@ -37,7 +35,6 @@ export const ts = () => {
           ) =>
             scheduleTsc(
               _builder,
-              root,
               ["-p", tsconfigPath, "--pretty", "false"],
               `TypeScript project "${tsconfigPath}" should build`,
               options,
@@ -50,14 +47,13 @@ export const ts = () => {
 
 function scheduleTsc(
   builder: VerificationBuilder,
-  root: string | undefined,
   args: string[],
   description: string,
   options?: TsCheckOptions,
 ) {
   builder.schedule(description, async ({ pass, fail }) => {
     try {
-      const cwd = options?.cwd ?? root ?? process.cwd();
+      const cwd = options?.cwd ?? builder.cwd;
       const result = await runTsc(args, { cwd, timeoutMs: options?.timeoutMs });
       if (result.exitCode === 0) {
         pass("TypeScript completed successfully.");

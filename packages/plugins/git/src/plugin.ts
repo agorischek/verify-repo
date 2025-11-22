@@ -3,6 +3,7 @@ import {
   createPluginEntry,
   type VerificationBuilder,
 } from "@verify-repo/engine";
+import path from "node:path";
 import simpleGit from "simple-git";
 import type { GitBranchPluginApi, GitPluginApi } from "./types";
 
@@ -19,8 +20,13 @@ export const git = () => {
       const entry = createPluginEntry(builder, {
         isClean: () => scheduleClean(builder, client),
         hasNoConflicts: () => scheduleConflicts(builder, client),
-        hasStaged: (_b: VerificationBuilder, filePath: string) =>
-          scheduleHasStaged(builder, client, filePath),
+        hasStaged: (_b: VerificationBuilder, filePath: string) => {
+          const base = builder.cwd;
+          const repoRoot = builder.root ?? process.cwd();
+          const abs = path.resolve(base, filePath);
+          const rel = path.relative(repoRoot, abs);
+          return scheduleHasStaged(builder, client, rel);
+        },
         isOnBranch: (_b: VerificationBuilder, branch: string) =>
           scheduleIsOnBranch(builder, client, branch),
       }) as GitPluginApi;
