@@ -16,11 +16,22 @@ export const script = () => {
         },
         outputs(regex: RegExp) {
           test(`script: ${name} boots when ${regex}`, async () => {
-            const { stdout, stderr } = await runScriptStreaming(name, {
+            const { child, stdout, stderr } = await runScriptStreaming(name, {
               timeout: 15000,
               root,
             });
-            await expect(stdout).toContainLineMatching(regex);
+            
+            try {
+              if (!stdout) {
+                throw new Error("stdout stream is not available");
+              }
+              await expect(stdout).toContainLineMatching(regex, 15000);
+            } finally {
+              // Clean up the process if it's still running
+              if (child.exitCode === null) {
+                child.kill();
+              }
+            }
           });
         },
       };

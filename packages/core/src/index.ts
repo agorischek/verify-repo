@@ -1,2 +1,2 @@
 export * from './types';
-export * from './RepoTests';
+export * from './RepoTesterBase';

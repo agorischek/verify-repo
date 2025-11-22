@@ -1,4 +1,5 @@
-import { spawn } from "child_process";
+import { spawn, ChildProcess } from "child_process";
+import { Readable } from "stream";
 
 // Helper to run a script and wait for it to finish
 export function runScript(
@@ -38,44 +39,22 @@ export function runScript(
 export function runScriptStreaming(
   name: string,
   options: { timeout: number; root?: string }
-): Promise<{ stdout: string; stderr: string }> {
-  return new Promise((resolve) => {
+): Promise<{ child: ChildProcess; stdout: Readable | null; stderr: Readable | null }> {
+  return new Promise((resolve, reject) => {
     const child = spawn("npm", ["run", name], {
       shell: true,
       cwd: options.root || process.cwd(),
     });
 
-    let stdout = "";
-    let stderr = "";
-
-    child.stdout?.on("data", (data) => {
-      stdout += data.toString();
-    });
-    child.stderr?.on("data", (data) => {
-      stderr += data.toString();
-    });
-
-    let resolved = false;
-    const finish = () => {
-      if (resolved) return;
-      resolved = true;
-      if (child.exitCode === null) {
-        child.kill();
-      }
-      resolve({ stdout, stderr });
-    };
-
-    const timer = setTimeout(finish, options.timeout);
-
-    child.on("close", () => {
-      clearTimeout(timer);
-      finish();
-    });
-
     child.on("error", (err) => {
-      clearTimeout(timer);
-      stderr += `Failed to start subprocess: ${err.message}`;
-      finish();
+      reject(err);
+    });
+
+    // Resolve immediately with the streams - the matcher will handle timeout
+    resolve({
+      child,
+      stdout: child.stdout,
+      stderr: child.stderr,
     });
   });
 }
