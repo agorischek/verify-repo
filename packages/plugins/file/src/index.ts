@@ -9,21 +9,18 @@ declare module '@repo-tests/core' {
   }
 }
 
-export function file() {
-  return {
-    name: "file",
-    create({ test, expect, root }: PluginContext) {
-      expect.extend(fileMatchers);
-      const api = function file(filePath: string): FilePluginApi {
-        return {
-          exists() {
-            test(`file: ${filePath} exists`, () => {
-               expect(filePath).toExistAsFile(root);
-            });
-          }
-        };
+export const file = () => {
+  return ({ test, expect, root }: PluginContext) => {
+    expect.extend(fileMatchers);
+    const api = function file(filePath: string): FilePluginApi {
+      return {
+        exists() {
+          test(`file: ${filePath} exists`, () => {
+             expect(filePath).toExistAsFile(root);
+          });
+        }
       };
-      return api;
-    }
+    };
+    return { file: api };
   };
 }

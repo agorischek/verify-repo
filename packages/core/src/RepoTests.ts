@@ -8,20 +8,21 @@ export class RepoTests {
   // but the interface declaration merging above provides the specific types for consumers.
   [key: string]: any;
 
-  public readonly rootDir?: string;
+  public readonly root?: string;
 
   constructor(config: RepoTestsConfig) {
-    const { plugins, test, expect, root: rootDir } = config;
+    const { plugins, test, expect, root } = config;
     
     if (!test || !expect) {
       throw new Error("RepoTests requires 'test' and 'expect' to be passed in the config.");
     }
 
-    this.rootDir = rootDir;
+    this.root = root;
 
     for (const plugin of plugins) {
-      const context: PluginContext = { test, expect, root: rootDir };
-      this[plugin.name] = plugin.create(context);
+      const context: PluginContext = { test, expect, root };
+      const api = plugin(context) || {};
+      Object.assign(this, api);
     }
   }
 }

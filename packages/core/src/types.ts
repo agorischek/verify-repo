@@ -4,10 +4,11 @@ export interface PluginContext {
   root?: string;
 }
 
-export interface RepoPlugin {
-  name: string;
-  create: (context: PluginContext) => any;
-}
+export type RepoPluginResult = Record<string, (...args: any[]) => any>;
+
+export type RepoPlugin<T extends RepoPluginResult = RepoPluginResult> = (
+  context: PluginContext
+) => T;
 
 export interface RepoTestsConfig {
   plugins: RepoPlugin[];
