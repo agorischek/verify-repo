@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url);
 export const ts = () => {
   return ({ root }: PluginContext) => {
     return {
-      ts(builder) {
+      ts(builder: VerificationBuilder) {
         return createPluginEntry(builder, {
           noErrors: (_builder: VerificationBuilder, options?: TsCheckOptions) =>
             scheduleTsc(

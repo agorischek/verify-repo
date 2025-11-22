@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url);
 export const eslint = () => {
   return ({ root }: PluginContext) => {
     return {
-      eslint(builder) {
+      eslint(builder: VerificationBuilder) {
         return createPluginEntry(builder, {
           passes: (_builder: VerificationBuilder, options?: EslintOptions) =>
             scheduleEslint(_builder, root, options),

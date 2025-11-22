@@ -1,4 +1,4 @@
-declare module "verify-repo" {
+declare module "@verify-repo/engine" {
   interface RepoVerification {
     eslint: import("./types").EslintPluginApi;
   }

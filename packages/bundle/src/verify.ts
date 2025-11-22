@@ -30,7 +30,14 @@ const RESERVED = new Set<PropertyKey>(["with"]);
 function createVerifyProxy(meta: VerificationMetadata = {}): RepoVerifier {
   const normalizedMeta = { ...meta };
 
-  const handler: ProxyHandler<Record<string, unknown>> = {
+  // Create a target object that satisfies the RepoVerifier interface requirements
+  // (specifically the 'with' method) so that we can cast it safely.
+  const proxyTarget = {
+    with: (extra: VerificationMetadata) =>
+      createVerifyProxy({ ...normalizedMeta, ...extra }),
+  } as RepoVerifier;
+
+  const handler: ProxyHandler<RepoVerifier> = {
     get(_target, prop, receiver) {
       const tester = ensureInstance();
 
@@ -72,7 +79,7 @@ function createVerifyProxy(meta: VerificationMetadata = {}): RepoVerifier {
     },
     ownKeys(target) {
       const tester = ensureInstance();
-      const keys = new Set<PropertyKey>(["with"]);
+      const keys = new Set<string | symbol>(["with"]);
       tester.getPluginNames().forEach((name) => keys.add(name));
       Reflect.ownKeys(tester).forEach((key) => {
         if (!RESERVED.has(key)) {
@@ -102,8 +109,7 @@ function createVerifyProxy(meta: VerificationMetadata = {}): RepoVerifier {
     },
   };
 
-  const proxyTarget: Record<string, unknown> = {};
-  return new Proxy(proxyTarget, handler) as unknown as RepoVerifier;
+  return new Proxy(proxyTarget, handler);
 }
 
 export const verify: RepoVerifier = createVerifyProxy();

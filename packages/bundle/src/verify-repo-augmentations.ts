@@ -1,8 +1,2 @@
-import type { RepoVerification as CoreRepoVerification } from "@verify-repo/engine";
-
-declare module "verify-repo" {
-  interface RepoVerification extends CoreRepoVerification {}
-}
-
+// This file is intentionally left empty as plugins now augment @verify-repo/engine directly.
 export {};
-

@@ -15,8 +15,15 @@ import type {
   CommandOutputOptions,
 } from "./types";
 
-type CommandEntrypoint = ((command: string) => CommandPluginApi) &
-  CommandPluginApi;
+type CommandLeaf = CommandPluginApi;
+
+interface CommandRoot {
+  (command: string): CommandLeaf;
+  runs(cmd: string, options?: CommandRunOptions): void;
+  outputs(cmd: string, regex: RegExp, options?: CommandOutputOptions): void;
+}
+
+type CommandEntrypoint = CommandRoot | CommandLeaf;
 
 export const command = () => {
   return ({ root }: PluginContext) => {
@@ -24,35 +31,44 @@ export const command = () => {
       builder: VerificationBuilder,
       commandText?: string,
     ): CommandEntrypoint => {
-      const entry = createPluginEntry(
-        builder,
-        commandText ? createCommandMethods(builder, commandText, root) : {},
-        commandText
-          ? undefined
-          : (parent, cmd: string) =>
-              buildEntry(parent.createChild({ command: cmd }), cmd),
-      ) as CommandEntrypoint;
+      if (commandText) {
+        return createPluginEntry(
+          builder,
+          createCommandMethods(builder, commandText, root),
+          undefined,
+        ) as CommandLeaf;
+      }
 
-      if (!commandText) {
-        entry.runs = (cmd: string, options?: CommandRunOptions) => {
+      const baseEntry = createPluginEntry(
+        builder,
+        {},
+        (parent: VerificationBuilder, cmd: string) =>
+          buildEntry(
+            parent.createChild({ command: cmd }),
+            cmd,
+          ) as CommandLeaf,
+      );
+
+      const rootEntry = Object.assign(baseEntry, {
+        runs: (cmd: string, options?: CommandRunOptions) => {
           const child = builder.createChild({ command: cmd });
-          buildEntry(child, cmd).runs(options);
-        };
-        entry.outputs = (
+          (buildEntry(child, cmd) as CommandLeaf).runs(options);
+        },
+        outputs: (
           cmd: string,
           regex: RegExp,
           options?: CommandOutputOptions,
         ) => {
           const child = builder.createChild({ command: cmd });
-          buildEntry(child, cmd).outputs(regex, options);
-        };
-      }
+          (buildEntry(child, cmd) as CommandLeaf).outputs(regex, options);
+        },
+      });
 
-      return entry;
+      return rootEntry as CommandRoot;
     };
 
     return {
-      command(builder) {
+      command(builder: VerificationBuilder) {
         return buildEntry(builder);
       },
     };

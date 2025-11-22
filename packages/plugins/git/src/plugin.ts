@@ -34,7 +34,7 @@ export const git = () => {
     };
 
     return {
-      git(builder) {
+      git(builder: VerificationBuilder) {
         return buildEntry(builder);
       },
     };

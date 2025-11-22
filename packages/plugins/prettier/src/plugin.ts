@@ -7,7 +7,7 @@ import { glob } from "glob";
 import path from "node:path";
 import prettierModule from "prettier";
 import { matchers } from "./matchers";
-import type { PrettierPluginApi } from "./types";
+import type { PrettierPluginApi, PrettierSelectorApi } from "./types";
 
 const DEFAULT_GLOBS = [
   "**/*.{js,jsx,ts,tsx,json,css,scss,less,html,md,mdx,yml,yaml,graphql,gql}",
@@ -24,7 +24,9 @@ type Selection =
   | { type: "file"; value: string }
   | undefined;
 
-type PrettierEntrypoint = PrettierPluginApi;
+type PrettierLeaf = PrettierSelectorApi;
+type PrettierRoot = PrettierPluginApi;
+type PrettierEntrypoint = PrettierRoot | PrettierLeaf;
 
 export const prettier = () => {
   return ({ root }: PluginContext) => {
@@ -32,31 +34,41 @@ export const prettier = () => {
       builder: VerificationBuilder,
       selection?: Selection,
     ): PrettierEntrypoint => {
-      const entry = createPluginEntry(
+      if (selection) {
+        return createPluginEntry(
+          builder,
+          {
+            isFormatted: () => scheduleFormatting(builder, root, selection),
+          },
+          undefined,
+        ) as PrettierLeaf;
+      }
+
+      const baseEntry = createPluginEntry(
         builder,
         {
           isFormatted: () => scheduleFormatting(builder, root, selection),
         },
-        selection
-          ? undefined
-          : (parent, pattern: string) =>
-              buildEntry(
-                parent.createChild({ pattern }),
-                { type: "pattern", value: pattern },
-              ),
-      ) as PrettierEntrypoint;
+        (parent: VerificationBuilder, pattern: string) =>
+          buildEntry(
+            parent.createChild({ pattern }),
+            { type: "pattern", value: pattern },
+          ) as PrettierLeaf,
+      );
 
-      entry.file = (filePath: string) =>
-        buildEntry(
-          builder.createChild({ file: filePath }),
-          { type: "file", value: filePath },
-        );
+      const rootEntry = Object.assign(baseEntry, {
+        file: (filePath: string) =>
+          buildEntry(
+            builder.createChild({ file: filePath }),
+            { type: "file", value: filePath },
+          ) as PrettierLeaf,
+      });
 
-      return entry;
+      return rootEntry as PrettierRoot;
     };
 
     return {
-      prettier(builder) {
+      prettier(builder: VerificationBuilder) {
         return buildEntry(builder);
       },
     };
