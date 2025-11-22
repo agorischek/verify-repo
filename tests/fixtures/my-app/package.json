@@ -1,0 +1,10 @@
+{
+  "name": "my-fixture-app",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'building...' && exit 0",
+    "dev": "echo 'starting dev server... ready' && sleep 1",
+    "fail": "echo 'oops' && exit 1"
+  }
+}
+
