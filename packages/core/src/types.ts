@@ -22,8 +22,8 @@ export interface RepoTestsConfig {
  * Plugins should add their property definitions here.
  * 
  * Example:
- * declare module '@repo-tests/core' {
- *   interface RepoTestsPlugins {
+ * declare module 'repo-tests' {
+ *   interface RepoTestsExtensions {
  *     myPlugin: MyPluginApi;
  *   }
  * }

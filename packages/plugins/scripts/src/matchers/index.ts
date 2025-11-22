@@ -1,5 +1,5 @@
 export const scriptMatchers = {
-  toHaveScriptSucceeded(received: any) {
+  async toHaveScriptSucceeded(received: any) {
     const pass = received.exitCode === 0;
     return {
       pass,
@@ -9,7 +9,7 @@ export const scriptMatchers = {
           : `Script exited with ${received.exitCode}\nSTDOUT:\n${received.stdout}\nSTDERR:\n${received.stderr}`
     };
   },
-  toContainLineMatching(output: string, regex: RegExp) {
+  async toContainLineMatching(output: string, regex: RegExp) {
     const lines = output.split(/\r?\n/);
     const matched = lines.find((line: string) => regex.test(line));
     const pass = Boolean(matched);
