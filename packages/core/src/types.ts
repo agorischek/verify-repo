@@ -7,7 +7,7 @@ export interface PluginContext {
 export type RepoPluginResult = Record<string, (...args: any[]) => any>;
 
 export type RepoPlugin<T extends RepoPluginResult = RepoPluginResult> = (
-  context: PluginContext
+  context: PluginContext,
 ) => T;
 
 export interface RepoTestsConfig {
@@ -20,7 +20,7 @@ export interface RepoTestsConfig {
 /**
  * This interface is intended to be augmented by plugins.
  * Plugins should add their property definitions here.
- * 
+ *
  * Example:
  * declare module 'repo-tests' {
  *   interface RepoTestsExtensions {

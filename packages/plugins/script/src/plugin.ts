@@ -20,7 +20,7 @@ export const script = () => {
               timeout: 15000,
               root,
             });
-            
+
             try {
               if (!stdout) {
                 throw new Error("stdout stream is not available");
@@ -39,4 +39,3 @@ export const script = () => {
     return { script: api };
   };
 };
-

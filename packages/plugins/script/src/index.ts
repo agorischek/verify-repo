@@ -1,3 +1,3 @@
-import './augmentations';
-export * from './types';
-export * from './plugin';
+import "./augmentations";
+export * from "./types";
+export * from "./plugin";

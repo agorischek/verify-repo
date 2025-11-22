@@ -1,5 +1,5 @@
-import { existsSync } from 'fs';
-import * as path from 'path';
+import { existsSync } from "fs";
+import * as path from "path";
 
 export const matchers = {
   async toExistAsFile(filePath: string, root?: string) {
@@ -11,9 +11,7 @@ export const matchers = {
       message: () =>
         pass
           ? `Expected file "${filePath}" not to exist, but it does.`
-          : `Expected file "${filePath}" to exist, but it was not found at ${fullPath}.`
+          : `Expected file "${filePath}" to exist, but it was not found at ${fullPath}.`,
     };
-  }
+  },
 };
-
-

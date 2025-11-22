@@ -1,7 +1,6 @@
 // Module augmentation to add 'file' to RepoTests
-declare module 'repo-tests' {
+declare module "repo-tests" {
   interface RepoTestsExtensions {
-    file: (filePath: string) => import('./types').FilePluginApi;
+    file: (filePath: string) => import("./types").FilePluginApi;
   }
 }
-

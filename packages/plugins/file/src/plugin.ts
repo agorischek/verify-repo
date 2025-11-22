@@ -1,6 +1,6 @@
-import { FilePluginApi } from './types';
-import { PluginContext } from '@repo-tests/core';
-import { matchers } from './matchers';
+import { FilePluginApi } from "./types";
+import { PluginContext } from "@repo-tests/core";
+import { matchers } from "./matchers";
 
 export const file = () => {
   return ({ test, expect, root }: PluginContext) => {
@@ -9,12 +9,11 @@ export const file = () => {
       return {
         exists() {
           test(`file: ${filePath} exists`, async () => {
-             await expect(filePath).toExistAsFile(root);
+            await expect(filePath).toExistAsFile(root);
           });
-        }
+        },
       };
     };
     return { file: api };
   };
-}
-
+};

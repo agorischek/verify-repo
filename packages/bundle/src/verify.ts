@@ -1,5 +1,5 @@
-import { RepoTester } from './RepoTester';
-import { RepoPlugin } from '@repo-tests/core';
+import { RepoTester } from "./RepoTester";
+import { RepoPlugin } from "@repo-tests/core";
 
 // Try to get globals, but they might not be available in all environments
 const getGlobals = () => {
@@ -17,7 +17,7 @@ const getVerifyInstance = (): RepoTester => {
     const { test, expect } = getGlobals();
     if (!test || !expect) {
       throw new Error(
-        'No test and expect found in globals. Use verify.with({ test, expect }) to provide them explicitly.'
+        "No test and expect found in globals. Use verify.with({ test, expect }) to provide them explicitly.",
       );
     }
     verifyInstance = new RepoTester({ test, expect });
@@ -33,8 +33,8 @@ export interface Verify extends RepoTester {
    * Create a new RepoTester instance with custom test and expect functions.
    * If not provided, defaults to globals.
    */
-  with(config: { test?: any; expect?: any; root?: string }): RepoTester;
-  
+  with(config: { test?: any; expect?: any; root?: string }): this;
+
   /**
    * Extend the default verify instance with additional plugins.
    * This mutates the verify instance in place.
@@ -47,30 +47,38 @@ const createVerifyProxy = (): Verify => {
   return new Proxy({} as Verify, {
     get(target, prop) {
       // Handle with method
-      if (prop === 'with') {
-        return function(config: { test?: any; expect?: any; root?: string }): RepoTester {
+      if (prop === "with") {
+        return function (config: {
+          test?: any;
+          expect?: any;
+          root?: string;
+        }): typeof proxy {
           const { test: configTest, expect: configExpect, root } = config;
           const { test: globalTest, expect: globalExpect } = getGlobals();
-          
+
           const test = configTest ?? globalTest;
           const expect = configExpect ?? globalExpect;
 
           if (!test || !expect) {
-            throw new Error('test and expect must be provided either in config or available as globals');
+            throw new Error(
+              "test and expect must be provided either in config or available as globals",
+            );
           }
 
-          return new RepoTester({ test, expect, root });
+          // Replace the instance to mutate in place
+          verifyInstance = new RepoTester({ test, expect, root });
+          return proxy;
         };
       }
-      
+
       // Handle extend method
-      if (prop === 'extend') {
-        return function(...plugins: RepoPlugin[]): typeof proxy {
+      if (prop === "extend") {
+        return function (...plugins: RepoPlugin[]): typeof proxy {
           getVerifyInstance().extend(...plugins);
           return proxy;
         };
       }
-      
+
       // For all other properties, get from the lazily-initialized instance
       return (getVerifyInstance() as any)[prop];
     },
@@ -79,7 +87,9 @@ const createVerifyProxy = (): Verify => {
       return true;
     },
     has(target, prop) {
-      return prop === 'with' || prop === 'extend' || prop in getVerifyInstance();
+      return (
+        prop === "with" || prop === "extend" || prop in getVerifyInstance()
+      );
     },
     ownKeys(target) {
       return Reflect.ownKeys(getVerifyInstance());

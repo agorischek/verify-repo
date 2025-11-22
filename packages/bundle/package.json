@@ -13,7 +13,7 @@
   "dependencies": {
     "@repo-tests/core": "workspace:*",
     "@repo-tests/plugin-file": "workspace:*",
-    "@repo-tests/plugin-script": "workspace:*"
+    "@repo-tests/plugin-script": "workspace:*",
+    "@repo-tests/plugin-prettier": "workspace:*"
   }
 }
-

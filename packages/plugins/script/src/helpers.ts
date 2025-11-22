@@ -4,7 +4,7 @@ import { Readable } from "stream";
 // Helper to run a script and wait for it to finish
 export function runScript(
   name: string,
-  root?: string
+  root?: string,
 ): Promise<{ exitCode: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve) => {
     // Assuming 'npm run <name>'
@@ -38,8 +38,12 @@ export function runScript(
 // Helper to run a script streaming/with timeout
 export function runScriptStreaming(
   name: string,
-  options: { timeout: number; root?: string }
-): Promise<{ child: ChildProcess; stdout: Readable | null; stderr: Readable | null }> {
+  options: { timeout: number; root?: string },
+): Promise<{
+  child: ChildProcess;
+  stdout: Readable | null;
+  stderr: Readable | null;
+}> {
   return new Promise((resolve, reject) => {
     const child = spawn("npm", ["run", name], {
       shell: true,
@@ -58,4 +62,3 @@ export function runScriptStreaming(
     });
   });
 }
-

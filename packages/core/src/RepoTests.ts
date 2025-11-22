@@ -1,4 +1,4 @@
-import { RepoTestsConfig, RepoTestsExtensions, PluginContext } from './types';
+import { RepoTestsConfig, RepoTestsExtensions, PluginContext } from "./types";
 
 // Use declaration merging to mixin the extensions
 export interface RepoTesterBase extends RepoTestsExtensions {}
@@ -12,9 +12,11 @@ export class RepoTesterBase {
 
   constructor(config: RepoTestsConfig) {
     const { plugins, test, expect, root } = config;
-    
+
     if (!test || !expect) {
-      throw new Error("RepoTesterBase requires 'test' and 'expect' to be passed in the config.");
+      throw new Error(
+        "RepoTesterBase requires 'test' and 'expect' to be passed in the config.",
+      );
     }
 
     this.root = root;

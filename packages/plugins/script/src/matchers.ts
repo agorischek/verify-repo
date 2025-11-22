@@ -8,13 +8,13 @@ export const matchers = {
       message: () =>
         pass
           ? "Expected script to fail but it succeeded"
-          : `Script exited with ${received.exitCode}\nSTDOUT:\n${received.stdout}\nSTDERR:\n${received.stderr}`
+          : `Script exited with ${received.exitCode}\nSTDOUT:\n${received.stdout}\nSTDERR:\n${received.stderr}`,
     };
   },
   async toContainLineMatching(
     stream: Readable,
     regex: RegExp,
-    timeout: number
+    timeout: number,
   ) {
     return new Promise<{ pass: boolean; message: () => string }>((resolve) => {
       let buffer = "";
@@ -38,7 +38,7 @@ export const matchers = {
           message: () =>
             pass
               ? `Expected output not to match ${regex}, but it did`
-              : `Expected output to contain a matching line: ${regex}\n\nOutput:\n${collectedLines.join("\n")}`
+              : `Expected output to contain a matching line: ${regex}\n\nOutput:\n${collectedLines.join("\n")}`,
         });
       };
 
@@ -79,7 +79,5 @@ export const matchers = {
         finish(false);
       });
     });
-  }
+  },
 };
-
-
