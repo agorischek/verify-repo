@@ -1,5 +1,5 @@
 {
-  "name": "@repo-tests/plugin-script",
+  "name": "@repo-tests/plugin-eslint",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",

@@ -3,9 +3,12 @@ export * from "@repo-tests/core";
 
 // Export plugins
 export * from "@repo-tests/plugin-file";
-export * from "@repo-tests/plugin-script";
+export * from "@repo-tests/plugin-command";
 export * from "@repo-tests/plugin-prettier";
 export * from "@repo-tests/plugin-git";
+export * from "@repo-tests/plugin-ts";
+export * from "@repo-tests/plugin-eslint";
+export * from "@repo-tests/plugin-docker";
 
 import { RepoTester } from "./RepoTester";
 export { RepoTester };

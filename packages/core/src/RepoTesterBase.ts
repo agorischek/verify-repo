@@ -1,6 +1,7 @@
 import { performance } from "node:perf_hooks";
 import {
   PluginContext,
+  PluginEntrypointFactory,
   RepoPlugin,
   RepoTestDefinition,
   RepoTestHandler,
@@ -8,7 +9,9 @@ import {
   RepoTestRunSummary,
   RepoTestsConfig,
   RepoTestsExtensions,
+  VerificationMetadata,
 } from "./types";
+import { VerificationBuilder } from "./VerificationBuilder";
 
 // Use declaration merging to mix in extensions defined by plugins.
 export interface RepoTesterBase extends RepoTestsExtensions {}
@@ -22,6 +25,7 @@ export class RepoTesterBase {
   private tests: RepoTestDefinition[] = [];
   private nextTestId = 0;
   private activeSource?: string;
+  private readonly pluginEntries = new Map<PropertyKey, PluginEntrypointFactory>();
 
   constructor(config: RepoTestsConfig) {
     const { plugins = [], root, defaultConcurrency } = config;
@@ -44,7 +48,14 @@ export class RepoTesterBase {
     };
 
     const api = plugin(context) || {};
-    Object.assign(this, api);
+    for (const [name, factory] of Object.entries(api)) {
+      if (typeof factory !== "function") {
+        throw new Error(
+          `Plugin entrypoint "${String(name)}" must be a function.`,
+        );
+      }
+      this.registerPluginEntrypoint(name, factory as PluginEntrypointFactory);
+    }
   }
 
   protected schedule(description: string, handler: RepoTestHandler) {
@@ -64,6 +75,39 @@ export class RepoTesterBase {
 
     this.tests.push(definition);
     return definition.id;
+  }
+
+  public getPluginEntrypoint(name: PropertyKey) {
+    return this.pluginEntries.get(name);
+  }
+
+  public getPluginNames(): PropertyKey[] {
+    return Array.from(this.pluginEntries.keys());
+  }
+
+  public createVerificationBuilder(
+    pluginName: string,
+    meta?: VerificationMetadata,
+    options?: { autoFinalize?: boolean },
+  ) {
+    return new VerificationBuilder({
+      pluginName,
+      meta,
+      root: this.root,
+      schedule: (description, handler) => this.schedule(description, handler),
+      autoFinalize: options?.autoFinalize,
+    });
+  }
+
+  private registerPluginEntrypoint(
+    name: PropertyKey,
+    factory: PluginEntrypointFactory,
+  ) {
+    if (name === "with") {
+      throw new Error('Plugin name "with" is reserved and cannot be used.');
+    }
+
+    this.pluginEntries.set(name, factory);
   }
 
   public enterFileScope(source?: string | null) {

@@ -34,20 +34,21 @@
     /* Enable all strict type-checking options. */
     "strict": true,
 
-    /* Skip type checking all .d.ts files. */
-    "skipLibCheck": true,
+      /* Skip type checking all .d.ts files. */
+      "skipLibCheck": true,
 
-    /* Path mapping for workspace packages */
-    "baseUrl": ".",
-    "paths": {
-      "@repo-tests/core": ["./packages/core/src/index.ts"],
-      "@repo-tests/plugin-script": ["./packages/plugins/script/src/index.ts"],
-      "@repo-tests/plugin-file": ["./packages/plugins/file/src/index.ts"],
-      "@repo-tests/plugin-prettier": [
-        "./packages/plugins/prettier/src/index.ts"
-      ],
-      "@repo-tests/plugin-git": ["./packages/plugins/git/src/index.ts"]
-    }
+      /* Path mapping for workspace packages */
+      "baseUrl": ".",
+      "paths": {
+        "@repo-tests/core": ["./packages/core/src/index.ts"],
+        "@repo-tests/plugin-command": ["./packages/plugins/command/src/index.ts"],
+        "@repo-tests/plugin-file": ["./packages/plugins/file/src/index.ts"],
+        "@repo-tests/plugin-prettier": ["./packages/plugins/prettier/src/index.ts"],
+        "@repo-tests/plugin-git": ["./packages/plugins/git/src/index.ts"],
+        "@repo-tests/plugin-ts": ["./packages/plugins/ts/src/index.ts"],
+        "@repo-tests/plugin-eslint": ["./packages/plugins/eslint/src/index.ts"],
+        "@repo-tests/plugin-docker": ["./packages/plugins/docker/src/index.ts"]
+      }
   },
   "exclude": ["node_modules"],
   "include": ["**/*.ts"]

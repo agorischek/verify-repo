@@ -1,14 +1,14 @@
 import { Readable } from "stream";
 
 export const matchers = {
-  async toHaveScriptSucceeded(received: any) {
+    async toHaveCommandSucceeded(received: any) {
     const pass = received.exitCode === 0;
     return {
       pass,
       message: () =>
         pass
-          ? "Expected script to fail but it succeeded"
-          : `Script exited with ${received.exitCode}\nSTDOUT:\n${received.stdout}\nSTDERR:\n${received.stderr}`,
+            ? "Command completed successfully."
+          : `Command exited with ${received.exitCode}\nSTDOUT:\n${received.stdout}\nSTDERR:\n${received.stderr}`,
     };
   },
   async toContainLineMatching(
@@ -33,13 +33,10 @@ export const matchers = {
         if (matched) return; // Already resolved
         matched = true;
         cleanup();
-        resolve({
-          pass,
-          message: () =>
-            pass
-              ? `Expected output not to match ${regex}, but it did`
-              : `Expected output to contain a matching line: ${regex}\n\nOutput:\n${collectedLines.join("\n")}`,
-        });
+          const message = pass
+            ? `Output contained a line matching ${regex}.`
+            : `Expected output to contain a matching line: ${regex}\n\nOutput:\n${collectedLines.join("\n")}`;
+          resolve({ pass, message: () => message });
       };
 
       // Set up timeout

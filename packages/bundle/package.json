@@ -13,9 +13,12 @@
   "dependencies": {
     "@repo-tests/core": "workspace:*",
     "@repo-tests/plugin-file": "workspace:*",
-    "@repo-tests/plugin-script": "workspace:*",
+    "@repo-tests/plugin-command": "workspace:*",
     "@repo-tests/plugin-prettier": "workspace:*",
     "@repo-tests/plugin-git": "workspace:*",
+    "@repo-tests/plugin-ts": "workspace:*",
+    "@repo-tests/plugin-eslint": "workspace:*",
+    "@repo-tests/plugin-docker": "workspace:*",
     "glob": "^13.0.0"
   }
 }

@@ -42,7 +42,14 @@ export interface PluginContext {
   schedule: (description: string, handler: RepoTestHandler) => void;
 }
 
-export type RepoPluginResult = Record<string, (...args: any[]) => any>;
+export type VerificationMetadata = Record<string, unknown>;
+
+export type PluginEntrypointFactory<
+  TResult = unknown,
+  TBuilder = import("./VerificationBuilder").VerificationBuilder,
+> = (builder: TBuilder) => TResult;
+
+export type RepoPluginResult = Record<string, PluginEntrypointFactory>;
 
 export type RepoPlugin<T extends RepoPluginResult = RepoPluginResult> = (
   context: PluginContext,

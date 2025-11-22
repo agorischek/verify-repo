@@ -1,7 +1,12 @@
+export interface GitBranchPluginApi {
+  isClean: () => void;
+  isCurrent: () => void;
+}
+
 export interface GitPluginApi {
-  (): void;
   isClean: () => void;
   hasNoConflicts: () => void;
   hasStaged: (path: string) => void;
   isOnBranch: (branch: string) => void;
+  branch: (branch: string) => GitBranchPluginApi;
 }
