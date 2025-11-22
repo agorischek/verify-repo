@@ -7,7 +7,6 @@ export interface PluginContext {
 export interface RepoPlugin {
   name: string;
   create: (context: PluginContext) => any;
-  matchers?: Record<string, any>;
 }
 
 export interface RepoTestsConfig {

@@ -20,9 +20,6 @@ export class RepoTests {
     this.rootDir = rootDir;
 
     for (const plugin of plugins) {
-      if (plugin.matchers) {
-        expect.extend(plugin.matchers);
-      }
       const context: PluginContext = { test, expect, root: rootDir };
       this[plugin.name] = plugin.create(context);
     }

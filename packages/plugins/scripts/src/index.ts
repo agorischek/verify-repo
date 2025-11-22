@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import { ScriptPluginApi } from './types';
 import { PluginContext } from '@repo-tests/core';
+import { scriptMatchers } from './matchers';
 
 // Module augmentation to add 'script' to RepoTests
 declare module '@repo-tests/core' {
@@ -13,6 +14,7 @@ export function scripts() {
   return {
     name: "script",
     create({ test, expect, root }: PluginContext) {
+      expect.extend(scriptMatchers);
       const api = function script(name: string): ScriptPluginApi {
         return {
           runs() {
@@ -33,30 +35,6 @@ export function scripts() {
         };
       };
       return api;
-    },
-    matchers: {
-      toHaveScriptSucceeded(received: any) {
-        const pass = received.exitCode === 0;
-        return {
-          pass,
-          message: () =>
-            pass
-              ? "Expected script to fail but it succeeded"
-              : `Script exited with ${received.exitCode}\nSTDOUT:\n${received.stdout}\nSTDERR:\n${received.stderr}`
-        };
-      },
-      toContainLineMatching(output: string, regex: RegExp) {
-        const lines = output.split(/\r?\n/);
-        const matched = lines.find((line: string) => regex.test(line));
-        const pass = Boolean(matched);
-        return {
-          pass,
-          message: () =>
-            pass
-              ? `Expected output not to match ${regex}, but it did`
-              : `Expected output to contain a matching line: ${regex}\n\nOutput:\n${output}`
-        };
-      }
     }
   };
 }
