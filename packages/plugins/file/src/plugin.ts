@@ -8,7 +8,7 @@ export const file = () => {
     const api = function file(filePath: string): FilePluginApi {
       return {
         exists() {
-          test(`file: ${filePath} exists`, async () => {
+          test(`"${filePath}" file should exist`, async () => {
             await expect(filePath).toExistAsFile(root);
           });
         },

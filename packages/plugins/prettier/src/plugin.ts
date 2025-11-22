@@ -4,7 +4,6 @@ import { glob } from "glob";
 import prettierModule from "prettier";
 import { matchers } from "./matchers";
 
-
 export const prettier = () => {
   return ({ test, expect, root }: PluginContext) => {
     expect.extend(matchers);
@@ -12,8 +11,8 @@ export const prettier = () => {
     const api: PrettierPluginApi = function prettier(globPattern?: string) {
       test(
         globPattern
-          ? `prettier: files matching "${globPattern}" should be formatted`
-          : "prettier: all files should be formatted",
+          ? `files matching "${globPattern}" should be formatted`
+          : "all files should be formatted",
         async () => {
           const baseDir = root || process.cwd();
 

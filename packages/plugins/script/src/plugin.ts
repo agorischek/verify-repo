@@ -9,13 +9,13 @@ export const script = () => {
     const api = function script(name: string): ScriptPluginApi {
       return {
         runs() {
-          test(`script: ${name} runs`, async () => {
+          test(`"${name}" script should run successfully`, async () => {
             const { exitCode, stdout, stderr } = await runScript(name, root);
             await expect({ exitCode, stdout, stderr }).toHaveScriptSucceeded();
           });
         },
         outputs(regex: RegExp) {
-          test(`script: ${name} boots when ${regex}`, async () => {
+          test(`"${name}" script output should match ${regex}`, async () => {
             const { child, stdout, stderr } = await runScriptStreaming(name, {
               timeout: 15000,
               root,
