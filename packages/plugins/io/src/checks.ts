@@ -78,3 +78,4 @@ export async function checkDirExists(dirPath: string, root?: string) {
     };
   }
 }
+

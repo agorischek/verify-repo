@@ -6,3 +6,4 @@ declare module "@verify-repo/engine" {
     prettier: PrettierPluginApi;
   }
 }
+

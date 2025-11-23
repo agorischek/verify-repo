@@ -82,11 +82,20 @@ configure({
 
 ## Authoring plugins
 
-Plugins define methods that register verifications using `context.register`. You can use the `context.entry` helper to simplify wrapping methods:
+You can extend `verify-repo` with custom checks by creating a plugin. A plugin is a function that returns a `RepoPlugin` object, usually created via the `plugin` helper.
+
+Key concepts:
+
+- **`name` / `description`**: Metadata for the plugin.
+- **`docs`**: Documentation for the checks provided by the plugin (shown in `--docs`).
+- **`api`**: A function that returns the API extensions. It receives a `VerificationContext` containing:
+  - `dir`: The current working directory for the check.
+  - `register`: A function to register a new check.
+  - `entry`: A helper to create a chainable API (e.g. `verify.myPlugin.check(...)`).
+
+Here is an example of a custom plugin that checks for content in the `README.md` file:
 
 ```ts
-// This plugin adds the API verify.readme.contains("Hello world!");
-
 export const readme = () =>
   plugin({
     name: "README checker",
@@ -102,12 +111,30 @@ export const readme = () =>
         entry({
           contains: (content: string) => {
             register(`README contains ${content}`, async ({ pass, fail }) => {
-              const readmeContent = await readFile(path.join(dir, "README.md"), "utf8");
-              if (readmeContent.includes(content)) pass(`README contains "${content}"`);
+              const file = await readFile(path.join(dir, "README.md"));
+              if (file.includes(content)) pass(`README contains "${content}"`);
               else fail(`README does not contain "${content}"`);
             });
           },
         }),
     }),
   });
+```
+
+To use your custom plugin, add it to `verify.config.ts`:
+
+```ts
+import { configure } from "verify-repo";
+import { readme } from "./plugins/readme";
+
+configure({
+  plugins: [readme()],
+});
+```
+
+Now you can use it in your verification files:
+
+```ts
+// repo.verify.ts
+verify.readme.contains("Getting Started");
 ```

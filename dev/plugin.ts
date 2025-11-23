@@ -17,8 +17,8 @@ export const readme = () =>
         entry({
           contains: (content: string) => {
             register(`README contains ${content}`, async ({ pass, fail }) => {
-              const readmeContent = await readFile(path.join(dir, "README.md"), "utf8");
-              if (readmeContent.includes(content)) pass(`README contains "${content}"`);
+              const file = await readFile(path.join(dir, "README.md"));
+              if (file.includes(content)) pass(`README contains "${content}"`);
               else fail(`README does not contain "${content}"`);
             });
           },
