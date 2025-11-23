@@ -22,7 +22,7 @@ verify.git.isClean();
 verify.prettier("src/**/*.ts").isFormatted();
 ```
 
-### Built-in plugins
+### Built-in checks
 
 - `command("npm run build").runs()` or `.outputs(/ready/)`
 - `script("dev").runs()`
@@ -82,9 +82,7 @@ configure({
 
 ## Authoring plugins
 
-You can extend `verify-repo` with custom checks by creating a plugin. A plugin is a function that returns a `RepoPlugin` object, usually created via the `plugin` helper.
-
-Key concepts:
+You can extend `verify-repo` with custom checks by creating a plugin.
 
 - **`name` / `description`**: Metadata for the plugin.
 - **`docs`**: Documentation for the checks provided by the plugin (shown in `--docs`).
