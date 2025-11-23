@@ -1,19 +1,57 @@
 import {
   PluginContext,
   createPluginEntry,
+  type RepoPlugin,
   type VerificationBuilder,
 } from "@verify-repo/engine";
 import path from "node:path";
 import simpleGit from "simple-git";
 import type { GitBranchPluginApi, GitPluginApi } from "./types";
 
-const formatFiles = (files: { path: string; working: string; index: string }[]) =>
+const formatFiles = (
+  files: { path: string; working: string; index: string }[],
+) =>
   files
     .map((file) => `${file.index}${file.working} ${file.path}`.trim())
     .join("\n");
 
-export const git = () => {
-  return ({ root }: PluginContext) => {
+export const git = (): RepoPlugin => ({
+  docs: {
+    name: "Git",
+    description:
+      "Assert repository cleanliness, conflicts, branches, and staged files.",
+    entries: [
+      {
+        signature: "verify.git.isClean()",
+        description:
+          "Fails if `git status` reports untracked, unstaged, or staged changes.",
+      },
+      {
+        signature: "verify.git.hasNoConflicts()",
+        description:
+          "Ensures there are no files listed in `git status --short` as conflicted.",
+      },
+      {
+        signature: 'verify.git.hasStaged("<path>")',
+        description:
+          "Asserts that the given file is staged (non-empty index status).",
+      },
+      {
+        signature: 'verify.git.isOnBranch("<branch>")',
+        description: "Checks that the current HEAD is on the expected branch.",
+      },
+      {
+        signature: 'verify.git.branch("<branch>").isClean()',
+        description:
+          "Asserts that the branch is checked out and has no dirty files.",
+      },
+      {
+        signature: 'verify.git.branch("<branch>").isCurrent()',
+        description: "Only verifies that the target branch is checked out.",
+      },
+    ],
+  },
+  api({ root }: PluginContext) {
     const client = simpleGit(root);
 
     const buildEntry = (builder: VerificationBuilder): GitPluginApi => {
@@ -44,8 +82,8 @@ export const git = () => {
         return buildEntry(builder);
       },
     };
-  };
-};
+  },
+});
 
 function createBranchEntry(
   builder: VerificationBuilder,

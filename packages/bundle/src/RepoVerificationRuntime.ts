@@ -1,10 +1,11 @@
 import { RepoVerificationEngine, RepoPlugin } from "@verify-repo/engine";
-import { file } from "@verify-repo/plugin-file";
+import { fs } from "packages/plugins/fs/src";
 import { command } from "@verify-repo/plugin-command";
 import { prettier } from "@verify-repo/plugin-prettier";
 import { git } from "@verify-repo/plugin-git";
 import { ts as tsPlugin } from "@verify-repo/plugin-ts";
 import { eslint as eslintPlugin } from "@verify-repo/plugin-eslint";
+import { bun as bunPlugin } from "@verify-repo/plugin-bun";
 import { docker } from "@verify-repo/plugin-docker";
 import { RepoVerifierConfig } from "./RepoVerifierConfig";
 
@@ -15,12 +16,13 @@ export class RepoVerificationRuntime extends RepoVerificationEngine {
     const { plugins = [], root, concurrency } = config;
 
     const builtIns: RepoPlugin[] = [
-      file(),
+      fs(),
       command(),
       prettier(),
       git(),
       tsPlugin(),
       eslintPlugin(),
+      bunPlugin(),
       docker(),
     ];
     const allPlugins = [...builtIns, ...plugins];

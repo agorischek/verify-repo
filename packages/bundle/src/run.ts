@@ -31,7 +31,14 @@ export async function run(options: RunOptions = {}) {
     concurrency: options.concurrency,
   });
 
-  const files = await discoverVerifyFiles(root, options.pattern, options.ignore);
+  const files = await discoverVerifyFiles(
+    root,
+    options.pattern,
+    options.ignore,
+  );
+  console.log(
+    `verify-repo: discovered ${files.length} verify file${files.length === 1 ? "" : "s"}`,
+  );
   const runtimeTag = Date.now().toString(36);
 
   for (const file of files) {
@@ -51,6 +58,11 @@ export async function run(options: RunOptions = {}) {
     });
   }
 
+  const verificationCount = verifyInstance.plannedTests;
+  console.log(
+    `verify-repo: registered ${verificationCount} verification${verificationCount === 1 ? "" : "s"}`,
+  );
+
   const summary = await verifyInstance.run({
     concurrency: options.concurrency,
   });
@@ -58,7 +70,7 @@ export async function run(options: RunOptions = {}) {
   const reporter =
     options.reporter === false
       ? null
-      : options.reporter ?? ((result) => defaultReporter(result, root));
+      : (options.reporter ?? ((result) => defaultReporter(result, root)));
   reporter?.(summary);
 
   if (summary.failed > 0) {

@@ -8,7 +8,9 @@ export interface RepoTestControls {
   fail: FailHandler;
 }
 
-export type RepoTestHandler = (controls: RepoTestControls) => MaybePromise<void>;
+export type RepoTestHandler = (
+  controls: RepoTestControls,
+) => MaybePromise<void>;
 
 export interface RepoTestDefinition {
   id: number;
@@ -51,9 +53,36 @@ export type PluginEntrypointFactory<
 
 export type RepoPluginResult = Record<string, PluginEntrypointFactory>;
 
-export type RepoPlugin<T extends RepoPluginResult = RepoPluginResult> = (
-  context: PluginContext,
-) => T;
+export interface PluginDocumentationEntry {
+  signature: string;
+  description?: string;
+}
+
+export interface PluginDocumentation {
+  name: string;
+  description?: string;
+  entries: PluginDocumentationEntry[];
+}
+
+export interface RepoPluginMetadata {
+  docs?: PluginDocumentation | PluginDocumentation[];
+}
+
+export interface RepoPluginFactory<
+  T extends RepoPluginResult = RepoPluginResult,
+> extends RepoPluginMetadata {
+  (context: PluginContext): T;
+}
+
+export interface RepoPluginDefinition<
+  T extends RepoPluginResult = RepoPluginResult,
+> extends RepoPluginMetadata {
+  api: RepoPluginFactory<T>;
+}
+
+export type RepoPlugin<T extends RepoPluginResult = RepoPluginResult> =
+  | RepoPluginFactory<T>
+  | RepoPluginDefinition<T>;
 
 export interface RepoVerificationEngineConfig {
   plugins?: RepoPlugin[];

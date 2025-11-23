@@ -14,7 +14,7 @@ beforeAll(async () => {
 import { verify } from "../../../../packages/bundle/src";
 
 verify.file("target.txt").exists();
-    `.trim()
+    `.trim(),
   );
 });
 
@@ -32,4 +32,3 @@ test("verification checks run relative to the directory of the .verify.ts file",
   expect(summary.failed).toBe(0);
   expect(summary.passed).toBe(1);
 });
-

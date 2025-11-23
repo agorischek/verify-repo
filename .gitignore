@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Task verification
 task.verify.ts
+
+# macOS
+.DS_Store

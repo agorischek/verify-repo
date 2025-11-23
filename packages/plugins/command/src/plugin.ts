@@ -1,6 +1,7 @@
 import {
   PluginContext,
   createPluginEntry,
+  type RepoPlugin,
   type VerificationBuilder,
 } from "@verify-repo/engine";
 import { checkOutputContainsLine } from "./checks";
@@ -25,8 +26,34 @@ interface CommandRoot {
 
 type CommandEntrypoint = CommandRoot | CommandLeaf;
 
-export const command = () => {
-  return ({ root }: PluginContext) => {
+export const command = (): RepoPlugin => ({
+  docs: {
+    name: "Command runner",
+    description:
+      "Execute shell commands and assert on exit codes or streamed output.",
+    entries: [
+      {
+        signature: 'verify.command("<cmd>").runs(options?)',
+        description:
+          "Runs the command and expects the configured exit code (default 0). Options support cwd, env, timeoutMs, and expectExitCode.",
+      },
+      {
+        signature: 'verify.command("<cmd>").outputs(/pattern/, options?)',
+        description:
+          "Streams stdout and resolves when the provided RegExp matches before the optional timeout (default 15s). Options support cwd, env, and timeoutMs.",
+      },
+      {
+        signature: 'verify.command.runs("<cmd>", options?)',
+        description:
+          "Shortcut that schedules a .runs() check without creating an intermediate chain.",
+      },
+      {
+        signature: 'verify.command.outputs("<cmd>", /pattern/, options?)',
+        description: "Shortcut that schedules an output check in one call.",
+      },
+    ],
+  },
+  api(_context: PluginContext) {
     const buildEntry = (
       builder: VerificationBuilder,
       commandText?: string,
@@ -43,10 +70,7 @@ export const command = () => {
         builder,
         {},
         (parent: VerificationBuilder, cmd: string) =>
-          buildEntry(
-            parent.createChild({ command: cmd }),
-            cmd,
-          ) as CommandLeaf,
+          buildEntry(parent.createChild({ command: cmd }), cmd) as CommandLeaf,
       );
 
       const rootEntry = Object.assign(baseEntry, {
@@ -72,8 +96,8 @@ export const command = () => {
         return buildEntry(builder);
       },
     };
-  };
-};
+  },
+});
 
 function createCommandMethods(
   builder: VerificationBuilder,

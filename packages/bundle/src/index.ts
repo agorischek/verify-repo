@@ -2,18 +2,20 @@
 export * from "@verify-repo/engine";
 
 // Export plugins
-export * from "@verify-repo/plugin-file";
+export * from "packages/plugins/fs/src";
 export * from "@verify-repo/plugin-command";
 export * from "@verify-repo/plugin-prettier";
 export * from "@verify-repo/plugin-git";
 export * from "@verify-repo/plugin-ts";
 export * from "@verify-repo/plugin-eslint";
+export * from "@verify-repo/plugin-bun";
 export * from "@verify-repo/plugin-docker";
 
 import { RepoVerificationRuntime } from "./RepoVerificationRuntime";
 export { RepoVerificationRuntime };
 export type { RepoVerifierConfig } from "./RepoVerifierConfig";
 export { run } from "./run";
+export { collectDocs, printDocs } from "./docs";
 export { RepoVerificationFailedError } from "./errors";
 
 // Import and re-export verify to ensure tsdown can resolve it

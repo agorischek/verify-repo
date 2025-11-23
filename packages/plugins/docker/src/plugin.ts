@@ -1,13 +1,31 @@
 import {
   PluginContext,
   createPluginEntry,
+  type RepoPlugin,
   type VerificationBuilder,
 } from "@verify-repo/engine";
 import { spawn } from "node:child_process";
 import type { DockerBuildOptions, DockerPluginApi } from "./types";
 
-export const docker = () => {
-  return ({ root }: PluginContext) => {
+export const docker = (): RepoPlugin => ({
+  docs: {
+    name: "Docker",
+    description:
+      "Run `docker build` with optional tags, args, and custom contexts.",
+    entries: [
+      {
+        signature: 'verify.docker.builds("Dockerfile", options?)',
+        description:
+          "Shortcut that sets the dockerfile path, then applies any additional build options (context, tag, args, buildArgs, cwd, timeoutMs).",
+      },
+      {
+        signature: "verify.docker.builds(options)",
+        description:
+          "Takes a full options object to describe the build and passes when `docker build` exits successfully.",
+      },
+    ],
+  },
+  api(_context: PluginContext) {
     return {
       docker(builder: VerificationBuilder) {
         return createPluginEntry(builder, {
@@ -26,8 +44,8 @@ export const docker = () => {
         }) as DockerPluginApi;
       },
     };
-  };
-};
+  },
+});
 
 interface NormalizedDockerOptions {
   dockerfile?: string;

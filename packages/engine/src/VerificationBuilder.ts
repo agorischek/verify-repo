@@ -1,4 +1,8 @@
-import type { PluginContext, RepoTestHandler, VerificationMetadata } from "./types";
+import type {
+  PluginContext,
+  RepoTestHandler,
+  VerificationMetadata,
+} from "./types";
 
 export interface VerificationBuilderOptions {
   pluginName: string;

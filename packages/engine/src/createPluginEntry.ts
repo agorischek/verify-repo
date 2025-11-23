@@ -19,9 +19,10 @@ type MethodWrappers<TMethods extends Record<string, PluginMethod>> = {
 type CallableEntry<
   TMethods extends Record<string, PluginMethod>,
   TCallable extends PluginCallHandler | undefined,
-> = TCallable extends PluginCallHandler<infer Args, infer Result>
-  ? ((...args: Args) => Result) & MethodWrappers<TMethods>
-  : MethodWrappers<TMethods>;
+> =
+  TCallable extends PluginCallHandler<infer Args, infer Result>
+    ? ((...args: Args) => Result) & MethodWrappers<TMethods>
+    : MethodWrappers<TMethods>;
 
 export function createPluginEntry<
   TMethods extends Record<string, PluginMethod>,

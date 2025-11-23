@@ -34,23 +34,28 @@
     /* Enable all strict type-checking options. */
     "strict": true,
 
-      /* Skip type checking all .d.ts files. */
-      "skipLibCheck": true,
+    /* Skip type checking all .d.ts files. */
+    "skipLibCheck": true,
 
-      /* Path mapping for workspace packages */
-      "baseUrl": ".",
-      "paths": {
-        "@verify-repo/engine": ["./packages/engine/src/index.ts"],
-        "@verify-repo/plugin-command": ["./packages/plugins/command/src/index.ts"],
-        "@verify-repo/plugin-file": ["./packages/plugins/file/src/index.ts"],
-        "@verify-repo/plugin-prettier": ["./packages/plugins/prettier/src/index.ts"],
-        "@verify-repo/plugin-git": ["./packages/plugins/git/src/index.ts"],
-        "@verify-repo/plugin-ts": ["./packages/plugins/ts/src/index.ts"],
-        "@verify-repo/plugin-eslint": ["./packages/plugins/eslint/src/index.ts"],
-        "@verify-repo/plugin-docker": ["./packages/plugins/docker/src/index.ts"],
-        "verify-repo": ["./packages/bundle/src/index.ts"],
-        "verify-repo/*": ["./packages/bundle/src/*"]
-      }
+    /* Path mapping for workspace packages */
+    "baseUrl": ".",
+    "paths": {
+      "@verify-repo/engine": ["./packages/engine/src/index.ts"],
+      "@verify-repo/plugin-command": [
+        "./packages/plugins/command/src/index.ts"
+      ],
+      "@verify-repo/plugin-file": ["packages/plugins/fs/src/index.ts"],
+      "@verify-repo/plugin-prettier": [
+        "./packages/plugins/prettier/src/index.ts"
+      ],
+      "@verify-repo/plugin-git": ["./packages/plugins/git/src/index.ts"],
+      "@verify-repo/plugin-ts": ["./packages/plugins/ts/src/index.ts"],
+      "@verify-repo/plugin-eslint": ["./packages/plugins/eslint/src/index.ts"],
+      "@verify-repo/plugin-bun": ["./packages/plugins/bun/src/index.ts"],
+      "@verify-repo/plugin-docker": ["./packages/plugins/docker/src/index.ts"],
+      "verify-repo": ["./packages/bundle/src/index.ts"],
+      "verify-repo/*": ["./packages/bundle/src/*"]
+    }
   },
   "exclude": ["node_modules"],
   "include": ["**/*.ts"]

@@ -55,4 +55,3 @@ export async function checkPrettierFormatted(
             .join("\n")}\n\nRun prettier --write to fix them.`,
   };
 }
-

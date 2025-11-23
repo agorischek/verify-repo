@@ -1,6 +1,7 @@
 import {
   PluginContext,
   createPluginEntry,
+  type RepoPlugin,
   type VerificationBuilder,
 } from "@verify-repo/engine";
 import { glob } from "glob";
@@ -28,8 +29,28 @@ type PrettierLeaf = PrettierSelectorApi;
 type PrettierRoot = PrettierPluginApi;
 type PrettierEntrypoint = PrettierRoot | PrettierLeaf;
 
-export const prettier = () => {
-  return ({ root }: PluginContext) => {
+export const prettier = (): RepoPlugin => ({
+  docs: {
+    name: "Prettier",
+    description:
+      "Validate that files are formatted according to the local Prettier config.",
+    entries: [
+      {
+        signature: "verify.prettier.isFormatted()",
+        description:
+          "Runs Prettier against default file globs in the repo root and fails when any file would change.",
+      },
+      {
+        signature: 'verify.prettier("<glob>").isFormatted()',
+        description: "Checks only files that match the provided glob pattern.",
+      },
+      {
+        signature: 'verify.prettier.file("<path>").isFormatted()',
+        description: "Targets a single file relative to the verify file.",
+      },
+    ],
+  },
+  api(_context: PluginContext) {
     const buildEntry = (
       builder: VerificationBuilder,
       selection?: Selection,
@@ -50,18 +71,18 @@ export const prettier = () => {
           isFormatted: () => scheduleFormatting(builder, selection),
         },
         (parent: VerificationBuilder, pattern: string) =>
-          buildEntry(
-            parent.createChild({ pattern }),
-            { type: "pattern", value: pattern },
-          ) as PrettierLeaf,
+          buildEntry(parent.createChild({ pattern }), {
+            type: "pattern",
+            value: pattern,
+          }) as PrettierLeaf,
       );
 
       const rootEntry = Object.assign(baseEntry, {
         file: (filePath: string) =>
-          buildEntry(
-            builder.createChild({ file: filePath }),
-            { type: "file", value: filePath },
-          ) as PrettierLeaf,
+          buildEntry(builder.createChild({ file: filePath }), {
+            type: "file",
+            value: filePath,
+          }) as PrettierLeaf,
       });
 
       return rootEntry as PrettierRoot;
@@ -72,8 +93,8 @@ export const prettier = () => {
         return buildEntry(builder);
       },
     };
-  };
-};
+  },
+});
 
 function scheduleFormatting(
   builder: VerificationBuilder,

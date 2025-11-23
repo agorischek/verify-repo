@@ -1,6 +1,7 @@
 import {
   PluginContext,
   createPluginEntry,
+  type RepoPlugin,
   type VerificationBuilder,
 } from "@verify-repo/engine";
 import { spawn } from "node:child_process";
@@ -9,8 +10,19 @@ import type { EslintOptions, EslintPluginApi } from "./types";
 
 const require = createRequire(import.meta.url);
 
-export const eslint = () => {
-  return ({ root }: PluginContext) => {
+export const eslint = (): RepoPlugin => ({
+  docs: {
+    name: "ESLint",
+    description: "Ensure lint rules pass (optionally fixing files first).",
+    entries: [
+      {
+        signature: "verify.eslint.passes(options?)",
+        description:
+          "Runs the local ESLint binary. Options support files/globs, cwd, config, maxWarnings, fix, and timeoutMs.",
+      },
+    ],
+  },
+  api(_context: PluginContext) {
     return {
       eslint(builder: VerificationBuilder) {
         return createPluginEntry(builder, {
@@ -19,13 +31,10 @@ export const eslint = () => {
         }) as EslintPluginApi;
       },
     };
-  };
-};
+  },
+});
 
-function scheduleEslint(
-  builder: VerificationBuilder,
-  options?: EslintOptions,
-) {
+function scheduleEslint(builder: VerificationBuilder, options?: EslintOptions) {
   const files = normalizeFiles(options?.files);
   const description =
     files.length === 1 && files[0] === "."
@@ -36,7 +45,10 @@ function scheduleEslint(
     try {
       const cwd = options?.cwd ?? builder.cwd;
       const args = buildEslintArgs(files, options);
-      const result = await runEslint(args, { cwd, timeoutMs: options?.timeoutMs });
+      const result = await runEslint(args, {
+        cwd,
+        timeoutMs: options?.timeoutMs,
+      });
       if (result.exitCode === 0) {
         pass("ESLint reported no errors.");
       } else {

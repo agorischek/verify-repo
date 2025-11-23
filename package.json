@@ -10,6 +10,7 @@
   "scripts": {
     "build": "cd packages/bundle && bun run build",
     "verify": "bun packages/bundle/src/bin.ts",
+    "verify:docs": "bun packages/bundle/src/bin.ts --docs",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write ."

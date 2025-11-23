@@ -1,5 +1,5 @@
 {
-  "name": "@verify-repo/plugin-file",
+  "name": "@verify-repo/plugin-bun",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",

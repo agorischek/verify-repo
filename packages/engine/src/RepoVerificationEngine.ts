@@ -2,8 +2,10 @@ import { performance } from "node:perf_hooks";
 import path from "node:path";
 import {
   PluginContext,
+  PluginDocumentation,
   PluginEntrypointFactory,
   RepoPlugin,
+  RepoPluginFactory,
   RepoTestDefinition,
   RepoTestHandler,
   RepoTestResult,
@@ -26,7 +28,11 @@ export class RepoVerificationEngine {
   private tests: RepoTestDefinition[] = [];
   private nextTestId = 0;
   private activeSource?: string;
-  private readonly pluginEntries = new Map<PropertyKey, PluginEntrypointFactory>();
+  private readonly pluginEntries = new Map<
+    PropertyKey,
+    PluginEntrypointFactory
+  >();
+  private readonly pluginDocs: PluginDocumentation[] = [];
 
   constructor(config: RepoVerificationEngineConfig) {
     const { plugins = [], root, defaultConcurrency } = config;
@@ -39,16 +45,15 @@ export class RepoVerificationEngine {
   }
 
   protected applyPlugin(plugin: RepoPlugin) {
-    if (typeof plugin !== "function") {
-      throw new Error("Repo plugin must be a function.");
-    }
+    const { factory, docs } = this.resolvePlugin(plugin);
+    this.recordPluginDocs(docs);
 
     const context: PluginContext = {
       root: this.root,
       schedule: (description, handler) => this.schedule(description, handler),
     };
 
-    const api = plugin(context) || {};
+    const api = factory(context) || {};
     for (const [name, factory] of Object.entries(api)) {
       if (typeof factory !== "function") {
         throw new Error(
@@ -86,6 +91,13 @@ export class RepoVerificationEngine {
     return Array.from(this.pluginEntries.keys());
   }
 
+  public getPluginDocumentation(): PluginDocumentation[] {
+    return this.pluginDocs.map((doc) => ({
+      ...doc,
+      entries: doc.entries.map((entry) => ({ ...entry })),
+    }));
+  }
+
   public createVerificationBuilder(
     pluginName: string,
     meta?: VerificationMetadata,
@@ -110,6 +122,43 @@ export class RepoVerificationEngine {
     }
 
     this.pluginEntries.set(name, factory);
+  }
+
+  private recordPluginDocs(docs?: PluginDocumentation | PluginDocumentation[]) {
+    if (!docs) {
+      return;
+    }
+    const contributions = Array.isArray(docs) ? docs : [docs];
+    for (const doc of contributions) {
+      if (!doc) continue;
+      this.pluginDocs.push({
+        name: doc.name,
+        description: doc.description,
+        entries: doc.entries.map((entry) => ({
+          signature: entry.signature,
+          description: entry.description,
+        })),
+      });
+    }
+  }
+
+  private resolvePlugin(plugin: RepoPlugin): {
+    factory: RepoPluginFactory;
+    docs?: PluginDocumentation | PluginDocumentation[];
+  } {
+    if (typeof plugin === "function") {
+      return { factory: plugin, docs: plugin.docs };
+    }
+    if (
+      plugin &&
+      typeof plugin === "object" &&
+      typeof plugin.api === "function"
+    ) {
+      return { factory: plugin.api.bind(plugin), docs: plugin.docs };
+    }
+    throw new Error(
+      "Repo plugin must be a function or an object with an api() method.",
+    );
   }
 
   public enterFileScope(source?: string | null) {
@@ -158,7 +207,9 @@ export class RepoVerificationEngine {
     }
 
     const resolvedConcurrency =
-      options?.concurrency ?? this.defaultConcurrency ?? Number.POSITIVE_INFINITY;
+      options?.concurrency ??
+      this.defaultConcurrency ??
+      Number.POSITIVE_INFINITY;
 
     const workerCount = Math.max(
       1,
