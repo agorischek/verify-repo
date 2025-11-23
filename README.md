@@ -15,7 +15,7 @@ import { verify } from "verify-repo";
 
 verify.file("package.json").exists();
 verify.dir("dist").exists();
-verify.command("npm run build").runs();
+verify.script("dev").runs();
 verify.git.isClean();
 verify.prettier("src/**/*.ts").isFormatted();
 ```
@@ -23,6 +23,7 @@ verify.prettier("src/**/*.ts").isFormatted();
 ### Built-in plugins
 
 - `command("npm run build").runs()` or `.outputs(/ready/)`
+- `script("dev").runs()`
 - `file("README.md").exists()` / `.contains("Install")`
 - `dir("dist").exists()` / `dir("node_modules").not.exists()`
 - `prettier.isFormatted()` or `prettier("src/**/*.ts").isFormatted()`

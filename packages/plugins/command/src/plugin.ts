@@ -26,15 +26,15 @@ interface CommandRoot {
 
 type CommandEntrypoint = CommandRoot | CommandLeaf;
 
-type ScriptsLeaf = CommandPluginApi;
+type ScriptLeaf = CommandPluginApi;
 
-interface ScriptsRoot {
-  (script: string): ScriptsLeaf;
+interface ScriptRoot {
+  (script: string): ScriptLeaf;
   runs(script: string, options?: CommandRunOptions): void;
   outputs(script: string, regex: RegExp, options?: CommandOutputOptions): void;
 }
 
-type ScriptsEntrypoint = ScriptsRoot | ScriptsLeaf;
+type ScriptEntrypoint = ScriptRoot | ScriptLeaf;
 
 function getPackageManagerCommand(
   packageManager: "npm" | "yarn" | "pnpm" | "bun" = "npm",
@@ -77,22 +77,22 @@ export const command = (): RepoPlugin => ({
       description: "Shortcut that schedules an output check in one call.",
     },
     {
-      signature: 'verify.scripts("<script>").runs(options?)',
+      signature: 'verify.script("<script>").runs(options?)',
       description:
         "Runs the npm/yarn/pnpm/bun script and expects the configured exit code (default 0). Uses the packageManager configured in verify.config.ts (default npm). Options support cwd, env, timeoutMs, and expectExitCode.",
     },
     {
-      signature: 'verify.scripts("<script>").outputs(/pattern/, options?)',
+      signature: 'verify.script("<script>").outputs(/pattern/, options?)',
       description:
         "Streams stdout from the npm/yarn/pnpm/bun script and resolves when the provided RegExp matches before the optional timeout (default 15s). Uses the packageManager configured in verify.config.ts (default npm). Options support cwd, env, and timeoutMs.",
     },
     {
-      signature: 'verify.scripts.runs("<script>", options?)',
+      signature: 'verify.script.runs("<script>", options?)',
       description:
         "Shortcut that schedules a .runs() check for a script without creating an intermediate chain.",
     },
     {
-      signature: 'verify.scripts.outputs("<script>", /pattern/, options?)',
+      signature: 'verify.script.outputs("<script>", /pattern/, options?)',
       description:
         "Shortcut that schedules an output check for a script in one call.",
     },
@@ -135,10 +135,10 @@ export const command = (): RepoPlugin => ({
       return rootEntry as CommandRoot;
     };
 
-    const buildScriptsEntry = (
+    const buildScriptEntry = (
       builder: VerificationBuilder,
       scriptName?: string,
-    ): ScriptsEntrypoint => {
+    ): ScriptEntrypoint => {
       const packageManager = context.packageManager ?? "npm";
 
       if (scriptName) {
@@ -148,9 +148,9 @@ export const command = (): RepoPlugin => ({
         );
         return new PluginEntry(
           builder,
-          createCommandMethods(builder, commandText),
+          createCommandMethods(builder, commandText, scriptName),
           undefined,
-        ) as ScriptsLeaf;
+        ) as ScriptLeaf;
       }
 
       const baseEntry = new PluginEntry(
@@ -161,9 +161,9 @@ export const command = (): RepoPlugin => ({
           const commandText = getPackageManagerCommand(packageManager, script);
           return new PluginEntry(
             child,
-            createCommandMethods(child, commandText),
+            createCommandMethods(child, commandText, script),
             undefined,
-          ) as ScriptsLeaf;
+          ) as ScriptLeaf;
         },
       );
 
@@ -174,9 +174,9 @@ export const command = (): RepoPlugin => ({
           (
             new PluginEntry(
               child,
-              createCommandMethods(child, commandText),
+              createCommandMethods(child, commandText, script),
               undefined,
-            ) as ScriptsLeaf
+            ) as ScriptLeaf
           ).runs(options);
         },
         outputs: (
@@ -189,22 +189,22 @@ export const command = (): RepoPlugin => ({
           (
             new PluginEntry(
               child,
-              createCommandMethods(child, commandText),
+              createCommandMethods(child, commandText, script),
               undefined,
-            ) as ScriptsLeaf
+            ) as ScriptLeaf
           ).outputs(regex, options);
         },
       });
 
-      return rootEntry as ScriptsRoot;
+      return rootEntry as ScriptRoot;
     };
 
     return {
       command(builder: VerificationBuilder) {
         return buildEntry(builder);
       },
-      scripts(builder: VerificationBuilder) {
-        return buildScriptsEntry(builder);
+      script(builder: VerificationBuilder) {
+        return buildScriptEntry(builder);
       },
     };
   },
@@ -213,10 +213,15 @@ export const command = (): RepoPlugin => ({
 function createCommandMethods(
   builder: VerificationBuilder,
   commandText: string,
+  scriptName?: string,
 ) {
+  const isScript = scriptName !== undefined;
+  const displayName = isScript ? scriptName : commandText;
+  const entityType = isScript ? "Script" : "Command";
+
   return {
     runs: (_builder: VerificationBuilder, options?: CommandRunOptions) => {
-      const description = `Command "${commandText}" should run successfully`;
+      const description = `${entityType} "${displayName}" should run successfully`;
       builder.schedule(description, async ({ pass, fail }) => {
         try {
           const result = await runCommand(
@@ -227,16 +232,16 @@ function createCommandMethods(
           if (result.exitCode === expected) {
             pass(
               expected === 0
-                ? `Command "${commandText}" exited successfully.`
-                : `Command "${commandText}" exited with expected code ${expected}.`,
+                ? `${entityType} "${displayName}" exited successfully.`
+                : `${entityType} "${displayName}" exited with expected code ${expected}.`,
             );
           } else {
             fail(
-              `Command "${commandText}" exited with ${result.exitCode}. Expected ${expected}.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
+              `${entityType} "${displayName}" exited with ${result.exitCode}. Expected ${expected}.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
             );
           }
         } catch (error) {
-          fail(`Failed to run "${commandText}"`, error);
+          fail(`Failed to run "${displayName}"`, error);
         }
       });
     },
@@ -245,7 +250,7 @@ function createCommandMethods(
       regex: RegExp,
       options?: CommandOutputOptions,
     ) => {
-      const description = `Command "${commandText}" output should match ${regex}`;
+      const description = `${entityType} "${displayName}" output should match ${regex}`;
       builder.schedule(description, async ({ pass, fail }) => {
         try {
           const { child, stdout } = await runCommandStreaming(commandText, {
@@ -255,7 +260,7 @@ function createCommandMethods(
 
           try {
             if (!stdout) {
-              fail("Command stdout stream is not available.");
+              fail(`${entityType} stdout stream is not available.`);
               return;
             }
 
@@ -278,7 +283,7 @@ function createCommandMethods(
           }
         } catch (error) {
           fail(
-            `Failed to validate output from "${commandText}" against ${regex}`,
+            `Failed to validate output from "${displayName}" against ${regex}`,
             error,
           );
         }

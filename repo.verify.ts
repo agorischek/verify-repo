@@ -7,3 +7,4 @@ verify.prettier.isFormatted();
 verify.file("bun.lockb").exists();
 verify.file("bun.lock").not.exists();
 verify.dir("dev").not.exists();
+verify.script("verify:docs").runs();
