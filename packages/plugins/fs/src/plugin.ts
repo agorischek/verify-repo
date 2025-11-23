@@ -105,7 +105,7 @@ export const fs = (): RepoPlugin => ({
 function createFileMethods(builder: VerificationBuilder, filePath: string) {
   return {
     positive: {
-      exists: async (_: VerificationBuilder) => {
+      exists: async () => {
         const description = `File "${filePath}" should exist`;
         builder.schedule(description, async ({ pass, fail }) => {
           const result = await checkFileExists(filePath, builder.cwd);
@@ -116,7 +116,7 @@ function createFileMethods(builder: VerificationBuilder, filePath: string) {
           }
         });
       },
-      contains: async (_: VerificationBuilder, needle: string | RegExp) => {
+      contains: async (needle: string | RegExp) => {
         const description = `File "${filePath}" should contain ${String(
           needle,
         )}`;
@@ -131,7 +131,7 @@ function createFileMethods(builder: VerificationBuilder, filePath: string) {
       },
     },
     negative: {
-      exists: async (_: VerificationBuilder) => {
+      exists: async () => {
         const description = `File "${filePath}" should not exist`;
         builder.schedule(description, async ({ pass, fail }) => {
           const result = await checkFileExists(filePath, builder.cwd);
@@ -142,7 +142,7 @@ function createFileMethods(builder: VerificationBuilder, filePath: string) {
           }
         });
       },
-      contains: async (_: VerificationBuilder, needle: string | RegExp) => {
+      contains: async (needle: string | RegExp) => {
         const description = `File "${filePath}" should not contain ${String(
           needle,
         )}`;
@@ -166,7 +166,7 @@ function createFileMethods(builder: VerificationBuilder, filePath: string) {
 function createDirMethods(builder: VerificationBuilder, dirPath: string) {
   return {
     positive: {
-      exists: async (_: VerificationBuilder) => {
+      exists: async () => {
         const description = `Directory "${dirPath}" should exist`;
         builder.schedule(description, async ({ pass, fail }) => {
           const result = await checkDirExists(dirPath, builder.cwd);
@@ -179,7 +179,7 @@ function createDirMethods(builder: VerificationBuilder, dirPath: string) {
       },
     },
     negative: {
-      exists: async (_: VerificationBuilder) => {
+      exists: async () => {
         const description = `Directory "${dirPath}" should not exist`;
         builder.schedule(description, async ({ pass, fail }) => {
           const result = await checkDirExists(dirPath, builder.cwd);

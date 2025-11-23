@@ -86,14 +86,14 @@ export const git = (): RepoPlugin => ({
       const entry = new PluginEntry(builder, {
         isClean: () => scheduleClean(builder, getClient),
         hasNoConflicts: () => scheduleConflicts(builder, getClient),
-        hasStaged: (_b: VerificationBuilder, filePath: string) => {
+        hasStaged: (filePath: string) => {
           const base = builder.cwd;
           const repoRoot = builder.root ?? process.cwd();
           const abs = path.resolve(base, filePath);
           const rel = path.relative(repoRoot, abs);
           return scheduleHasStaged(builder, getClient, rel);
         },
-        isOnBranch: (_b: VerificationBuilder, branch: string) =>
+        isOnBranch: (branch: string) =>
           scheduleIsOnBranch(builder, getClient, branch),
       }) as GitPluginApi;
 

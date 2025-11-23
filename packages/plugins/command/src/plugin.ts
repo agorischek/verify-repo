@@ -220,7 +220,7 @@ function createCommandMethods(
   const entityType = isScript ? "Script" : "Command";
 
   return {
-    runs: (_builder: VerificationBuilder, options?: CommandRunOptions) => {
+    runs: (options?: CommandRunOptions) => {
       const description = `${entityType} "${displayName}" should run successfully`;
       builder.schedule(description, async ({ pass, fail }) => {
         try {
@@ -245,11 +245,7 @@ function createCommandMethods(
         }
       });
     },
-    outputs: (
-      _builder: VerificationBuilder,
-      regex: RegExp,
-      options?: CommandOutputOptions,
-    ) => {
+    outputs: (regex: RegExp, options?: CommandOutputOptions) => {
       const description = `${entityType} "${displayName}" output should match ${regex}`;
       builder.schedule(description, async ({ pass, fail }) => {
         try {

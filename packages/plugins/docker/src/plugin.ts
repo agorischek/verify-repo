@@ -28,7 +28,6 @@ export const docker = (): RepoPlugin => ({
       docker(builder: VerificationBuilder) {
         return new PluginEntry(builder, {
           builds: (
-            _builder: VerificationBuilder,
             dockerfileOrOptions?: string | DockerBuildOptions,
             explicitOptions?: DockerBuildOptions,
           ) => {
@@ -37,7 +36,7 @@ export const docker = (): RepoPlugin => ({
               dockerfileOrOptions,
               explicitOptions,
             );
-            scheduleDockerBuild(_builder, normalized);
+            scheduleDockerBuild(builder, normalized);
           },
         }) as DockerPluginApi;
       },

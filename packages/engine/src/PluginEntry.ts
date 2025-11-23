@@ -1,18 +1,17 @@
 import { VerificationBuilder } from "./VerificationBuilder";
 
 export type PluginMethod<TArgs extends any[] = any[], TResult = unknown> = (
-  builder: VerificationBuilder,
   ...args: TArgs
 ) => TResult;
 
 export type PluginCallHandler<
   TArgs extends any[] = any[],
   TResult = unknown,
-> = PluginMethod<TArgs, TResult>;
+> = (builder: VerificationBuilder, ...args: TArgs) => TResult;
 
 type MethodWrappers<TMethods extends Record<string, PluginMethod>> = {
   [K in keyof TMethods]: (
-    ...args: Parameters<TMethods[K]> extends [any, ...infer P] ? P : never
+    ...args: Parameters<TMethods[K]>
   ) => ReturnType<TMethods[K]>;
 };
 
@@ -42,9 +41,7 @@ export class PluginEntry<
 
     for (const [name, method] of Object.entries(methods)) {
       targetObject[name] = (...args: any[]) =>
-        builder.register(() =>
-          (method as PluginMethod)(builder, ...(args as any[])),
-        );
+        builder.register(() => (method as PluginMethod)(...(args as any[])));
     }
 
     // Return the target object instead of this instance

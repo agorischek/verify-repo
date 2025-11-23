@@ -24,8 +24,7 @@ export const eslint = (): RepoPlugin => ({
     return {
       eslint(builder: VerificationBuilder) {
         return new PluginEntry(builder, {
-          passes: (_builder: VerificationBuilder, options?: EslintOptions) =>
-            scheduleEslint(_builder, options),
+          passes: (options?: EslintOptions) => scheduleEslint(builder, options),
         }) as EslintPluginApi;
       },
     };

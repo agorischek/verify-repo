@@ -37,8 +37,7 @@ function createBunTestEntry(builder: VerificationBuilder): BunTestApi {
   return new PluginEntry(
     builder,
     {
-      passes: (_builder: VerificationBuilder, options?: BunTestOptions) =>
-        scheduleBunTest(builder, options),
+      passes: (options?: BunTestOptions) => scheduleBunTest(builder, options),
     },
     undefined,
   ) as BunTestApi;

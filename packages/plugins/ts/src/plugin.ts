@@ -31,27 +31,23 @@ export const ts = (): RepoPlugin => ({
     return {
       ts(builder: VerificationBuilder) {
         return new PluginEntry(builder, {
-          noErrors: (_builder: VerificationBuilder, options?: TsCheckOptions) =>
+          noErrors: (options?: TsCheckOptions) =>
             scheduleTsc(
-              _builder,
+              builder,
               ["--noEmit", "--pretty", "false"],
               "TypeScript should have no errors",
               options,
             ),
-          builds: (_builder: VerificationBuilder, options?: TsCheckOptions) =>
+          builds: (options?: TsCheckOptions) =>
             scheduleTsc(
-              _builder,
+              builder,
               ["--pretty", "false"],
               "TypeScript project should build",
               options,
             ),
-          buildsProject: (
-            _builder: VerificationBuilder,
-            tsconfigPath: string,
-            options?: TsCheckOptions,
-          ) =>
+          buildsProject: (tsconfigPath: string, options?: TsCheckOptions) =>
             scheduleTsc(
-              _builder,
+              builder,
               ["-p", tsconfigPath, "--pretty", "false"],
               `TypeScript project "${tsconfigPath}" should build`,
               options,
