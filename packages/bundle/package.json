@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "verify": "./dist/bin.js"
+    "verify-repo": "./dist/bin.js"
   },
   "files": [
     "dist"

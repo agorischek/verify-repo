@@ -42,6 +42,7 @@ export interface RepoTestRunSummary {
 export interface PluginContext {
   root?: string;
   schedule: (description: string, handler: RepoTestHandler) => void;
+  packageManager?: "npm" | "yarn" | "pnpm" | "bun";
 }
 
 export type VerificationMetadata = Record<string, unknown>;
@@ -88,6 +89,7 @@ export interface RepoVerificationEngineConfig {
   plugins?: RepoPlugin[];
   root?: string;
   defaultConcurrency?: number;
+  packageManager?: "npm" | "yarn" | "pnpm" | "bun";
 }
 
 /**

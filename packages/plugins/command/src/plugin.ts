@@ -26,6 +26,32 @@ interface CommandRoot {
 
 type CommandEntrypoint = CommandRoot | CommandLeaf;
 
+type ScriptsLeaf = CommandPluginApi;
+
+interface ScriptsRoot {
+  (script: string): ScriptsLeaf;
+  runs(script: string, options?: CommandRunOptions): void;
+  outputs(script: string, regex: RegExp, options?: CommandOutputOptions): void;
+}
+
+type ScriptsEntrypoint = ScriptsRoot | ScriptsLeaf;
+
+function getPackageManagerCommand(
+  packageManager: "npm" | "yarn" | "pnpm" | "bun" = "npm",
+  script: string,
+): string {
+  switch (packageManager) {
+    case "npm":
+      return `npm run ${script}`;
+    case "yarn":
+      return `yarn ${script}`;
+    case "pnpm":
+      return `pnpm run ${script}`;
+    case "bun":
+      return `bun run ${script}`;
+  }
+}
+
 export const command = (): RepoPlugin => ({
   docs: {
     name: "Command runner",
@@ -51,9 +77,29 @@ export const command = (): RepoPlugin => ({
         signature: 'verify.command.outputs("<cmd>", /pattern/, options?)',
         description: "Shortcut that schedules an output check in one call.",
       },
+      {
+        signature: 'verify.scripts("<script>").runs(options?)',
+        description:
+          "Runs the npm/yarn/pnpm/bun script and expects the configured exit code (default 0). Uses the packageManager configured in verify.config.ts (default npm). Options support cwd, env, timeoutMs, and expectExitCode.",
+      },
+      {
+        signature: 'verify.scripts("<script>").outputs(/pattern/, options?)',
+        description:
+          "Streams stdout from the npm/yarn/pnpm/bun script and resolves when the provided RegExp matches before the optional timeout (default 15s). Uses the packageManager configured in verify.config.ts (default npm). Options support cwd, env, and timeoutMs.",
+      },
+      {
+        signature: 'verify.scripts.runs("<script>", options?)',
+        description:
+          "Shortcut that schedules a .runs() check for a script without creating an intermediate chain.",
+      },
+      {
+        signature: 'verify.scripts.outputs("<script>", /pattern/, options?)',
+        description:
+          "Shortcut that schedules an output check for a script in one call.",
+      },
     ],
   },
-  api(_context: PluginContext) {
+  api(context: PluginContext) {
     const buildEntry = (
       builder: VerificationBuilder,
       commandText?: string,
@@ -91,9 +137,76 @@ export const command = (): RepoPlugin => ({
       return rootEntry as CommandRoot;
     };
 
+    const buildScriptsEntry = (
+      builder: VerificationBuilder,
+      scriptName?: string,
+    ): ScriptsEntrypoint => {
+      const packageManager = context.packageManager ?? "npm";
+
+      if (scriptName) {
+        const commandText = getPackageManagerCommand(
+          packageManager,
+          scriptName,
+        );
+        return createPluginEntry(
+          builder,
+          createCommandMethods(builder, commandText),
+          undefined,
+        ) as ScriptsLeaf;
+      }
+
+      const baseEntry = createPluginEntry(
+        builder,
+        {},
+        (parent: VerificationBuilder, script: string) => {
+          const child = parent.createChild({ script });
+          const commandText = getPackageManagerCommand(packageManager, script);
+          return createPluginEntry(
+            child,
+            createCommandMethods(child, commandText),
+            undefined,
+          ) as ScriptsLeaf;
+        },
+      );
+
+      const rootEntry = Object.assign(baseEntry, {
+        runs: (script: string, options?: CommandRunOptions) => {
+          const commandText = getPackageManagerCommand(packageManager, script);
+          const child = builder.createChild({ script });
+          (
+            createPluginEntry(
+              child,
+              createCommandMethods(child, commandText),
+              undefined,
+            ) as ScriptsLeaf
+          ).runs(options);
+        },
+        outputs: (
+          script: string,
+          regex: RegExp,
+          options?: CommandOutputOptions,
+        ) => {
+          const commandText = getPackageManagerCommand(packageManager, script);
+          const child = builder.createChild({ script });
+          (
+            createPluginEntry(
+              child,
+              createCommandMethods(child, commandText),
+              undefined,
+            ) as ScriptsLeaf
+          ).outputs(regex, options);
+        },
+      });
+
+      return rootEntry as ScriptsRoot;
+    };
+
     return {
       command(builder: VerificationBuilder) {
         return buildEntry(builder);
+      },
+      scripts(builder: VerificationBuilder) {
+        return buildScriptsEntry(builder);
       },
     };
   },

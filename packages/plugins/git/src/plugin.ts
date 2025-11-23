@@ -61,10 +61,14 @@ export const git = (): RepoPlugin => ({
     const getClient = async (): Promise<SimpleGit> => {
       if (!clientPromise) {
         clientPromise = (async () => {
-          const searchPaths = [root, process.cwd()].filter((p): p is string => p !== undefined);
+          const searchPaths = [root, process.cwd()].filter(
+            (p): p is string => p !== undefined,
+          );
           for (const base of searchPaths) {
             try {
-              const simpleGitPath = require.resolve("simple-git", { paths: [base] });
+              const simpleGitPath = require.resolve("simple-git", {
+                paths: [base],
+              });
               const simpleGitModule = await import(simpleGitPath);
               const simpleGit = simpleGitModule.default || simpleGitModule;
               return simpleGit(root ?? process.cwd());

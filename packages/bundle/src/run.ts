@@ -1,9 +1,10 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { access } from "node:fs/promises";
 import { glob } from "glob";
 import type { RepoTestRunSummary } from "@verify-repo/engine";
 import { RepoVerifierConfig } from "./RepoVerifierConfig";
-import { configure } from "./verify";
+import { configure, getVerifyInstance } from "./verify";
 import { RepoVerificationFailedError } from "./errors";
 
 const DEFAULT_PATTERN = "**/*?.verify.{js,ts}";
@@ -23,13 +24,65 @@ export interface RunOptions extends RepoVerifierConfig {
   reporter?: false | ((summary: RepoTestRunSummary) => void);
 }
 
+async function loadConfigFile(root: string): Promise<void> {
+  const configPaths = [
+    path.join(root, "verify.config.ts"),
+    path.join(root, "verify.config.js"),
+  ];
+
+  for (const configPath of configPaths) {
+    try {
+      await access(configPath);
+      // Config file exists, import it (which will execute configure() if it calls it)
+      const configUrl = pathToFileURL(configPath).href;
+      await import(configUrl);
+      return; // Successfully loaded, exit
+    } catch (error) {
+      // If it's a file not found error, try next path
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+        continue;
+      }
+      // For other errors (like import errors), throw them
+      throw error;
+    }
+  }
+}
+
 export async function run(options: RunOptions = {}) {
   const root = options.root ?? process.cwd();
-  const verifyInstance = configure({
-    root,
-    plugins: options.plugins,
-    concurrency: options.concurrency,
-  });
+
+  // Load config file first if it exists (it calls configure() to set up the instance)
+  try {
+    await loadConfigFile(root);
+  } catch (error) {
+    throw new Error(
+      `Failed to load verify.config.ts: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    );
+  }
+
+  // Get the current instance (may have been configured by verify.config.ts)
+  let verifyInstance = getVerifyInstance();
+
+  // If options are provided, reconfigure (options override config file settings)
+  // The config file mutates the instance in place, and options can override
+  if (
+    options.root !== undefined ||
+    options.plugins !== undefined ||
+    options.concurrency !== undefined ||
+    options.packageManager !== undefined
+  ) {
+    const existingInstance = verifyInstance;
+    const mergedConfig: RepoVerifierConfig = {
+      // Preserve root from config file if not overridden
+      root: options.root ?? existingInstance.root ?? root,
+      // Options explicitly provided override config file
+      plugins: options.plugins,
+      concurrency: options.concurrency,
+      packageManager: options.packageManager,
+    };
+    verifyInstance = configure(mergedConfig);
+  }
 
   const files = await discoverVerifyFiles(
     root,
@@ -63,8 +116,16 @@ export async function run(options: RunOptions = {}) {
     `verify-repo: registered ${verificationCount} verification${verificationCount === 1 ? "" : "s"}`,
   );
 
+  // Convert boolean concurrency to number: true = unlimited (Infinity), false = sequential (1)
+  const runConcurrency: number | undefined =
+    typeof options.concurrency === "boolean"
+      ? options.concurrency
+        ? Number.POSITIVE_INFINITY
+        : 1
+      : options.concurrency;
+
   const summary = await verifyInstance.run({
-    concurrency: options.concurrency,
+    concurrency: runConcurrency,
   });
 
   const reporter =

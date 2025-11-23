@@ -25,6 +25,7 @@ export class RepoVerificationEngine {
 
   public readonly root?: string;
   private readonly defaultConcurrency?: number;
+  private readonly packageManager?: "npm" | "yarn" | "pnpm" | "bun";
   private tests: RepoTestDefinition[] = [];
   private nextTestId = 0;
   private activeSource?: string;
@@ -35,9 +36,10 @@ export class RepoVerificationEngine {
   private readonly pluginDocs: PluginDocumentation[] = [];
 
   constructor(config: RepoVerificationEngineConfig) {
-    const { plugins = [], root, defaultConcurrency } = config;
+    const { plugins = [], root, defaultConcurrency, packageManager } = config;
     this.root = root;
     this.defaultConcurrency = defaultConcurrency;
+    this.packageManager = packageManager;
 
     for (const plugin of plugins) {
       this.applyPlugin(plugin);
@@ -51,6 +53,7 @@ export class RepoVerificationEngine {
     const context: PluginContext = {
       root: this.root,
       schedule: (description, handler) => this.schedule(description, handler),
+      packageManager: this.packageManager,
     };
 
     const api = factory(context) || {};

@@ -1,8 +1,8 @@
-<img src="static/logo.png" alt="verify-repo logo" width="200">
+<img src="static/logo.png" alt="verify-repo logo" width="300">
 
 # verify-repo
 
-Test the state of your repository. Great for letting coding agents prove they're done.
+Test the state of your repository. Great for having coding agents prove they're done.
 
 ## Define checks
 
@@ -18,10 +18,7 @@ verify.dir("dist").exists();
 verify.command("npm run build").runs();
 verify.git.isClean();
 verify.prettier("src/**/*.ts").isFormatted();
-verify.with({ message: "release guard" }).git.branch("release").isClean();
 ```
-
-`verify` is a dynamic DSL. Accessing `verify.<plugin>` creates a verification builder. Call exactly one check (`isClean()`, `runs()`, `isFormatted()`, etc.) per builder; if no check is registered the builder throws. Use `verify.with(meta)` to attach metadata that you can read inside your plugins or use to differentiate checks in reports.
 
 ### Built-in plugins
 
@@ -35,13 +32,11 @@ verify.with({ message: "release guard" }).git.branch("release").isClean();
 - `bun.test.passes({ args: ["--filter", "unit"] })`
 - `docker.builds("Dockerfile.prod", { tag: "my-app:prod" })`
 
-## Run them
+## Run
 
 You can run the verifications using the CLI:
 
 ```bash
-bun verify
-# or
 npx verify-repo
 ```
 
@@ -64,7 +59,7 @@ checks in parallel. A non-zero exit (or thrown `RepoVerificationFailedError`) in
 To see a list of all available checks and their documentation, run:
 
 ```bash
-bun verify --docs
+npx verify-repo --docs
 ```
 
 ## Configuration

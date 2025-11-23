@@ -13,7 +13,7 @@ export class RepoVerificationRuntime extends RepoVerificationEngine {
   private readonly _plugins: RepoPlugin[];
 
   constructor(config: RepoVerifierConfig = {}) {
-    const { plugins = [], root, concurrency } = config;
+    const { plugins = [], root, concurrency, packageManager = "npm" } = config;
 
     const builtIns: RepoPlugin[] = [
       fs(),
@@ -27,10 +27,19 @@ export class RepoVerificationRuntime extends RepoVerificationEngine {
     ];
     const allPlugins = [...builtIns, ...plugins];
 
+    // Convert boolean concurrency to number: true = unlimited (Infinity), false = sequential (1)
+    const defaultConcurrency: number | undefined =
+      typeof concurrency === "boolean"
+        ? concurrency
+          ? Number.POSITIVE_INFINITY
+          : 1
+        : concurrency;
+
     super({
       plugins: allPlugins,
       root,
-      defaultConcurrency: concurrency,
+      defaultConcurrency,
+      packageManager,
     });
 
     this._plugins = allPlugins;
