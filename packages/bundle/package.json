@@ -1,6 +1,11 @@
 {
   "name": "verify-repo",
   "version": "0.0.1",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agorischek/verify-repo.git"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -8,10 +13,13 @@
     "verify-repo": "./dist/bin.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "README.md"
   ],
   "scripts": {
-    "build": "tsdown"
+    "build": "tsdown",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "glob": "^13.0.0"
