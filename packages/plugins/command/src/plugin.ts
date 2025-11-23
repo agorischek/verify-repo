@@ -53,11 +53,10 @@ function getPackageManagerCommand(
 }
 
 export const command = (): RepoPlugin => ({
-  docs: {
-    name: "Command runner",
-    description:
-      "Execute shell commands and assert on exit codes or streamed output.",
-    entries: [
+  name: "Command runner",
+  description:
+    "Execute shell commands and assert on exit codes or streamed output.",
+  docs: [
       {
         signature: 'verify.command("<cmd>").runs(options?)',
         description:
@@ -98,7 +97,6 @@ export const command = (): RepoPlugin => ({
           "Shortcut that schedules an output check for a script in one call.",
       },
     ],
-  },
   api(context: PluginContext) {
     const buildEntry = (
       builder: VerificationBuilder,

@@ -12,11 +12,10 @@ type FileEntrypoint = FileRoot | FilePluginApi;
 type DirRoot = (dirPath: string) => DirPluginApi;
 
 export const fs = (): RepoPlugin => ({
-  docs: {
-    name: "Filesystem",
-    description:
-      "Assertions for files and directories relative to the verify file.",
-    entries: [
+  name: "Filesystem",
+  description:
+    "Assertions for files and directories relative to the verify file.",
+  docs: [
       {
         signature: 'verify.file("<path>").exists()',
         description:
@@ -45,7 +44,6 @@ export const fs = (): RepoPlugin => ({
         description: "Ensures the directory does not exist.",
       },
     ],
-  },
   api(_context: PluginContext) {
     const buildFileEntry = (
       builder: VerificationBuilder,

@@ -8,17 +8,15 @@ import { spawn } from "node:child_process";
 import type { BunPluginApi, BunTestApi, BunTestOptions } from "./types";
 
 export const bun = (): RepoPlugin => ({
-  docs: {
-    name: "Bun",
-    description: "Run Bun-powered test suites as part of repo verification.",
-    entries: [
-      {
-        signature: "verify.bun.test.passes(options?)",
-        description:
-          "Runs `bun test` (optionally with extra CLI args) relative to the verify file directory and expects a zero exit code. Override cwd, env, or timeout via options.",
-      },
-    ],
-  },
+  name: "Bun",
+  description: "Run Bun-powered test suites as part of repo verification.",
+  docs: [
+    {
+      signature: "verify.bun.test.passes(options?)",
+      description:
+        "Runs `bun test` (optionally with extra CLI args) relative to the verify file directory and expects a zero exit code. Override cwd, env, or timeout via options.",
+    },
+  ],
   api(_context: PluginContext) {
     return {
       bun(builder: VerificationBuilder) {

@@ -32,11 +32,10 @@ type PrettierRoot = PrettierPluginApi;
 type PrettierEntrypoint = PrettierRoot | PrettierLeaf;
 
 export const prettier = (): RepoPlugin => ({
-  docs: {
-    name: "Prettier",
-    description:
-      "Validate that files are formatted according to the local Prettier config.",
-    entries: [
+  name: "Prettier",
+  description:
+    "Validate that files are formatted according to the local Prettier config.",
+  docs: [
       {
         signature: "verify.prettier.isFormatted()",
         description:
@@ -51,7 +50,6 @@ export const prettier = (): RepoPlugin => ({
         description: "Targets a single file relative to the verify file.",
       },
     ],
-  },
   api(_context: PluginContext) {
     const buildEntry = (
       builder: VerificationBuilder,

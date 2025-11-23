@@ -20,11 +20,10 @@ const formatFiles = (
     .join("\n");
 
 export const git = (): RepoPlugin => ({
-  docs: {
-    name: "Git",
-    description:
-      "Assert repository cleanliness, conflicts, branches, and staged files.",
-    entries: [
+  name: "Git",
+  description:
+    "Assert repository cleanliness, conflicts, branches, and staged files.",
+  docs: [
       {
         signature: "verify.git.isClean()",
         description:
@@ -54,7 +53,6 @@ export const git = (): RepoPlugin => ({
         description: "Only verifies that the target branch is checked out.",
       },
     ],
-  },
   api({ root }: PluginContext) {
     let clientPromise: Promise<SimpleGit> | null = null;
 

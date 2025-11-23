@@ -3,6 +3,7 @@ import path from "node:path";
 import {
   PluginContext,
   PluginDocumentation,
+  PluginDocumentationEntry,
   PluginEntrypointFactory,
   RepoPlugin,
   RepoPluginFactory,
@@ -47,8 +48,8 @@ export class RepoVerificationEngine {
   }
 
   protected applyPlugin(plugin: RepoPlugin) {
-    const { factory, docs } = this.resolvePlugin(plugin);
-    this.recordPluginDocs(docs);
+    const { factory, name, description, docs } = this.resolvePlugin(plugin);
+    this.recordPluginDocs(name, description, docs);
 
     const context: PluginContext = {
       root: this.root,
@@ -127,37 +128,49 @@ export class RepoVerificationEngine {
     this.pluginEntries.set(name, factory);
   }
 
-  private recordPluginDocs(docs?: PluginDocumentation | PluginDocumentation[]) {
-    if (!docs) {
+  private recordPluginDocs(
+    name?: string,
+    description?: string,
+    docs?: PluginDocumentationEntry[],
+  ) {
+    if (!name || !docs || docs.length === 0) {
       return;
     }
-    const contributions = Array.isArray(docs) ? docs : [docs];
-    for (const doc of contributions) {
-      if (!doc) continue;
-      this.pluginDocs.push({
-        name: doc.name,
-        description: doc.description,
-        entries: doc.entries.map((entry) => ({
-          signature: entry.signature,
-          description: entry.description,
-        })),
-      });
-    }
+    this.pluginDocs.push({
+      name,
+      description,
+      entries: docs.map((entry) => ({
+        signature: entry.signature,
+        description: entry.description,
+      })),
+    });
   }
 
   private resolvePlugin(plugin: RepoPlugin): {
     factory: RepoPluginFactory;
-    docs?: PluginDocumentation | PluginDocumentation[];
+    name?: string;
+    description?: string;
+    docs?: PluginDocumentationEntry[];
   } {
     if (typeof plugin === "function") {
-      return { factory: plugin, docs: plugin.docs };
+      return {
+        factory: plugin,
+        name: plugin.name,
+        description: plugin.description,
+        docs: plugin.docs,
+      };
     }
     if (
       plugin &&
       typeof plugin === "object" &&
       typeof plugin.api === "function"
     ) {
-      return { factory: plugin.api.bind(plugin), docs: plugin.docs };
+      return {
+        factory: plugin.api.bind(plugin),
+        name: plugin.name,
+        description: plugin.description,
+        docs: plugin.docs,
+      };
     }
     throw new Error(
       "Repo plugin must be a function or an object with an api() method.",

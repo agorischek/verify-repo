@@ -11,17 +11,15 @@ import type { EslintOptions, EslintPluginApi } from "./types";
 const require = createRequire(import.meta.url);
 
 export const eslint = (): RepoPlugin => ({
-  docs: {
-    name: "ESLint",
-    description: "Ensure lint rules pass (optionally fixing files first).",
-    entries: [
-      {
-        signature: "verify.eslint.passes(options?)",
-        description:
-          "Runs the local ESLint binary. Options support files/globs, cwd, config, maxWarnings, fix, and timeoutMs.",
-      },
-    ],
-  },
+  name: "ESLint",
+  description: "Ensure lint rules pass (optionally fixing files first).",
+  docs: [
+    {
+      signature: "verify.eslint.passes(options?)",
+      description:
+        "Runs the local ESLint binary. Options support files/globs, cwd, config, maxWarnings, fix, and timeoutMs.",
+    },
+  ],
   api(_context: PluginContext) {
     return {
       eslint(builder: VerificationBuilder) {

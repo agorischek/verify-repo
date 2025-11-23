@@ -8,11 +8,10 @@ import { spawn } from "node:child_process";
 import type { DockerBuildOptions, DockerPluginApi } from "./types";
 
 export const docker = (): RepoPlugin => ({
-  docs: {
-    name: "Docker",
-    description:
-      "Run `docker build` with optional tags, args, and custom contexts.",
-    entries: [
+  name: "Docker",
+  description:
+    "Run `docker build` with optional tags, args, and custom contexts.",
+  docs: [
       {
         signature: 'verify.docker.builds("Dockerfile", options?)',
         description:
@@ -24,7 +23,6 @@ export const docker = (): RepoPlugin => ({
           "Takes a full options object to describe the build and passes when `docker build` exits successfully.",
       },
     ],
-  },
   api(_context: PluginContext) {
     return {
       docker(builder: VerificationBuilder) {

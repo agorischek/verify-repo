@@ -66,7 +66,9 @@ export interface PluginDocumentation {
 }
 
 export interface RepoPluginMetadata {
-  docs?: PluginDocumentation | PluginDocumentation[];
+  name?: string;
+  description?: string;
+  docs?: PluginDocumentationEntry[];
 }
 
 export interface RepoPluginFactory<

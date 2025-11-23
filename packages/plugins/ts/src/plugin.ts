@@ -11,10 +11,9 @@ import type { TsCheckOptions, TsPluginApi } from "./types";
 const require = createRequire(import.meta.url);
 
 export const ts = (): RepoPlugin => ({
-  docs: {
-    name: "TypeScript",
-    description: "Run the TypeScript compiler in different modes.",
-    entries: [
+  name: "TypeScript",
+  description: "Run the TypeScript compiler in different modes.",
+  docs: [
       {
         signature: "verify.ts.noErrors(options?)",
         description: "Runs `tsc --noEmit` to confirm there are no type errors.",
@@ -29,7 +28,6 @@ export const ts = (): RepoPlugin => ({
         description: "Targets a specific tsconfig file via `tsc -p`.",
       },
     ],
-  },
   api(_context: PluginContext) {
     return {
       ts(builder: VerificationBuilder) {

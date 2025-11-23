@@ -90,19 +90,16 @@ import {
 } from "verify-repo";
 
 export const hello = (): RepoPlugin => ({
-  docs: {
-    name: "Hello",
-    description: "A friendly plugin.",
-    entries: [
-      {
-        signature: 'verify.hello("name").greets()',
-        description: "Checks that the hello greeting is received.",
-      },
-    ],
-  },
-  api({ root }: PluginContext) {
-    return {
-      hello(builder: VerificationBuilder) {
+  name: "Hello",
+  description: "A friendly plugin.",
+  docs: [
+    {
+      signature: 'verify.hello("name").greets()',
+      description: "Checks that the hello greeting is received.",
+    },
+  ],
+  api: ({ root }: PluginContext) => ({
+    hello(builder: VerificationBuilder) {
         return createPluginEntry(builder, {
           greets: (_builder, name: string) => {
             builder.schedule(`says hello to ${name}`, async ({ pass }) => {
@@ -111,7 +108,7 @@ export const hello = (): RepoPlugin => ({
           },
         });
       },
-    };
+    }),
   },
 });
 ```
