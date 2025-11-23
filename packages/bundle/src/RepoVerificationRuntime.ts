@@ -29,11 +29,7 @@ export class RepoVerificationRuntime extends RepoVerificationEngine {
 
     // Convert boolean concurrency to number: true = unlimited (Infinity), false = sequential (1)
     const defaultConcurrency: number | undefined =
-      typeof concurrency === "boolean"
-        ? concurrency
-          ? Number.POSITIVE_INFINITY
-          : 1
-        : concurrency;
+      typeof concurrency === "boolean" ? (concurrency ? Number.POSITIVE_INFINITY : 1) : concurrency;
 
     super({
       plugins: allPlugins,

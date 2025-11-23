@@ -6,9 +6,7 @@ export interface DocsOptions extends RepoVerifierConfig {
   writer?: (line: string) => void;
 }
 
-export function collectDocs(
-  config: RepoVerifierConfig = {},
-): PluginDocumentation[] {
+export function collectDocs(config: RepoVerifierConfig = {}): PluginDocumentation[] {
   const runtime = new RepoVerificationRuntime(config);
   return runtime.getPluginDocumentation();
 }

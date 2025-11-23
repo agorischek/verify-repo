@@ -1,9 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  type RepoVerification,
-  type VerificationMetadata,
-} from "@verify-repo/engine";
+import { type RepoVerification, type VerificationMetadata } from "@verify-repo/engine";
 import { RepoVerificationRuntime } from "./RepoVerificationRuntime";
 import type { RepoVerifierConfig } from "./RepoVerifierConfig";
 
@@ -58,8 +55,7 @@ function createVerifyProxy(meta: VerificationMetadata = {}): RepoVerifier {
   // Create a target object that satisfies the RepoVerifier interface requirements
   // (specifically the 'with' method) so that we can cast it safely.
   const proxyTarget = {
-    with: (extra: VerificationMetadata) =>
-      createVerifyProxy({ ...normalizedMeta, ...extra }),
+    with: (extra: VerificationMetadata) => createVerifyProxy({ ...normalizedMeta, ...extra }),
   } as RepoVerifier;
 
   const handler: ProxyHandler<RepoVerifier> = {
@@ -67,16 +63,12 @@ function createVerifyProxy(meta: VerificationMetadata = {}): RepoVerifier {
       const tester = ensureInstance();
 
       if (prop === "with") {
-        return (extra: VerificationMetadata = {}) =>
-          createVerifyProxy({ ...normalizedMeta, ...extra });
+        return (extra: VerificationMetadata = {}) => createVerifyProxy({ ...normalizedMeta, ...extra });
       }
 
       const pluginFactory = tester.getPluginEntrypoint(prop);
       if (pluginFactory) {
-        const context = tester.createVerificationContext(
-          String(prop),
-          normalizedMeta,
-        );
+        const context = tester.createVerificationContext(String(prop), normalizedMeta);
         return pluginFactory(context);
       }
 

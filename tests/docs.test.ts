@@ -7,11 +7,7 @@ test("collectDocs returns built-in plugin documentation", () => {
   const filesystem = docs.find((doc) => doc.name === "Filesystem");
 
   expect(filesystem).toBeDefined();
-  expect(
-    filesystem?.entries.some((entry) =>
-      entry.signature.includes('verify.file("'),
-    ),
-  ).toBe(true);
+  expect(filesystem?.entries.some((entry) => entry.signature.includes('verify.file("'))).toBe(true);
 });
 
 test("collectDocs merges docs from custom plugins", () => {

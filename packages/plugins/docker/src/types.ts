@@ -4,13 +4,10 @@ export interface DockerBuildOptions {
   tag?: string;
   args?: string[];
   buildArgs?: Record<string, string>;
-  cwd?: string;
+  dir?: string;
   timeoutMs?: number;
 }
 
 export interface DockerPluginApi {
-  builds: (
-    dockerfileOrOptions?: string | DockerBuildOptions,
-    options?: DockerBuildOptions,
-  ) => void;
+  builds: (dockerfileOrOptions?: string | DockerBuildOptions, options?: DockerBuildOptions) => void;
 }

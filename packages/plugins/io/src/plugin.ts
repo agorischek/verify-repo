@@ -6,7 +6,7 @@ type FileRoot = (filePath: string) => FilePluginApi;
 type FileEntrypoint = FileRoot | FilePluginApi;
 type DirRoot = (dirPath: string) => DirPluginApi;
 
-export const fs = (): RepoPlugin => ({
+export const io = (): RepoPlugin => ({
   name: "Filesystem",
   description: "Assertions for files and directories relative to the verify file.",
   docs: [

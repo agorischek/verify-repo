@@ -44,9 +44,7 @@ export async function checkPrettierFormatted(
     }),
   );
 
-  const unformattedFiles = results.filter(
-    (file): file is string => file !== null,
-  );
+  const unformattedFiles = results.filter((file): file is string => file !== null);
   const pass = unformattedFiles.length === 0;
 
   return {

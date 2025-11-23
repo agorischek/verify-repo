@@ -1,5 +1,5 @@
 export interface TsCheckOptions {
-  cwd?: string;
+  dir?: string;
   timeoutMs?: number;
 }
 

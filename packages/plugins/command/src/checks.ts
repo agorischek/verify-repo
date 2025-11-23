@@ -1,10 +1,6 @@
 import { Readable } from "stream";
 
-export async function checkOutputContainsLine(
-  stream: Readable,
-  regex: RegExp,
-  timeout: number,
-) {
+export async function checkOutputContainsLine(stream: Readable, regex: RegExp, timeout: number) {
   return new Promise<{ pass: boolean; message: () => string }>((resolve) => {
     let buffer = "";
     let matched = false;
@@ -24,9 +20,7 @@ export async function checkOutputContainsLine(
       cleanup();
       const message = pass
         ? `Output contained a line matching ${regex}.`
-        : `Expected output to contain a matching line: ${regex}\n\nOutput:\n${collectedLines.join(
-            "\n",
-          )}`;
+        : `Expected output to contain a matching line: ${regex}\n\nOutput:\n${collectedLines.join("\n")}`;
       resolve({ pass, message: () => message });
     };
 

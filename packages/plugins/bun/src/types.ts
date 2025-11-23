@@ -6,7 +6,7 @@ export interface BunTestOptions {
   /**
    * Working directory for the command (defaults to the verify file directory).
    */
-  cwd?: string;
+  dir?: string;
   /**
    * Environment variables to merge with the current process env.
    */

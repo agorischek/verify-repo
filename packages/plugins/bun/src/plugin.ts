@@ -1,8 +1,4 @@
-import {
-  type PluginOptions,
-  type RepoPlugin,
-  type VerificationContext,
-} from "@verify-repo/engine";
+import { type PluginOptions, type RepoPlugin, type VerificationContext } from "@verify-repo/engine";
 import { spawn } from "node:child_process";
 import type { BunPluginApi, BunTestApi, BunTestOptions } from "./types";
 
@@ -13,7 +9,7 @@ export const bun = (): RepoPlugin => ({
     {
       signature: "verify.bun.test.passes(options?)",
       description:
-        "Runs `bun test` (optionally with extra CLI args) relative to the verify file directory and expects a zero exit code. Override cwd, env, or timeout via options.",
+        "Runs `bun test` (optionally with extra CLI args) relative to the verify file directory and expects a zero exit code. Override dir, env, or timeout via options.",
     },
   ],
   api() {
@@ -38,11 +34,8 @@ function createBunTestEntry(context: VerificationContext): BunTestApi {
   }) as BunTestApi;
 }
 
-function scheduleBunTest(
-  context: VerificationContext,
-  options?: BunTestOptions,
-) {
-  const cwd = options?.cwd ?? context.cwd;
+function scheduleBunTest(context: VerificationContext, options?: BunTestOptions) {
+  const dir = options?.dir ?? context.dir;
   const extraArgs = options?.args ?? [];
   const bunArgs = ["test", ...extraArgs];
   const label = formatCommand(bunArgs);
@@ -50,7 +43,7 @@ function scheduleBunTest(
   context.register(`${label} should succeed`, async ({ pass, fail }) => {
     try {
       const result = await runBunCommand(bunArgs, {
-        cwd,
+        dir,
         env: options?.env,
         timeoutMs: options?.timeoutMs,
       });
@@ -60,9 +53,7 @@ function scheduleBunTest(
         return;
       }
 
-      fail(
-        `"${label}" exited with ${result.exitCode}.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
-      );
+      fail(`"${label}" exited with ${result.exitCode}.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
     } catch (error) {
       fail(`Failed to run "${label}".`, error);
     }
@@ -74,7 +65,7 @@ function formatCommand(args: string[]) {
 }
 
 interface BunCommandOptions {
-  cwd: string;
+  dir: string;
   env?: NodeJS.ProcessEnv;
   timeoutMs?: number;
 }
@@ -85,13 +76,10 @@ interface BunCommandResult {
   stderr: string;
 }
 
-function runBunCommand(
-  args: string[],
-  options: BunCommandOptions,
-): Promise<BunCommandResult> {
+function runBunCommand(args: string[], options: BunCommandOptions): Promise<BunCommandResult> {
   return new Promise((resolve, reject) => {
     const child = spawn("bun", args, {
-      cwd: options.cwd,
+      cwd: options.dir,
       env: { ...process.env, ...options.env },
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -129,11 +117,7 @@ function runBunCommand(
       }
 
       if (timedOut) {
-        reject(
-          new Error(
-            `"${formatCommand(args)}" timed out after ${options.timeoutMs}ms.`,
-          ),
-        );
+        reject(new Error(`"${formatCommand(args)}" timed out after ${options.timeoutMs}ms.`));
         return;
       }
 

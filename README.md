@@ -1,8 +1,10 @@
-<img src="static/logo.png" alt="verify-repo logo" width="300">
+<img src="https://raw.githubusercontent.com/agorischek/verify-repo/refs/heads/main/static/logo.png" alt="verify-repo logo" width="300">
 
 # verify-repo
 
-Test the state of your repository. Great for having coding agents prove they're done.
+[![Version](https://img.shields.io/npm/v/verify-repo)](https://www.npmjs.com/package/verify-repo "Version") [![Workflow](https://img.shields.io/github/actions/workflow/status/agorischek/repo-tests/.github/workflows/ci.yml)](https://github.com/agorischek/repo-tests/actions/workflows/.github/workflows/ci.yml "Workflow") [![License](https://img.shields.io/github/license/agorischek/repo-tests)](https://github.com/agorischek/repo-tests/blob/main/LICENSE "License") [![Badges](https://img.shields.io/badge/badges-rolled-white)](https://github.com/agorischek/badge-roll "Badges")
+
+Test the state of your repository. Make your coding agents prove they're done.
 
 ## Define checks
 
@@ -20,7 +22,7 @@ verify.git.isClean();
 verify.prettier("src/**/*.ts").isFormatted();
 ```
 
-### Built-in plugins
+### Built-in checks
 
 - `command("npm run build").runs()` or `.outputs(/ready/)`
 - `script("dev").runs()`
@@ -80,30 +82,57 @@ configure({
 
 ## Authoring plugins
 
-Plugins define methods that register verifications using `context.register`. You can use the `context.entry` helper to simplify wrapping methods:
+You can extend `verify-repo` with custom checks by creating a plugin.
+
+- **`name` / `description`**: Metadata for the plugin.
+- **`docs`**: Documentation for the checks provided by the plugin (shown in `--docs`).
+- **`api`**: A function that returns the API extensions. It receives a `VerificationContext` containing:
+  - `dir`: The current working directory for the check.
+  - `register`: A function to register a new check.
+  - `entry`: A helper to create a chainable API (e.g. `verify.myPlugin.check(...)`).
+
+Here is an example of a custom plugin that checks for content in the `README.md` file:
 
 ```ts
-import { plugin } from "verify-repo";
-
-export const hello = () =>
+export const readme = () =>
   plugin({
-    name: "Hello",
-    description: "A friendly plugin.",
+    name: "README checker",
+    description: "Checks for contents in the README file.",
     docs: [
       {
-        signature: 'verify.hello.greets("name")',
-        description: "Checks that the hello greeting is received.",
+        signature: 'verify.readme.contains("content")',
+        description: "Checks that the README file contains the specified content.",
       },
     ],
-    api: ({ root }) => ({
-      hello: ({ entry, register }) =>
+    api: () => ({
+      readme: ({ dir, entry, register }) =>
         entry({
-          greets: (name: string) => {
-            register(`says hello to ${name}`, async ({ pass }) => {
-              pass(`Hello, ${name}! (from ${root ?? process.cwd()})`);
+          contains: (content: string) => {
+            register(`README contains ${content}`, async ({ pass, fail }) => {
+              const file = await readFile(path.join(dir, "README.md"));
+              if (file.includes(content)) pass(`README contains "${content}"`);
+              else fail(`README does not contain "${content}"`);
             });
           },
         }),
     }),
   });
+```
+
+To use your custom plugin, add it to `verify.config.ts`:
+
+```ts
+import { configure } from "verify-repo";
+import { readme } from "./plugins/readme";
+
+configure({
+  plugins: [readme()],
+});
+```
+
+Now you can use it in your verification files:
+
+```ts
+// repo.verify.ts
+verify.readme.contains("Getting Started");
 ```

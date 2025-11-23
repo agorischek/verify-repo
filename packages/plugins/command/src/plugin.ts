@@ -1,20 +1,7 @@
-import {
-  PluginEntry,
-  type PluginOptions,
-  type RepoPlugin,
-  type VerificationContext,
-} from "@verify-repo/engine";
+import { PluginEntry, type PluginOptions, type RepoPlugin, type VerificationContext } from "@verify-repo/engine";
 import { checkOutputContainsLine } from "./checks";
-import {
-  runCommand,
-  runCommandStreaming,
-  type CommandRunOptions as InternalRunOptions,
-} from "./helpers";
-import type {
-  CommandPluginApi,
-  CommandRunOptions,
-  CommandOutputOptions,
-} from "./types";
+import { runCommand, runCommandStreaming, type CommandRunOptions as InternalRunOptions } from "./helpers";
+import type { CommandPluginApi, CommandRunOptions, CommandOutputOptions } from "./types";
 
 type CommandLeaf = CommandPluginApi;
 
@@ -36,10 +23,7 @@ interface ScriptRoot {
 
 type ScriptEntrypoint = ScriptRoot | ScriptLeaf;
 
-function getPackageManagerCommand(
-  packageManager: "npm" | "yarn" | "pnpm" | "bun" = "npm",
-  script: string,
-): string {
+function getPackageManagerCommand(packageManager: "npm" | "yarn" | "pnpm" | "bun" = "npm", script: string): string {
   switch (packageManager) {
     case "npm":
       return `npm run ${script}`;
@@ -54,23 +38,21 @@ function getPackageManagerCommand(
 
 export const command = (): RepoPlugin => ({
   name: "Command runner",
-  description:
-    "Execute shell commands and assert on exit codes or streamed output.",
+  description: "Execute shell commands and assert on exit codes or streamed output.",
   docs: [
     {
       signature: 'verify.command("<cmd>").runs(options?)',
       description:
-        "Runs the command and expects the configured exit code (default 0). Options support cwd, env, timeoutMs, and expectExitCode.",
+        "Runs the command and expects the configured exit code (default 0). Options support dir, env, timeoutMs, and expectExitCode.",
     },
     {
       signature: 'verify.command("<cmd>").outputs(/pattern/, options?)',
       description:
-        "Streams stdout and resolves when the provided RegExp matches before the optional timeout (default 15s). Options support cwd, env, and timeoutMs.",
+        "Streams stdout and resolves when the provided RegExp matches before the optional timeout (default 15s). Options support dir, env, and timeoutMs.",
     },
     {
       signature: 'verify.command.runs("<cmd>", options?)',
-      description:
-        "Shortcut that schedules a .runs() check without creating an intermediate chain.",
+      description: "Shortcut that schedules a .runs() check without creating an intermediate chain.",
     },
     {
       signature: 'verify.command.outputs("<cmd>", /pattern/, options?)',
@@ -79,39 +61,31 @@ export const command = (): RepoPlugin => ({
     {
       signature: 'verify.script("<script>").runs(options?)',
       description:
-        "Runs the npm/yarn/pnpm/bun script and expects the configured exit code (default 0). Uses the packageManager configured in verify.config.ts (default npm). Options support cwd, env, timeoutMs, and expectExitCode.",
+        "Runs the npm/yarn/pnpm/bun script and expects the configured exit code (default 0). Uses the packageManager configured in verify.config.ts (default npm). Options support dir, env, timeoutMs, and expectExitCode.",
     },
     {
       signature: 'verify.script("<script>").outputs(/pattern/, options?)',
       description:
-        "Streams stdout from the npm/yarn/pnpm/bun script and resolves when the provided RegExp matches before the optional timeout (default 15s). Uses the packageManager configured in verify.config.ts (default npm). Options support cwd, env, and timeoutMs.",
+        "Streams stdout from the npm/yarn/pnpm/bun script and resolves when the provided RegExp matches before the optional timeout (default 15s). Uses the packageManager configured in verify.config.ts (default npm). Options support dir, env, and timeoutMs.",
     },
     {
       signature: 'verify.script.runs("<script>", options?)',
-      description:
-        "Shortcut that schedules a .runs() check for a script without creating an intermediate chain.",
+      description: "Shortcut that schedules a .runs() check for a script without creating an intermediate chain.",
     },
     {
       signature: 'verify.script.outputs("<script>", /pattern/, options?)',
-      description:
-        "Shortcut that schedules an output check for a script in one call.",
+      description: "Shortcut that schedules an output check for a script in one call.",
     },
   ],
   api({ packageManager }: PluginOptions) {
-    const buildEntry = (
-      context: VerificationContext,
-      commandText?: string,
-    ): CommandEntrypoint => {
+    const buildEntry = (context: VerificationContext, commandText?: string): CommandEntrypoint => {
       if (commandText) {
-        return context.entry(
-          createCommandMethods(context, commandText),
-        ) as CommandLeaf;
+        return context.entry(createCommandMethods(context, commandText)) as CommandLeaf;
       }
 
       const baseEntry = context.entry(
         {},
-        (parent: VerificationContext, cmd: string) =>
-          buildEntry(parent.extend({ command: cmd }), cmd) as CommandLeaf,
+        (parent: VerificationContext, cmd: string) => buildEntry(parent.extend({ command: cmd }), cmd) as CommandLeaf,
       );
 
       const rootEntry = Object.assign(baseEntry, {
@@ -119,11 +93,7 @@ export const command = (): RepoPlugin => ({
           const child = context.extend({ command: cmd });
           (buildEntry(child, cmd) as CommandLeaf).runs(options);
         },
-        outputs: (
-          cmd: string,
-          regex: RegExp,
-          options?: CommandOutputOptions,
-        ) => {
+        outputs: (cmd: string, regex: RegExp, options?: CommandOutputOptions) => {
           const child = context.extend({ command: cmd });
           (buildEntry(child, cmd) as CommandLeaf).outputs(regex, options);
         },
@@ -132,55 +102,30 @@ export const command = (): RepoPlugin => ({
       return rootEntry as CommandRoot;
     };
 
-    const buildScriptEntry = (
-      context: VerificationContext,
-      scriptName?: string,
-    ): ScriptEntrypoint => {
+    const buildScriptEntry = (context: VerificationContext, scriptName?: string): ScriptEntrypoint => {
       const resolvedPackageManager = packageManager ?? "npm";
 
       if (scriptName) {
-        const commandText = getPackageManagerCommand(
-          resolvedPackageManager,
-          scriptName,
-        );
-        return context.entry(
-          createCommandMethods(context, commandText, scriptName),
-        ) as ScriptLeaf;
+        const commandText = getPackageManagerCommand(resolvedPackageManager, scriptName);
+        return context.entry(createCommandMethods(context, commandText, scriptName)) as ScriptLeaf;
       }
 
-      const baseEntry = context.entry(
-        {},
-        (parent: VerificationContext, script: string) => {
-          const child = parent.extend({ script });
-          const commandText = getPackageManagerCommand(packageManager, script);
-          return child.entry(
-            createCommandMethods(child, commandText, script),
-          ) as ScriptLeaf;
-        },
-      );
+      const baseEntry = context.entry({}, (parent: VerificationContext, script: string) => {
+        const child = parent.extend({ script });
+        const commandText = getPackageManagerCommand(packageManager, script);
+        return child.entry(createCommandMethods(child, commandText, script)) as ScriptLeaf;
+      });
 
       const rootEntry = Object.assign(baseEntry, {
         runs: (script: string, options?: CommandRunOptions) => {
           const commandText = getPackageManagerCommand(packageManager, script);
           const child = context.extend({ script });
-          (
-            child.entry(
-              createCommandMethods(child, commandText, script),
-            ) as ScriptLeaf
-          ).runs(options);
+          (child.entry(createCommandMethods(child, commandText, script)) as ScriptLeaf).runs(options);
         },
-        outputs: (
-          script: string,
-          regex: RegExp,
-          options?: CommandOutputOptions,
-        ) => {
+        outputs: (script: string, regex: RegExp, options?: CommandOutputOptions) => {
           const commandText = getPackageManagerCommand(packageManager, script);
           const child = context.extend({ script });
-          (
-            child.entry(
-              createCommandMethods(child, commandText, script),
-            ) as ScriptLeaf
-          ).outputs(regex, options);
+          (child.entry(createCommandMethods(child, commandText, script)) as ScriptLeaf).outputs(regex, options);
         },
       });
 
@@ -198,11 +143,7 @@ export const command = (): RepoPlugin => ({
   },
 });
 
-function createCommandMethods(
-  context: VerificationContext,
-  commandText: string,
-  scriptName?: string,
-) {
+function createCommandMethods(context: VerificationContext, commandText: string, scriptName?: string) {
   const isScript = scriptName !== undefined;
   const displayName = isScript ? scriptName : commandText;
   const entityType = isScript ? "Script" : "Command";
@@ -212,10 +153,7 @@ function createCommandMethods(
       const description = `${entityType} "${displayName}" should run successfully`;
       context.register(description, async ({ pass, fail }) => {
         try {
-          const result = await runCommand(
-            commandText,
-            deriveRunOptions(context.cwd, options),
-          );
+          const result = await runCommand(commandText, deriveRunOptions(context.dir, options));
           const expected = options?.expectExitCode ?? 0;
           if (result.exitCode === expected) {
             pass(
@@ -238,7 +176,7 @@ function createCommandMethods(
       context.register(description, async ({ pass, fail }) => {
         try {
           const { child, stdout } = await runCommandStreaming(commandText, {
-            cwd: options?.cwd ?? context.cwd,
+            dir: options?.dir ?? context.dir,
             env: options?.env,
           });
 
@@ -249,11 +187,7 @@ function createCommandMethods(
             }
 
             const timeout = options?.timeoutMs ?? 15000;
-            const result = await checkOutputContainsLine(
-              stdout,
-              regex,
-              timeout,
-            );
+            const result = await checkOutputContainsLine(stdout, regex, timeout);
 
             if (result.pass) {
               pass(result.message());
@@ -266,22 +200,16 @@ function createCommandMethods(
             }
           }
         } catch (error) {
-          fail(
-            `Failed to validate output from "${displayName}" against ${regex}`,
-            error,
-          );
+          fail(`Failed to validate output from "${displayName}" against ${regex}`, error);
         }
       });
     },
   };
 }
 
-function deriveRunOptions(
-  root: string | undefined,
-  options?: CommandRunOptions,
-): InternalRunOptions {
+function deriveRunOptions(root: string | undefined, options?: CommandRunOptions): InternalRunOptions {
   return {
-    cwd: options?.cwd ?? root,
+    dir: options?.dir ?? root,
     env: options?.env,
     timeoutMs: options?.timeoutMs,
   };
