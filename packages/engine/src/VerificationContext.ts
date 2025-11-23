@@ -4,34 +4,34 @@ import type {
   VerificationMetadata,
 } from "./types";
 
-export interface VerificationBuilderOptions {
+export interface VerificationContextOptions {
   pluginName: string;
-  schedule: PluginContext["schedule"];
+  register: PluginContext["register"];
   root?: string;
   baseDir?: string;
   meta?: VerificationMetadata;
   autoFinalize?: boolean;
-  parent?: VerificationBuilder;
+  parent?: VerificationContext;
 }
 
-export class VerificationBuilder {
+export class VerificationContext {
   public readonly pluginName: string;
   public readonly root?: string;
   public readonly baseDir?: string;
 
-  private readonly scheduleFn: PluginContext["schedule"];
-  private readonly parent?: VerificationBuilder;
-  private readonly children = new Set<VerificationBuilder>();
+  private readonly registerFn: PluginContext["register"];
+  private readonly parent?: VerificationContext;
+  private readonly children = new Set<VerificationContext>();
   private readonly meta: VerificationMetadata;
   private readonly autoFinalize: boolean;
 
   private checkRegistered = false;
   private finalized = false;
 
-  constructor(options: VerificationBuilderOptions) {
+  constructor(options: VerificationContextOptions) {
     const {
       pluginName,
-      schedule,
+      register,
       root,
       baseDir,
       meta,
@@ -40,7 +40,7 @@ export class VerificationBuilder {
     } = options;
 
     this.pluginName = pluginName;
-    this.scheduleFn = schedule;
+    this.registerFn = register;
     this.root = root;
     this.baseDir = baseDir;
     this.parent = parent;
@@ -66,7 +66,10 @@ export class VerificationBuilder {
     return this.meta;
   }
 
-  public register<T>(check: () => T): T {
+  /**
+   * @internal
+   */
+  public lock<T>(check: () => T): T {
     if (this.checkRegistered) {
       throw new Error(
         `Only one check can be registered for verify.${this.pluginName}.`,
@@ -95,13 +98,13 @@ export class VerificationBuilder {
     }
   }
 
-  public createChild(
+  public extend(
     meta?: VerificationMetadata,
     options?: { autoFinalize?: boolean },
-  ): VerificationBuilder {
-    return new VerificationBuilder({
+  ): VerificationContext {
+    return new VerificationContext({
       pluginName: this.pluginName,
-      schedule: this.scheduleFn,
+      register: this.registerFn,
       root: this.root,
       baseDir: this.baseDir,
       meta: { ...this.meta, ...(meta ?? {}) },
@@ -110,8 +113,8 @@ export class VerificationBuilder {
     });
   }
 
-  public schedule(description: string, handler: RepoTestHandler) {
-    this.scheduleFn(description, handler);
+  public register(description: string, handler: RepoTestHandler) {
+    this.registerFn(description, handler);
   }
 
   private handleChildRegistration() {

@@ -2,7 +2,7 @@ import {
   PluginEntry,
   type PluginContext,
   type RepoPlugin,
-  type VerificationBuilder,
+  type VerificationContext,
 } from "@verify-repo/engine";
 import { spawn } from "node:child_process";
 import type { BunPluginApi, BunTestApi, BunTestOptions } from "./types";
@@ -19,40 +19,40 @@ export const bun = (): RepoPlugin => ({
   ],
   api(_context: PluginContext) {
     return {
-      bun(builder: VerificationBuilder) {
-        return buildBunEntry(builder);
+      bun(context: VerificationContext) {
+        return buildBunEntry(context);
       },
     };
   },
 });
 
-function buildBunEntry(builder: VerificationBuilder): BunPluginApi {
-  const entry = new PluginEntry(builder, {});
+function buildBunEntry(context: VerificationContext): BunPluginApi {
+  const entry = new PluginEntry(context, {});
   return Object.assign(entry, {
-    test: createBunTestEntry(builder.createChild({ command: "bun test" })),
+    test: createBunTestEntry(context.extend({ command: "bun test" })),
   }) as BunPluginApi;
 }
 
-function createBunTestEntry(builder: VerificationBuilder): BunTestApi {
+function createBunTestEntry(context: VerificationContext): BunTestApi {
   return new PluginEntry(
-    builder,
+    context,
     {
-      passes: (options?: BunTestOptions) => scheduleBunTest(builder, options),
+      passes: (options?: BunTestOptions) => scheduleBunTest(context, options),
     },
     undefined,
   ) as BunTestApi;
 }
 
 function scheduleBunTest(
-  builder: VerificationBuilder,
+  context: VerificationContext,
   options?: BunTestOptions,
 ) {
-  const cwd = options?.cwd ?? builder.cwd;
+  const cwd = options?.cwd ?? context.cwd;
   const extraArgs = options?.args ?? [];
   const bunArgs = ["test", ...extraArgs];
   const label = formatCommand(bunArgs);
 
-  builder.schedule(`${label} should succeed`, async ({ pass, fail }) => {
+  context.register(`${label} should succeed`, async ({ pass, fail }) => {
     try {
       const result = await runBunCommand(bunArgs, {
         cwd,

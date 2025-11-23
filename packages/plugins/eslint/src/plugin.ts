@@ -2,7 +2,7 @@ import {
   PluginContext,
   PluginEntry,
   type RepoPlugin,
-  type VerificationBuilder,
+  type VerificationContext,
 } from "@verify-repo/engine";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
@@ -22,25 +22,25 @@ export const eslint = (): RepoPlugin => ({
   ],
   api(_context: PluginContext) {
     return {
-      eslint(builder: VerificationBuilder) {
-        return new PluginEntry(builder, {
-          passes: (options?: EslintOptions) => scheduleEslint(builder, options),
+      eslint(context: VerificationContext) {
+        return new PluginEntry(context, {
+          passes: (options?: EslintOptions) => scheduleEslint(context, options),
         }) as EslintPluginApi;
       },
     };
   },
 });
 
-function scheduleEslint(builder: VerificationBuilder, options?: EslintOptions) {
+function scheduleEslint(context: VerificationContext, options?: EslintOptions) {
   const files = normalizeFiles(options?.files);
   const description =
     files.length === 1 && files[0] === "."
       ? "ESLint should pass"
       : `ESLint should pass for ${files.join(", ")}`;
 
-  builder.schedule(description, async ({ pass, fail }) => {
+  context.register(description, async ({ pass, fail }) => {
     try {
-      const cwd = options?.cwd ?? builder.cwd;
+      const cwd = options?.cwd ?? context.cwd;
       const args = buildEslintArgs(files, options);
       const result = await runEslint(args, {
         cwd,

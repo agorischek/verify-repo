@@ -1,4 +1,4 @@
-import { VerificationBuilder } from "./VerificationBuilder";
+import { VerificationContext } from "./VerificationContext";
 
 export type PluginMethod<TArgs extends any[] = any[], TResult = unknown> = (
   ...args: TArgs
@@ -7,7 +7,7 @@ export type PluginMethod<TArgs extends any[] = any[], TResult = unknown> = (
 export type PluginCallHandler<
   TArgs extends any[] = any[],
   TResult = unknown,
-> = (builder: VerificationBuilder, ...args: TArgs) => TResult;
+> = (context: VerificationContext, ...args: TArgs) => TResult;
 
 type MethodWrappers<TMethods extends Record<string, PluginMethod>> = {
   [K in keyof TMethods]: (
@@ -28,20 +28,20 @@ export class PluginEntry<
   TCallable extends PluginCallHandler | undefined = undefined,
 > {
   constructor(
-    builder: VerificationBuilder,
+    context: VerificationContext,
     methods: TMethods,
     callHandler?: TCallable,
   ) {
     const target: Record<string, unknown> | ((...args: any[]) => unknown) =
       typeof callHandler === "function"
         ? (...args: any[]) =>
-            (callHandler as PluginCallHandler)(builder, ...args)
+            (callHandler as PluginCallHandler)(context, ...args)
         : {};
     const targetObject = target as Record<string, unknown>;
 
     for (const [name, method] of Object.entries(methods)) {
       targetObject[name] = (...args: any[]) =>
-        builder.register(() => (method as PluginMethod)(...(args as any[])));
+        context.lock(() => (method as PluginMethod)(...(args as any[])));
     }
 
     // Return the target object instead of this instance

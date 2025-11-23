@@ -41,7 +41,7 @@ export interface RepoTestRunSummary {
 
 export interface PluginContext {
   root?: string;
-  schedule: (description: string, handler: RepoTestHandler) => void;
+  register: (description: string, handler: RepoTestHandler) => void;
   packageManager?: "npm" | "yarn" | "pnpm" | "bun";
 }
 
@@ -49,8 +49,8 @@ export type VerificationMetadata = Record<string, unknown>;
 
 export type PluginEntrypointFactory<
   TResult = unknown,
-  TBuilder = import("./VerificationBuilder").VerificationBuilder,
-> = (builder: TBuilder) => TResult;
+  TBuilder = import("./VerificationContext").VerificationContext,
+> = (context: TBuilder) => TResult;
 
 export type RepoPluginResult = Record<string, PluginEntrypointFactory>;
 

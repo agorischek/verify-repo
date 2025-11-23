@@ -2,7 +2,7 @@ import {
   PluginContext,
   PluginEntry,
   type RepoPlugin,
-  type VerificationBuilder,
+  type VerificationContext,
 } from "@verify-repo/engine";
 import path from "node:path";
 import { createRequire } from "node:module";
@@ -82,23 +82,23 @@ export const git = (): RepoPlugin => ({
       return clientPromise;
     };
 
-    const buildEntry = (builder: VerificationBuilder): GitPluginApi => {
-      const entry = new PluginEntry(builder, {
-        isClean: () => scheduleClean(builder, getClient),
-        hasNoConflicts: () => scheduleConflicts(builder, getClient),
+    const buildEntry = (context: VerificationContext): GitPluginApi => {
+      const entry = new PluginEntry(context, {
+        isClean: () => scheduleClean(context, getClient),
+        hasNoConflicts: () => scheduleConflicts(context, getClient),
         hasStaged: (filePath: string) => {
-          const base = builder.cwd;
-          const repoRoot = builder.root ?? process.cwd();
+          const base = context.cwd;
+          const repoRoot = context.root ?? process.cwd();
           const abs = path.resolve(base, filePath);
           const rel = path.relative(repoRoot, abs);
-          return scheduleHasStaged(builder, getClient, rel);
+          return scheduleHasStaged(context, getClient, rel);
         },
         isOnBranch: (branch: string) =>
-          scheduleIsOnBranch(builder, getClient, branch),
+          scheduleIsOnBranch(context, getClient, branch),
       }) as GitPluginApi;
 
       entry.branch = (branch: string) => {
-        const child = builder.createChild({ branch });
+        const child = context.extend({ branch });
         return createBranchEntry(child, getClient, branch);
       };
 
@@ -106,29 +106,29 @@ export const git = (): RepoPlugin => ({
     };
 
     return {
-      git(builder: VerificationBuilder) {
-        return buildEntry(builder);
+      git(context: VerificationContext) {
+        return buildEntry(context);
       },
     };
   },
 });
 
 function createBranchEntry(
-  builder: VerificationBuilder,
+  context: VerificationContext,
   getGit: () => Promise<SimpleGit>,
   branch: string,
 ): GitBranchPluginApi {
-  return new PluginEntry(builder, {
-    isClean: () => scheduleBranchClean(builder, getGit, branch),
-    isCurrent: () => scheduleIsOnBranch(builder, getGit, branch),
+  return new PluginEntry(context, {
+    isClean: () => scheduleBranchClean(context, getGit, branch),
+    isCurrent: () => scheduleIsOnBranch(context, getGit, branch),
   }) as GitBranchPluginApi;
 }
 
 function scheduleClean(
-  builder: VerificationBuilder,
+  context: VerificationContext,
   getGit: () => Promise<SimpleGit>,
 ) {
-  builder.schedule("git status should be clean", async ({ pass, fail }) => {
+  context.register("git status should be clean", async ({ pass, fail }) => {
     try {
       const git = await getGit();
       const status = await git.status();
@@ -155,10 +155,10 @@ function scheduleClean(
 }
 
 function scheduleConflicts(
-  builder: VerificationBuilder,
+  context: VerificationContext,
   getGit: () => Promise<SimpleGit>,
 ) {
-  builder.schedule("git should have no conflicts", async ({ pass, fail }) => {
+  context.register("git should have no conflicts", async ({ pass, fail }) => {
     try {
       const git = await getGit();
       const status = await git.status();
@@ -174,11 +174,11 @@ function scheduleConflicts(
 }
 
 function scheduleHasStaged(
-  builder: VerificationBuilder,
+  context: VerificationContext,
   getGit: () => Promise<SimpleGit>,
   filePath: string,
 ) {
-  builder.schedule(
+  context.register(
     `git should have staged changes for "${filePath}"`,
     async ({ pass, fail }) => {
       try {
@@ -204,11 +204,11 @@ function scheduleHasStaged(
 }
 
 function scheduleIsOnBranch(
-  builder: VerificationBuilder,
+  context: VerificationContext,
   getGit: () => Promise<SimpleGit>,
   branch: string,
 ) {
-  builder.schedule(
+  context.register(
     `git should be on branch "${branch}"`,
     async ({ pass, fail }) => {
       try {
@@ -229,11 +229,11 @@ function scheduleIsOnBranch(
 }
 
 function scheduleBranchClean(
-  builder: VerificationBuilder,
+  context: VerificationContext,
   getGit: () => Promise<SimpleGit>,
   branch: string,
 ) {
-  builder.schedule(
+  context.register(
     `branch "${branch}" should be current and clean`,
     async ({ pass, fail }) => {
       try {

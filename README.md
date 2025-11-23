@@ -80,14 +80,14 @@ configure({
 
 ## Authoring plugins
 
-Plugins use `new PluginEntry(builder, methods, callHandler?)`. Each method allows you to mark the check as registered and call `builder.schedule(description, handler)`:
+Plugins use `new PluginEntry(context, methods, callHandler?)`. Each method allows you to mark the check as registered and call `context.schedule(description, handler)`:
 
 ```ts
 import {
   PluginContext,
   PluginEntry,
   type RepoPlugin,
-  type VerificationBuilder,
+  type VerificationContext,
 } from "verify-repo";
 
 export const hello = (): RepoPlugin => ({
@@ -100,18 +100,17 @@ export const hello = (): RepoPlugin => ({
     },
   ],
   api: ({ root }: PluginContext) => ({
-    hello(builder: VerificationBuilder) {
-        return new PluginEntry(builder, {
-          greets: (name: string) => {
-            builder.schedule(`says hello to ${name}`, async ({ pass }) => {
-              pass(`Hello, ${name}! (from ${root ?? process.cwd()})`);
-            });
-          },
-        });
-      },
-    }),
-  },
+    hello(context: VerificationContext) {
+      return new PluginEntry(context, {
+        greets: (name: string) => {
+          context.schedule(`says hello to ${name}`, async ({ pass }) => {
+            pass(`Hello, ${name}! (from ${root ?? process.cwd()})`);
+          });
+        },
+      });
+    },
+  }),
 });
 ```
 
-Use `builder.createChild(meta)` inside call handlers to support selectors (e.g. `verify.hello("world").greets()`).
+Use `context.extend(meta)` inside call handlers to support selectors (e.g. `verify.hello("world").greets()`).

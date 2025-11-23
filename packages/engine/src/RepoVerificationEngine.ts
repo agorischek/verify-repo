@@ -15,7 +15,7 @@ import {
   RepoVerificationEngineConfig,
   VerificationMetadata,
 } from "./types";
-import { VerificationBuilder } from "./VerificationBuilder";
+import { VerificationContext } from "./VerificationContext";
 
 // Use declaration merging to mix in extensions defined by plugins.
 export interface RepoVerificationEngine extends RepoVerification {}
@@ -53,7 +53,7 @@ export class RepoVerificationEngine {
 
     const context: PluginContext = {
       root: this.root,
-      schedule: (description, handler) => this.schedule(description, handler),
+      register: (description, handler) => this.register(description, handler),
       packageManager: this.packageManager,
     };
 
@@ -68,7 +68,7 @@ export class RepoVerificationEngine {
     }
   }
 
-  protected schedule(description: string, handler: RepoTestHandler) {
+  protected register(description: string, handler: RepoTestHandler) {
     if (!description || typeof description !== "string") {
       throw new Error("Repo test description must be a non-empty string.");
     }
@@ -102,17 +102,17 @@ export class RepoVerificationEngine {
     }));
   }
 
-  public createVerificationBuilder(
+  public createVerificationContext(
     pluginName: string,
     meta?: VerificationMetadata,
     options?: { autoFinalize?: boolean },
   ) {
-    return new VerificationBuilder({
+    return new VerificationContext({
       pluginName,
       meta,
       root: this.root,
       baseDir: this.activeSource ? path.dirname(this.activeSource) : undefined,
-      schedule: (description, handler) => this.schedule(description, handler),
+      register: (description, handler) => this.register(description, handler),
       autoFinalize: options?.autoFinalize,
     });
   }
