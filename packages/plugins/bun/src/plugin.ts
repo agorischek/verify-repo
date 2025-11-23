@@ -1,8 +1,4 @@
-import {
-  type PluginOptions,
-  type RepoPlugin,
-  type VerificationContext,
-} from "@verify-repo/engine";
+import { type PluginOptions, type RepoPlugin, type VerificationContext } from "@verify-repo/engine";
 import { spawn } from "node:child_process";
 import type { BunPluginApi, BunTestApi, BunTestOptions } from "./types";
 
@@ -38,10 +34,7 @@ function createBunTestEntry(context: VerificationContext): BunTestApi {
   }) as BunTestApi;
 }
 
-function scheduleBunTest(
-  context: VerificationContext,
-  options?: BunTestOptions,
-) {
+function scheduleBunTest(context: VerificationContext, options?: BunTestOptions) {
   const dir = options?.dir ?? context.dir;
   const extraArgs = options?.args ?? [];
   const bunArgs = ["test", ...extraArgs];
@@ -60,9 +53,7 @@ function scheduleBunTest(
         return;
       }
 
-      fail(
-        `"${label}" exited with ${result.exitCode}.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
-      );
+      fail(`"${label}" exited with ${result.exitCode}.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
     } catch (error) {
       fail(`Failed to run "${label}".`, error);
     }
@@ -85,10 +76,7 @@ interface BunCommandResult {
   stderr: string;
 }
 
-function runBunCommand(
-  args: string[],
-  options: BunCommandOptions,
-): Promise<BunCommandResult> {
+function runBunCommand(args: string[], options: BunCommandOptions): Promise<BunCommandResult> {
   return new Promise((resolve, reject) => {
     const child = spawn("bun", args, {
       cwd: options.dir,
@@ -129,11 +117,7 @@ function runBunCommand(
       }
 
       if (timedOut) {
-        reject(
-          new Error(
-            `"${formatCommand(args)}" timed out after ${options.timeoutMs}ms.`,
-          ),
-        );
+        reject(new Error(`"${formatCommand(args)}" timed out after ${options.timeoutMs}ms.`));
         return;
       }
 

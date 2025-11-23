@@ -9,8 +9,5 @@ export interface DockerBuildOptions {
 }
 
 export interface DockerPluginApi {
-  builds: (
-    dockerfileOrOptions?: string | DockerBuildOptions,
-    options?: DockerBuildOptions,
-  ) => void;
+  builds: (dockerfileOrOptions?: string | DockerBuildOptions, options?: DockerBuildOptions) => void;
 }

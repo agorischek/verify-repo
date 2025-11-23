@@ -41,13 +41,9 @@
     "baseUrl": ".",
     "paths": {
       "@verify-repo/engine": ["./packages/engine/src/index.ts"],
-      "@verify-repo/plugin-command": [
-        "./packages/plugins/command/src/index.ts"
-      ],
+      "@verify-repo/plugin-command": ["./packages/plugins/command/src/index.ts"],
       "@verify-repo/plugin-fs": ["packages/plugins/fs/src/index.ts"],
-      "@verify-repo/plugin-prettier": [
-        "./packages/plugins/prettier/src/index.ts"
-      ],
+      "@verify-repo/plugin-prettier": ["./packages/plugins/prettier/src/index.ts"],
       "@verify-repo/plugin-git": ["./packages/plugins/git/src/index.ts"],
       "@verify-repo/plugin-ts": ["./packages/plugins/ts/src/index.ts"],
       "@verify-repo/plugin-eslint": ["./packages/plugins/eslint/src/index.ts"],

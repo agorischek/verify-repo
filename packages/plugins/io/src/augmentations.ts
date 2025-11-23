@@ -7,4 +7,3 @@ declare module "@verify-repo/engine" {
     dir: (dirPath: string) => DirPluginApi;
   }
 }
-

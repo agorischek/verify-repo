@@ -1,8 +1,4 @@
-import {
-  type PluginOptions,
-  type RepoPlugin,
-  type VerificationContext,
-} from "@verify-repo/engine";
+import { type PluginOptions, type RepoPlugin, type VerificationContext } from "@verify-repo/engine";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import type { TsCheckOptions, TsPluginApi } from "./types";
@@ -31,19 +27,9 @@ export const ts = (): RepoPlugin => ({
       ts(context: VerificationContext) {
         return context.entry({
           noErrors: (options?: TsCheckOptions) =>
-            scheduleTsc(
-              context,
-              ["--noEmit", "--pretty", "false"],
-              "TypeScript should have no errors",
-              options,
-            ),
+            scheduleTsc(context, ["--noEmit", "--pretty", "false"], "TypeScript should have no errors", options),
           builds: (options?: TsCheckOptions) =>
-            scheduleTsc(
-              context,
-              ["--pretty", "false"],
-              "TypeScript project should build",
-              options,
-            ),
+            scheduleTsc(context, ["--pretty", "false"], "TypeScript project should build", options),
           buildsProject: (tsconfigPath: string, options?: TsCheckOptions) =>
             scheduleTsc(
               context,
@@ -57,12 +43,7 @@ export const ts = (): RepoPlugin => ({
   },
 });
 
-function scheduleTsc(
-  context: VerificationContext,
-  args: string[],
-  description: string,
-  options?: TsCheckOptions,
-) {
+function scheduleTsc(context: VerificationContext, args: string[], description: string, options?: TsCheckOptions) {
   context.register(description, async ({ pass, fail }) => {
     try {
       const dir = options?.dir ?? context.dir;
@@ -70,9 +51,7 @@ function scheduleTsc(
       if (result.exitCode === 0) {
         pass("TypeScript completed successfully.");
       } else {
-        fail(
-          `tsc exited with ${result.exitCode}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
-        );
+        fail(`tsc exited with ${result.exitCode}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
       }
     } catch (error) {
       fail("Failed to run the TypeScript compiler.", error);
@@ -89,15 +68,10 @@ function resolveTscBinary(dir: string) {
       // continue
     }
   }
-  throw new Error(
-    'Could not find the TypeScript compiler. Install "typescript" in your project.',
-  );
+  throw new Error('Could not find the TypeScript compiler. Install "typescript" in your project.');
 }
 
-async function runTsc(
-  args: string[],
-  options: { dir: string; timeoutMs?: number },
-) {
+async function runTsc(args: string[], options: { dir: string; timeoutMs?: number }) {
   const tscPath = resolveTscBinary(options.dir);
   return new Promise<{
     exitCode: number | null;
@@ -136,11 +110,7 @@ async function runTsc(
     child.on("close", (exitCode) => {
       if (timer) clearTimeout(timer);
       if (timedOut) {
-        reject(
-          new Error(
-            `tsc timed out after ${options.timeoutMs}ms while running in ${options.dir}`,
-          ),
-        );
+        reject(new Error(`tsc timed out after ${options.timeoutMs}ms while running in ${options.dir}`));
         return;
       }
       resolve({ exitCode, stdout, stderr });

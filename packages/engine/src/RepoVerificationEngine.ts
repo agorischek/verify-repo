@@ -30,10 +30,7 @@ export class RepoVerificationEngine {
   private tests: RepoTestDefinition[] = [];
   private nextTestId = 0;
   private activeSource?: string;
-  private readonly pluginEntries = new Map<
-    PropertyKey,
-    PluginEntrypointFactory
-  >();
+  private readonly pluginEntries = new Map<PropertyKey, PluginEntrypointFactory>();
   private readonly pluginDocs: PluginDocumentation[] = [];
 
   constructor(config: RepoVerificationEngineConfig) {
@@ -59,9 +56,7 @@ export class RepoVerificationEngine {
     const api = factory(options) || {};
     for (const [name, factory] of Object.entries(api)) {
       if (typeof factory !== "function") {
-        throw new Error(
-          `Plugin entrypoint "${String(name)}" must be a function.`,
-        );
+        throw new Error(`Plugin entrypoint "${String(name)}" must be a function.`);
       }
       this.registerPluginEntrypoint(name, factory as PluginEntrypointFactory);
     }
@@ -116,10 +111,7 @@ export class RepoVerificationEngine {
     });
   }
 
-  private registerPluginEntrypoint(
-    name: PropertyKey,
-    factory: PluginEntrypointFactory,
-  ) {
+  private registerPluginEntrypoint(name: PropertyKey, factory: PluginEntrypointFactory) {
     if (name === "with") {
       throw new Error('Plugin name "with" is reserved and cannot be used.');
     }
@@ -127,11 +119,7 @@ export class RepoVerificationEngine {
     this.pluginEntries.set(name, factory);
   }
 
-  private recordPluginDocs(
-    name?: string,
-    description?: string,
-    docs?: PluginDocumentationEntry[],
-  ) {
+  private recordPluginDocs(name?: string, description?: string, docs?: PluginDocumentationEntry[]) {
     if (!name || !docs || docs.length === 0) {
       return;
     }
@@ -159,11 +147,7 @@ export class RepoVerificationEngine {
         docs: plugin.docs,
       };
     }
-    if (
-      plugin &&
-      typeof plugin === "object" &&
-      typeof plugin.api === "function"
-    ) {
+    if (plugin && typeof plugin === "object" && typeof plugin.api === "function") {
       return {
         factory: plugin.api.bind(plugin),
         name: plugin.name,
@@ -171,9 +155,7 @@ export class RepoVerificationEngine {
         docs: plugin.docs,
       };
     }
-    throw new Error(
-      "Repo plugin must be a function or an object with an api() method.",
-    );
+    throw new Error("Repo plugin must be a function or an object with an api() method.");
   }
 
   public enterFileScope(source?: string | null) {
@@ -184,10 +166,7 @@ export class RepoVerificationEngine {
     };
   }
 
-  public async withFileScope<T>(
-    source: string | undefined,
-    task: () => Promise<T> | T,
-  ): Promise<T> {
+  public async withFileScope<T>(source: string | undefined, task: () => Promise<T> | T): Promise<T> {
     const restore = this.enterFileScope(source);
     try {
       return await task();
@@ -205,9 +184,7 @@ export class RepoVerificationEngine {
     this.nextTestId = 0;
   }
 
-  public async run(options?: {
-    concurrency?: number;
-  }): Promise<RepoTestRunSummary> {
+  public async run(options?: { concurrency?: number }): Promise<RepoTestRunSummary> {
     const plan = [...this.tests];
     const total = plan.length;
 
@@ -221,17 +198,11 @@ export class RepoVerificationEngine {
       };
     }
 
-    const resolvedConcurrency =
-      options?.concurrency ??
-      this.defaultConcurrency ??
-      Number.POSITIVE_INFINITY;
+    const resolvedConcurrency = options?.concurrency ?? this.defaultConcurrency ?? Number.POSITIVE_INFINITY;
 
     const workerCount = Math.max(
       1,
-      Math.min(
-        total,
-        Number.isFinite(resolvedConcurrency) ? resolvedConcurrency : total,
-      ),
+      Math.min(total, Number.isFinite(resolvedConcurrency) ? resolvedConcurrency : total),
     );
 
     const results: RepoTestResult[] = new Array(total);
@@ -264,9 +235,7 @@ export class RepoVerificationEngine {
     };
   }
 
-  private async execute(
-    definition: RepoTestDefinition,
-  ): Promise<RepoTestResult> {
+  private async execute(definition: RepoTestDefinition): Promise<RepoTestResult> {
     const startedAt = performance.now();
     const result: RepoTestResult = {
       id: definition.id,
@@ -278,11 +247,7 @@ export class RepoVerificationEngine {
 
     let settled = false;
 
-    const settle = (
-      status: "passed" | "failed",
-      message?: string,
-      error?: unknown,
-    ) => {
+    const settle = (status: "passed" | "failed", message?: string, error?: unknown) => {
       if (settled) {
         return;
       }
@@ -296,24 +261,16 @@ export class RepoVerificationEngine {
 
     const controls = {
       pass: (message: string) => settle("passed", message),
-      fail: (message: string, error?: unknown) =>
-        settle("failed", message, error),
+      fail: (message: string, error?: unknown) => settle("failed", message, error),
     };
 
     try {
       await definition.handler(controls);
       if (!settled) {
-        settle(
-          "failed",
-          `Test "${definition.description}" completed without calling pass() or fail().`,
-        );
+        settle("failed", `Test "${definition.description}" completed without calling pass() or fail().`);
       }
     } catch (error) {
-      settle(
-        "failed",
-        `Test "${definition.description}" threw an error.`,
-        error,
-      );
+      settle("failed", `Test "${definition.description}" threw an error.`, error);
     } finally {
       result.durationMs = performance.now() - startedAt;
     }

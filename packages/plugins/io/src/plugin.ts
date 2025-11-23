@@ -1,8 +1,4 @@
-import {
-  type PluginOptions,
-  type RepoPlugin,
-  type VerificationContext,
-} from "@verify-repo/engine";
+import { type PluginOptions, type RepoPlugin, type VerificationContext } from "@verify-repo/engine";
 import { checkFileContains, checkFileExists, checkDirExists } from "./checks";
 import type { FilePluginApi, DirPluginApi } from "./types";
 
@@ -12,18 +8,15 @@ type DirRoot = (dirPath: string) => DirPluginApi;
 
 export const io = (): RepoPlugin => ({
   name: "Filesystem",
-  description:
-    "Assertions for files and directories relative to the verify file.",
+  description: "Assertions for files and directories relative to the verify file.",
   docs: [
     {
       signature: 'verify.file("<path>").exists()',
-      description:
-        "Passes when the target file exists relative to the current verify file (or repo root).",
+      description: "Passes when the target file exists relative to the current verify file (or repo root).",
     },
     {
       signature: 'verify.file("<path>").contains(textOrPattern)',
-      description:
-        "Ensures the file contents include the provided string or satisfy the regular expression.",
+      description: "Ensures the file contents include the provided string or satisfy the regular expression.",
     },
     {
       signature: 'verify.file("<path>").not.exists()',
@@ -31,8 +24,7 @@ export const io = (): RepoPlugin => ({
     },
     {
       signature: 'verify.file("<path>").not.contains(textOrPattern)',
-      description:
-        "Fails if the file contains the provided string or matches the expression.",
+      description: "Fails if the file contains the provided string or matches the expression.",
     },
     {
       signature: 'verify.dir("<path>").exists()',
@@ -44,10 +36,7 @@ export const io = (): RepoPlugin => ({
     },
   ],
   api() {
-    const buildFileEntry = (
-      context: VerificationContext,
-      filePath?: string,
-    ): FileEntrypoint => {
+    const buildFileEntry = (context: VerificationContext, filePath?: string): FileEntrypoint => {
       if (filePath) {
         const methods = createFileMethods(context, filePath);
         const api = context.entry(methods.positive);
@@ -59,17 +48,11 @@ export const io = (): RepoPlugin => ({
       return context.entry(
         {},
         (parent: VerificationContext, target: string) =>
-          buildFileEntry(
-            parent.extend({ file: target }),
-            target,
-          ) as FilePluginApi,
+          buildFileEntry(parent.extend({ file: target }), target) as FilePluginApi,
       ) as FileRoot;
     };
 
-    const buildDirEntry = (
-      context: VerificationContext,
-      dirPath?: string,
-    ): DirRoot | DirPluginApi => {
+    const buildDirEntry = (context: VerificationContext, dirPath?: string): DirRoot | DirPluginApi => {
       if (dirPath) {
         const methods = createDirMethods(context, dirPath);
         const api = context.entry(methods.positive);
@@ -111,9 +94,7 @@ function createFileMethods(context: VerificationContext, filePath: string) {
         });
       },
       contains: async (needle: string | RegExp) => {
-        const description = `File "${filePath}" should contain ${String(
-          needle,
-        )}`;
+        const description = `File "${filePath}" should contain ${String(needle)}`;
         context.register(description, async ({ pass, fail }) => {
           const result = await checkFileContains(filePath, needle, context.dir);
           if (result.pass) {
@@ -137,19 +118,13 @@ function createFileMethods(context: VerificationContext, filePath: string) {
         });
       },
       contains: async (needle: string | RegExp) => {
-        const description = `File "${filePath}" should not contain ${String(
-          needle,
-        )}`;
+        const description = `File "${filePath}" should not contain ${String(needle)}`;
         context.register(description, async ({ pass, fail }) => {
           const result = await checkFileContains(filePath, needle, context.dir);
           if (!result.pass) {
             pass(`File "${filePath}" does not contain ${String(needle)}.`);
           } else {
-            fail(
-              `Expected file "${filePath}" to not contain ${String(
-                needle,
-              )}, but it does.`,
-            );
+            fail(`Expected file "${filePath}" to not contain ${String(needle)}, but it does.`);
           }
         });
       },

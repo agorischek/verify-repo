@@ -10,4 +10,3 @@ export interface GitPluginApi {
   isOnBranch: (branch: string) => void;
   branch: (branch: string) => GitBranchPluginApi;
 }
-

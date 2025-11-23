@@ -13,27 +13,18 @@ export async function checkFileExists(filePath: string, root?: string) {
   } catch {
     return {
       pass: false,
-      message: () =>
-        `Expected file "${filePath}" to exist, but it was not found at ${fullPath}.`,
+      message: () => `Expected file "${filePath}" to exist, but it was not found at ${fullPath}.`,
     };
   }
 }
 
-export async function checkFileContains(
-  filePath: string,
-  needle: string | RegExp,
-  root?: string,
-) {
+export async function checkFileContains(filePath: string, needle: string | RegExp, root?: string) {
   const baseDir = root || process.cwd();
   const fullPath = path.resolve(baseDir, filePath);
   try {
     const contents = await readFile(fullPath, "utf8");
-    const pass =
-      typeof needle === "string"
-        ? contents.includes(needle)
-        : needle.test(contents);
-    const printableNeedle =
-      typeof needle === "string" ? `"${needle}"` : needle.toString();
+    const pass = typeof needle === "string" ? contents.includes(needle) : needle.test(contents);
+    const printableNeedle = typeof needle === "string" ? `"${needle}"` : needle.toString();
 
     return {
       pass,
@@ -45,10 +36,7 @@ export async function checkFileContains(
   } catch (error) {
     return {
       pass: false,
-      message: () =>
-        `Failed to read "${filePath}" while searching for ${String(needle)}: ${
-          (error as Error).message
-        }`,
+      message: () => `Failed to read "${filePath}" while searching for ${String(needle)}: ${(error as Error).message}`,
     };
   }
 }
@@ -66,16 +54,13 @@ export async function checkDirExists(dirPath: string, root?: string) {
     } else {
       return {
         pass: false,
-        message: () =>
-          `Expected directory "${dirPath}" to exist, but "${fullPath}" is not a directory.`,
+        message: () => `Expected directory "${dirPath}" to exist, but "${fullPath}" is not a directory.`,
       };
     }
   } catch {
     return {
       pass: false,
-      message: () =>
-        `Expected directory "${dirPath}" to exist, but it was not found at ${fullPath}.`,
+      message: () => `Expected directory "${dirPath}" to exist, but it was not found at ${fullPath}.`,
     };
   }
 }
-

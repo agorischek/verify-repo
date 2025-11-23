@@ -15,4 +15,3 @@ about:
   branch: main
   workflow: .github/workflows/ci.yml
   package: verify-repo
-

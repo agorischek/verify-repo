@@ -1,15 +1,10 @@
-import {
-  type PluginOptions,
-  type RepoPlugin,
-  type VerificationContext,
-} from "@verify-repo/engine";
+import { type PluginOptions, type RepoPlugin, type VerificationContext } from "@verify-repo/engine";
 import { spawn } from "node:child_process";
 import type { DockerBuildOptions, DockerPluginApi } from "./types";
 
 export const docker = (): RepoPlugin => ({
   name: "Docker",
-  description:
-    "Run `docker build` with optional tags, args, and custom contexts.",
+  description: "Run `docker build` with optional tags, args, and custom contexts.",
   docs: [
     {
       signature: 'verify.docker.builds("Dockerfile", options?)',
@@ -26,15 +21,8 @@ export const docker = (): RepoPlugin => ({
     return {
       docker(context: VerificationContext) {
         return context.entry({
-          builds: (
-            dockerfileOrOptions?: string | DockerBuildOptions,
-            explicitOptions?: DockerBuildOptions,
-          ) => {
-            const normalized = normalizeOptions(
-              context.dir,
-              dockerfileOrOptions,
-              explicitOptions,
-            );
+          builds: (dockerfileOrOptions?: string | DockerBuildOptions, explicitOptions?: DockerBuildOptions) => {
+            const normalized = normalizeOptions(context.dir, dockerfileOrOptions, explicitOptions);
             scheduleDockerBuild(context, normalized);
           },
         }) as DockerPluginApi;
@@ -74,10 +62,7 @@ function normalizeOptions(
   };
 }
 
-function scheduleDockerBuild(
-  context: VerificationContext,
-  options: NormalizedDockerOptions,
-) {
+function scheduleDockerBuild(context: VerificationContext, options: NormalizedDockerOptions) {
   const description = options.dockerfile
     ? `Dockerfile "${options.dockerfile}" should build`
     : "Docker image should build";
@@ -92,9 +77,7 @@ function scheduleDockerBuild(
       if (result.exitCode === 0) {
         pass("Docker build completed successfully.");
       } else {
-        fail(
-          `docker build exited with ${result.exitCode}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
-        );
+        fail(`docker build exited with ${result.exitCode}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
       }
     } catch (error) {
       fail("Failed to run docker build.", error);
@@ -120,10 +103,7 @@ function buildDockerArgs(options: NormalizedDockerOptions) {
   return args;
 }
 
-async function runDockerBuild(
-  args: string[],
-  options: { dir: string; timeoutMs?: number },
-) {
+async function runDockerBuild(args: string[], options: { dir: string; timeoutMs?: number }) {
   return new Promise<{
     exitCode: number | null;
     stdout: string;
@@ -161,11 +141,7 @@ async function runDockerBuild(
     child.on("close", (exitCode) => {
       if (timer) clearTimeout(timer);
       if (timedOut) {
-        reject(
-          new Error(
-            `docker build timed out after ${options.timeoutMs}ms while running in ${options.dir}`,
-          ),
-        );
+        reject(new Error(`docker build timed out after ${options.timeoutMs}ms while running in ${options.dir}`));
         return;
       }
       resolve({ exitCode, stdout, stderr });

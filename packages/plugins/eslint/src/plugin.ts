@@ -1,8 +1,4 @@
-import {
-  type PluginOptions,
-  type RepoPlugin,
-  type VerificationContext,
-} from "@verify-repo/engine";
+import { type PluginOptions, type RepoPlugin, type VerificationContext } from "@verify-repo/engine";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import type { EslintOptions, EslintPluginApi } from "./types";
@@ -33,9 +29,7 @@ export const eslint = (): RepoPlugin => ({
 function scheduleEslint(context: VerificationContext, options?: EslintOptions) {
   const files = normalizeFiles(options?.files);
   const description =
-    files.length === 1 && files[0] === "."
-      ? "ESLint should pass"
-      : `ESLint should pass for ${files.join(", ")}`;
+    files.length === 1 && files[0] === "." ? "ESLint should pass" : `ESLint should pass for ${files.join(", ")}`;
 
   context.register(description, async ({ pass, fail }) => {
     try {
@@ -48,9 +42,7 @@ function scheduleEslint(context: VerificationContext, options?: EslintOptions) {
       if (result.exitCode === 0) {
         pass("ESLint reported no errors.");
       } else {
-        fail(
-          `ESLint exited with ${result.exitCode}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
-        );
+        fail(`ESLint exited with ${result.exitCode}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
       }
     } catch (error) {
       fail("Failed to run ESLint.", error);
@@ -88,15 +80,10 @@ function resolveEslintBinary(dir: string) {
       // continue
     }
   }
-  throw new Error(
-    'Could not find ESLint. Install "eslint" in your project to use this check.',
-  );
+  throw new Error('Could not find ESLint. Install "eslint" in your project to use this check.');
 }
 
-async function runEslint(
-  args: string[],
-  options: { dir: string; timeoutMs?: number },
-) {
+async function runEslint(args: string[], options: { dir: string; timeoutMs?: number }) {
   const eslintPath = resolveEslintBinary(options.dir);
   return new Promise<{
     exitCode: number | null;
@@ -135,11 +122,7 @@ async function runEslint(
     child.on("close", (exitCode) => {
       if (timer) clearTimeout(timer);
       if (timedOut) {
-        reject(
-          new Error(
-            `ESLint timed out after ${options.timeoutMs}ms while running in ${options.dir}`,
-          ),
-        );
+        reject(new Error(`ESLint timed out after ${options.timeoutMs}ms while running in ${options.dir}`));
         return;
       }
       resolve({ exitCode, stdout, stderr });

@@ -1,9 +1,4 @@
-import {
-  PluginEntry,
-  type PluginOptions,
-  type RepoPlugin,
-  type VerificationContext,
-} from "@verify-repo/engine";
+import { PluginEntry, type PluginOptions, type RepoPlugin, type VerificationContext } from "@verify-repo/engine";
 import { glob } from "glob";
 import path from "node:path";
 import { createRequire } from "node:module";
@@ -12,20 +7,10 @@ import type { PrettierPluginApi, PrettierSelectorApi } from "./types";
 
 const require = createRequire(import.meta.url);
 
-const DEFAULT_GLOBS = [
-  "**/*.{js,jsx,ts,tsx,json,css,scss,less,html,md,mdx,yml,yaml,graphql,gql}",
-];
-const DEFAULT_IGNORE = [
-  "**/node_modules/**",
-  "**/dist/**",
-  "**/build/**",
-  "**/.git/**",
-];
+const DEFAULT_GLOBS = ["**/*.{js,jsx,ts,tsx,json,css,scss,less,html,md,mdx,yml,yaml,graphql,gql}"];
+const DEFAULT_IGNORE = ["**/node_modules/**", "**/dist/**", "**/build/**", "**/.git/**"];
 
-type Selection =
-  | { type: "pattern"; value: string }
-  | { type: "file"; value: string }
-  | undefined;
+type Selection = { type: "pattern"; value: string } | { type: "file"; value: string } | undefined;
 
 type PrettierLeaf = PrettierSelectorApi;
 type PrettierRoot = PrettierPluginApi;
@@ -33,13 +18,11 @@ type PrettierEntrypoint = PrettierRoot | PrettierLeaf;
 
 export const prettier = (): RepoPlugin => ({
   name: "Prettier",
-  description:
-    "Validate that files are formatted according to the local Prettier config.",
+  description: "Validate that files are formatted according to the local Prettier config.",
   docs: [
     {
       signature: "verify.prettier.isFormatted()",
-      description:
-        "Runs Prettier against default file globs in the repo root and fails when any file would change.",
+      description: "Runs Prettier against default file globs in the repo root and fails when any file would change.",
     },
     {
       signature: 'verify.prettier("<glob>").isFormatted()',
@@ -51,10 +34,7 @@ export const prettier = (): RepoPlugin => ({
     },
   ],
   api() {
-    const buildEntry = (
-      context: VerificationContext,
-      selection?: Selection,
-    ): PrettierEntrypoint => {
+    const buildEntry = (context: VerificationContext, selection?: Selection): PrettierEntrypoint => {
       if (selection) {
         return context.entry(
           {
@@ -106,24 +86,17 @@ async function loadPrettier(dir: string) {
       // continue
     }
   }
-  throw new Error(
-    'Could not find Prettier. Install "prettier" in your project to use this check.',
-  );
+  throw new Error('Could not find Prettier. Install "prettier" in your project to use this check.');
 }
 
-function scheduleFormatting(
-  context: VerificationContext,
-  selection: Selection,
-) {
+function scheduleFormatting(context: VerificationContext, selection: Selection) {
   const description = getDescription(selection);
   context.register(description, async ({ pass, fail }) => {
     try {
       const baseDir = context.dir;
       const prettierModule = await loadPrettier(baseDir);
       const configFile = await prettierModule.resolveConfigFile(baseDir);
-      const config = configFile
-        ? await prettierModule.resolveConfig(configFile)
-        : null;
+      const config = configFile ? await prettierModule.resolveConfig(configFile) : null;
 
       const filesToCheck = await resolveFiles(baseDir, selection);
       const result = await checkPrettierFormatted(filesToCheck, {
@@ -153,10 +126,7 @@ function getDescription(selection: Selection) {
   return `file "${selection.value}" should be formatted`;
 }
 
-async function resolveFiles(
-  baseDir: string,
-  selection: Selection,
-): Promise<string[]> {
+async function resolveFiles(baseDir: string, selection: Selection): Promise<string[]> {
   if (!selection) {
     return collectDefaultFiles(baseDir);
   }

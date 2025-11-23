@@ -13,10 +13,7 @@ export interface CommandRunResult {
   stderr: string;
 }
 
-export function runCommand(
-  command: string,
-  options: CommandRunOptions = {},
-): Promise<CommandRunResult> {
+export function runCommand(command: string, options: CommandRunOptions = {}): Promise<CommandRunResult> {
   return new Promise((resolve, reject) => {
     const child = spawn(command, {
       shell: true,
@@ -55,11 +52,7 @@ export function runCommand(
         clearTimeout(timer);
       }
       if (timedOut) {
-        reject(
-          new Error(
-            `Command "${command}" timed out after ${options.timeoutMs}ms.`,
-          ),
-        );
+        reject(new Error(`Command "${command}" timed out after ${options.timeoutMs}ms.`));
         return;
       }
       resolve({ exitCode: code, stdout, stderr });

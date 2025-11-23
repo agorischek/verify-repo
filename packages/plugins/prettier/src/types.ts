@@ -6,4 +6,3 @@ export interface PrettierPluginApi extends PrettierSelectorApi {
   (pattern: string): PrettierSelectorApi;
   file: (filePath: string) => PrettierSelectorApi;
 }
-

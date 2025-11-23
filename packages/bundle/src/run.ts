@@ -8,12 +8,7 @@ import { configure, getVerifyInstance, normalizeRoot } from "./verify";
 import { RepoVerificationFailedError } from "./errors";
 
 const DEFAULT_PATTERN = "**/*?.verify.{js,ts}";
-const DEFAULT_IGNORE = [
-  "**/node_modules/**",
-  "**/dist/**",
-  "**/build/**",
-  "**/.git/**",
-];
+const DEFAULT_IGNORE = ["**/node_modules/**", "**/dist/**", "**/build/**", "**/.git/**"];
 
 export interface RunOptions extends RepoVerifierConfig {
   pattern?: string | string[];
@@ -25,10 +20,7 @@ export interface RunOptions extends RepoVerifierConfig {
 }
 
 async function loadConfigFile(root: string): Promise<void> {
-  const configPaths = [
-    path.join(root, "verify.config.ts"),
-    path.join(root, "verify.config.js"),
-  ];
+  const configPaths = [path.join(root, "verify.config.ts"), path.join(root, "verify.config.js")];
 
   for (const configPath of configPaths) {
     try {
@@ -55,10 +47,9 @@ export async function run(options: RunOptions = {}) {
   try {
     await loadConfigFile(root);
   } catch (error) {
-    throw new Error(
-      `Failed to load verify.config.ts: ${error instanceof Error ? error.message : String(error)}`,
-      { cause: error },
-    );
+    throw new Error(`Failed to load verify.config.ts: ${error instanceof Error ? error.message : String(error)}`, {
+      cause: error,
+    });
   }
 
   // Get the current instance (may have been configured by verify.config.ts)
@@ -84,37 +75,24 @@ export async function run(options: RunOptions = {}) {
     verifyInstance = configure(mergedConfig);
   }
 
-  const files = await discoverVerifyFiles(
-    root,
-    options.pattern,
-    options.ignore,
-  );
-  console.log(
-    `verify-repo: discovered ${files.length} verify file${files.length === 1 ? "" : "s"}`,
-  );
+  const files = await discoverVerifyFiles(root, options.pattern, options.ignore);
+  console.log(`verify-repo: discovered ${files.length} verify file${files.length === 1 ? "" : "s"}`);
   const runtimeTag = Date.now().toString(36);
 
   for (const file of files) {
     await verifyInstance.withFileScope(file, async () => {
       try {
         const fileUrl = pathToFileURL(file);
-        fileUrl.search = `?run=${runtimeTag}-${Math.random()
-          .toString(36)
-          .slice(2)}`;
+        fileUrl.search = `?run=${runtimeTag}-${Math.random().toString(36).slice(2)}`;
         await import(fileUrl.href);
       } catch (error) {
-        throw new Error(
-          `Failed to load verify file at ${relativePath(root, file)}`,
-          { cause: error },
-        );
+        throw new Error(`Failed to load verify file at ${relativePath(root, file)}`, { cause: error });
       }
     });
   }
 
   const verificationCount = verifyInstance.plannedTests;
-  console.log(
-    `verify-repo: registered ${verificationCount} verification${verificationCount === 1 ? "" : "s"}`,
-  );
+  console.log(`verify-repo: registered ${verificationCount} verification${verificationCount === 1 ? "" : "s"}`);
 
   // Convert boolean concurrency to number: true = unlimited (Infinity), false = sequential (1)
   const runConcurrency: number | undefined =
@@ -129,9 +107,7 @@ export async function run(options: RunOptions = {}) {
   });
 
   const reporter =
-    options.reporter === false
-      ? null
-      : (options.reporter ?? ((result) => defaultReporter(result, root)));
+    options.reporter === false ? null : (options.reporter ?? ((result) => defaultReporter(result, root)));
   reporter?.(summary);
 
   if (summary.failed > 0) {
@@ -141,14 +117,8 @@ export async function run(options: RunOptions = {}) {
   return summary;
 }
 
-async function discoverVerifyFiles(
-  root: string,
-  pattern?: string | string[],
-  ignore?: string[],
-) {
-  const patterns = Array.isArray(pattern)
-    ? pattern
-    : [pattern ?? DEFAULT_PATTERN];
+async function discoverVerifyFiles(root: string, pattern?: string | string[], ignore?: string[]) {
+  const patterns = Array.isArray(pattern) ? pattern : [pattern ?? DEFAULT_PATTERN];
   const ignored = ignore ?? DEFAULT_IGNORE;
 
   const matches = await Promise.all(
