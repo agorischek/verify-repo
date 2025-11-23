@@ -4,7 +4,7 @@ import { access } from "node:fs/promises";
 import { glob } from "glob";
 import type { RepoTestRunSummary } from "@verify-repo/engine";
 import { RepoVerifierConfig } from "./RepoVerifierConfig";
-import { configure, getVerifyInstance } from "./verify";
+import { configure, getVerifyInstance, normalizeRoot } from "./verify";
 import { RepoVerificationFailedError } from "./errors";
 
 const DEFAULT_PATTERN = "**/*?.verify.{js,ts}";
@@ -49,7 +49,7 @@ async function loadConfigFile(root: string): Promise<void> {
 }
 
 export async function run(options: RunOptions = {}) {
-  const root = options.root ?? process.cwd();
+  const root = normalizeRoot(options.root) ?? process.cwd();
 
   // Load config file first if it exists (it calls configure() to set up the instance)
   try {
@@ -75,7 +75,7 @@ export async function run(options: RunOptions = {}) {
     const existingInstance = verifyInstance;
     const mergedConfig: RepoVerifierConfig = {
       // Preserve root from config file if not overridden
-      root: options.root ?? existingInstance.root ?? root,
+      root: normalizeRoot(options.root) ?? existingInstance.root ?? root,
       // Options explicitly provided override config file
       plugins: options.plugins,
       concurrency: options.concurrency,

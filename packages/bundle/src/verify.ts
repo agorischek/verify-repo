@@ -1,3 +1,5 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   type RepoVerification,
   type VerificationMetadata,
@@ -18,8 +20,31 @@ const ensureInstance = () => {
   return verifyInstance;
 };
 
+/**
+ * Normalizes a root path, handling both file paths and file:// URLs (like import.meta.url).
+ * If a URL is provided, it extracts the directory path from it.
+ * If a path is provided, it returns it as-is.
+ */
+export function normalizeRoot(root: string | undefined): string | undefined {
+  if (!root) {
+    return undefined;
+  }
+
+  // Check if it's a URL (file:// protocol)
+  if (root.startsWith("file://")) {
+    return path.dirname(fileURLToPath(root));
+  }
+
+  // Already a path, return as-is
+  return root;
+}
+
 export const configure = (config: RepoVerifierConfig = {}) => {
-  verifyInstance = new RepoVerificationRuntime(config);
+  const normalizedConfig: RepoVerifierConfig = {
+    ...config,
+    root: normalizeRoot(config.root),
+  };
+  verifyInstance = new RepoVerificationRuntime(normalizedConfig);
   return verifyInstance;
 };
 

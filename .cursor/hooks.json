@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": "packages/bundle/src/hooks/cursor.ts"
+      }
+    ]
+  }
+}
