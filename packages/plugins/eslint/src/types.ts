@@ -3,7 +3,7 @@ export interface EslintOptions {
   maxWarnings?: number;
   config?: string;
   fix?: boolean;
-  cwd?: string;
+  dir?: string;
   timeoutMs?: number;
 }
 

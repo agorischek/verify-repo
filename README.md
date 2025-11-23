@@ -85,45 +85,26 @@ configure({
 Plugins define methods that register verifications using `context.register`. You can use the `context.entry` helper to simplify wrapping methods:
 
 ```ts
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { plugin } from "verify-repo";
+// This plugin adds the API verify.readme.contains("Hello world!");
 
-const loadPackageJson = async (root: string) => {
-  const pkg = await readJson(resolvePath(root, "package.json"));
-  return pkg;
-};
-
-const readJson = async (filePath: string) => {
-  const contents = await readFile(filePath, "utf8");
-  return JSON.parse(contents);
-};
-
-const resolvePath = (root: string, file: string) => {
-  return path.join(root, file);
-};
-
-export const package = () =>
+export const readme = () =>
   plugin({
-    name: "Package",
-    description: "Verify package.json properties.",
+    name: "README checker",
+    description: "Checks for contents in the README file.",
     docs: [
       {
-        signature: 'verify.package.hasProperty("key", "value")',
-        description: "Checks that package.json has a property with the specified key and value.",
+        signature: 'verify.readme.contains("content")',
+        description: "Checks that the README file contains the specified content.",
       },
     ],
-    api: ({ root }) => ({
-      package: ({ entry, register }) =>
+    api: () => ({
+      readme: ({ dir, entry, register }) =>
         entry({
-          hasProperty: (key: string, value: string) => {
-            register(`package.json has property "${key}" with value "${value}"`, async ({ pass, fail }) => {
-              const pkg = await loadPackageJson(root);
-              if (pkg[key] === value) {
-                pass(`package.json has "${key}" set to "${value}"`);
-              } else {
-                fail(`Expected "${key}" to be "${value}", but got "${pkg[key]}"`);
-              }
+          contains: (content: string) => {
+            register(`README contains ${content}`, async ({ pass, fail }) => {
+              const readmeContent = await readFile(path.join(dir, "README.md"), "utf8");
+              if (readmeContent.includes(content)) pass(`README contains "${content}"`);
+              else fail(`README does not contain "${content}"`);
             });
           },
         }),

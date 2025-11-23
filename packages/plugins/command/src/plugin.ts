@@ -60,12 +60,12 @@ export const command = (): RepoPlugin => ({
     {
       signature: 'verify.command("<cmd>").runs(options?)',
       description:
-        "Runs the command and expects the configured exit code (default 0). Options support cwd, env, timeoutMs, and expectExitCode.",
+        "Runs the command and expects the configured exit code (default 0). Options support dir, env, timeoutMs, and expectExitCode.",
     },
     {
       signature: 'verify.command("<cmd>").outputs(/pattern/, options?)',
       description:
-        "Streams stdout and resolves when the provided RegExp matches before the optional timeout (default 15s). Options support cwd, env, and timeoutMs.",
+        "Streams stdout and resolves when the provided RegExp matches before the optional timeout (default 15s). Options support dir, env, and timeoutMs.",
     },
     {
       signature: 'verify.command.runs("<cmd>", options?)',
@@ -79,12 +79,12 @@ export const command = (): RepoPlugin => ({
     {
       signature: 'verify.script("<script>").runs(options?)',
       description:
-        "Runs the npm/yarn/pnpm/bun script and expects the configured exit code (default 0). Uses the packageManager configured in verify.config.ts (default npm). Options support cwd, env, timeoutMs, and expectExitCode.",
+        "Runs the npm/yarn/pnpm/bun script and expects the configured exit code (default 0). Uses the packageManager configured in verify.config.ts (default npm). Options support dir, env, timeoutMs, and expectExitCode.",
     },
     {
       signature: 'verify.script("<script>").outputs(/pattern/, options?)',
       description:
-        "Streams stdout from the npm/yarn/pnpm/bun script and resolves when the provided RegExp matches before the optional timeout (default 15s). Uses the packageManager configured in verify.config.ts (default npm). Options support cwd, env, and timeoutMs.",
+        "Streams stdout from the npm/yarn/pnpm/bun script and resolves when the provided RegExp matches before the optional timeout (default 15s). Uses the packageManager configured in verify.config.ts (default npm). Options support dir, env, and timeoutMs.",
     },
     {
       signature: 'verify.script.runs("<script>", options?)',
@@ -214,7 +214,7 @@ function createCommandMethods(
         try {
           const result = await runCommand(
             commandText,
-            deriveRunOptions(context.cwd, options),
+            deriveRunOptions(context.dir, options),
           );
           const expected = options?.expectExitCode ?? 0;
           if (result.exitCode === expected) {
@@ -238,7 +238,7 @@ function createCommandMethods(
       context.register(description, async ({ pass, fail }) => {
         try {
           const { child, stdout } = await runCommandStreaming(commandText, {
-            cwd: options?.cwd ?? context.cwd,
+            dir: options?.dir ?? context.dir,
             env: options?.env,
           });
 
@@ -281,7 +281,7 @@ function deriveRunOptions(
   options?: CommandRunOptions,
 ): InternalRunOptions {
   return {
-    cwd: options?.cwd ?? root,
+    dir: options?.dir ?? root,
     env: options?.env,
     timeoutMs: options?.timeoutMs,
   };

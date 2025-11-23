@@ -1,13 +1,13 @@
 export interface CommandRunOptions {
   expectExitCode?: number;
   timeoutMs?: number;
-  cwd?: string;
+  dir?: string;
   env?: NodeJS.ProcessEnv;
 }
 
 export interface CommandOutputOptions {
   timeoutMs?: number;
-  cwd?: string;
+  dir?: string;
   env?: NodeJS.ProcessEnv;
 }
 

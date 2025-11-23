@@ -2,7 +2,7 @@ import { spawn, ChildProcess } from "node:child_process";
 import { Readable } from "node:stream";
 
 export interface CommandRunOptions {
-  cwd?: string;
+  dir?: string;
   env?: NodeJS.ProcessEnv;
   timeoutMs?: number;
 }
@@ -20,7 +20,7 @@ export function runCommand(
   return new Promise((resolve, reject) => {
     const child = spawn(command, {
       shell: true,
-      cwd: options.cwd ?? process.cwd(),
+      cwd: options.dir ?? process.cwd(),
       env: { ...process.env, ...options.env },
     });
 
@@ -68,7 +68,7 @@ export function runCommand(
 }
 
 export interface StreamingOptions {
-  cwd?: string;
+  dir?: string;
   env?: NodeJS.ProcessEnv;
 }
 
@@ -83,7 +83,7 @@ export function runCommandStreaming(
   return new Promise((resolve, reject) => {
     const child = spawn(command, {
       shell: true,
-      cwd: options.cwd ?? process.cwd(),
+      cwd: options.dir ?? process.cwd(),
       env: { ...process.env, ...options.env },
     });
 

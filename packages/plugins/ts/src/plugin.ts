@@ -65,8 +65,8 @@ function scheduleTsc(
 ) {
   context.register(description, async ({ pass, fail }) => {
     try {
-      const cwd = options?.cwd ?? context.cwd;
-      const result = await runTsc(args, { cwd, timeoutMs: options?.timeoutMs });
+      const dir = options?.dir ?? context.dir;
+      const result = await runTsc(args, { dir, timeoutMs: options?.timeoutMs });
       if (result.exitCode === 0) {
         pass("TypeScript completed successfully.");
       } else {
@@ -80,8 +80,8 @@ function scheduleTsc(
   });
 }
 
-function resolveTscBinary(cwd: string) {
-  const searchPaths = [cwd, process.cwd()];
+function resolveTscBinary(dir: string) {
+  const searchPaths = [dir, process.cwd()];
   for (const base of searchPaths) {
     try {
       return require.resolve("typescript/bin/tsc", { paths: [base] });
@@ -96,16 +96,16 @@ function resolveTscBinary(cwd: string) {
 
 async function runTsc(
   args: string[],
-  options: { cwd: string; timeoutMs?: number },
+  options: { dir: string; timeoutMs?: number },
 ) {
-  const tscPath = resolveTscBinary(options.cwd);
+  const tscPath = resolveTscBinary(options.dir);
   return new Promise<{
     exitCode: number | null;
     stdout: string;
     stderr: string;
   }>((resolve, reject) => {
     const child = spawn(process.execPath, [tscPath, ...args], {
-      cwd: options.cwd,
+      cwd: options.dir,
       env: process.env,
     });
 
@@ -138,7 +138,7 @@ async function runTsc(
       if (timedOut) {
         reject(
           new Error(
-            `tsc timed out after ${options.timeoutMs}ms while running in ${options.cwd}`,
+            `tsc timed out after ${options.timeoutMs}ms while running in ${options.dir}`,
           ),
         );
         return;

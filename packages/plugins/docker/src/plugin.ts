@@ -14,7 +14,7 @@ export const docker = (): RepoPlugin => ({
     {
       signature: 'verify.docker.builds("Dockerfile", options?)',
       description:
-        "Shortcut that sets the dockerfile path, then applies any additional build options (context, tag, args, buildArgs, cwd, timeoutMs).",
+        "Shortcut that sets the dockerfile path, then applies any additional build options (context, tag, args, buildArgs, dir, timeoutMs).",
     },
     {
       signature: "verify.docker.builds(options)",
@@ -31,7 +31,7 @@ export const docker = (): RepoPlugin => ({
             explicitOptions?: DockerBuildOptions,
           ) => {
             const normalized = normalizeOptions(
-              context.cwd,
+              context.dir,
               dockerfileOrOptions,
               explicitOptions,
             );
@@ -49,12 +49,12 @@ interface NormalizedDockerOptions {
   tag?: string;
   args: string[];
   buildArgs: Record<string, string>;
-  cwd: string;
+  dir: string;
   timeoutMs?: number;
 }
 
 function normalizeOptions(
-  cwd: string,
+  dir: string,
   dockerfileOrOptions?: string | DockerBuildOptions,
   explicitOptions?: DockerBuildOptions,
 ): NormalizedDockerOptions {
@@ -69,7 +69,7 @@ function normalizeOptions(
     tag: options.tag,
     args: options.args ?? [],
     buildArgs: options.buildArgs ?? {},
-    cwd: options.cwd ?? cwd,
+    dir: options.dir ?? dir,
     timeoutMs: options.timeoutMs,
   };
 }
@@ -86,7 +86,7 @@ function scheduleDockerBuild(
     const args = buildDockerArgs(options);
     try {
       const result = await runDockerBuild(args, {
-        cwd: options.cwd,
+        dir: options.dir,
         timeoutMs: options.timeoutMs,
       });
       if (result.exitCode === 0) {
@@ -122,7 +122,7 @@ function buildDockerArgs(options: NormalizedDockerOptions) {
 
 async function runDockerBuild(
   args: string[],
-  options: { cwd: string; timeoutMs?: number },
+  options: { dir: string; timeoutMs?: number },
 ) {
   return new Promise<{
     exitCode: number | null;
@@ -130,7 +130,7 @@ async function runDockerBuild(
     stderr: string;
   }>((resolve, reject) => {
     const child = spawn("docker", args, {
-      cwd: options.cwd,
+      cwd: options.dir,
       env: process.env,
     });
 
@@ -163,7 +163,7 @@ async function runDockerBuild(
       if (timedOut) {
         reject(
           new Error(
-            `docker build timed out after ${options.timeoutMs}ms while running in ${options.cwd}`,
+            `docker build timed out after ${options.timeoutMs}ms while running in ${options.dir}`,
           ),
         );
         return;

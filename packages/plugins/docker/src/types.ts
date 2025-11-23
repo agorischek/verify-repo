@@ -4,7 +4,7 @@ export interface DockerBuildOptions {
   tag?: string;
   args?: string[];
   buildArgs?: Record<string, string>;
-  cwd?: string;
+  dir?: string;
   timeoutMs?: number;
 }
 

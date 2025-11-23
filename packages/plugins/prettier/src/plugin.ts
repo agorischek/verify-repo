@@ -95,8 +95,8 @@ export const prettier = (): RepoPlugin => ({
   },
 });
 
-async function loadPrettier(cwd: string) {
-  const searchPaths = [cwd, process.cwd()];
+async function loadPrettier(dir: string) {
+  const searchPaths = [dir, process.cwd()];
   for (const base of searchPaths) {
     try {
       const prettierPath = require.resolve("prettier", { paths: [base] });
@@ -118,7 +118,7 @@ function scheduleFormatting(
   const description = getDescription(selection);
   context.register(description, async ({ pass, fail }) => {
     try {
-      const baseDir = context.cwd;
+      const baseDir = context.dir;
       const prettierModule = await loadPrettier(baseDir);
       const configFile = await prettierModule.resolveConfigFile(baseDir);
       const config = configFile

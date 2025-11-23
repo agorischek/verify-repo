@@ -86,7 +86,7 @@ export const git = (): RepoPlugin => ({
         isClean: () => scheduleClean(context, getClient),
         hasNoConflicts: () => scheduleConflicts(context, getClient),
         hasStaged: (filePath: string) => {
-          const base = context.cwd;
+          const base = context.dir;
           const repoRoot = context.root ?? process.cwd();
           const abs = path.resolve(base, filePath);
           const rel = path.relative(repoRoot, abs);

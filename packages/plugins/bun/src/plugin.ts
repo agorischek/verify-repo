@@ -13,7 +13,7 @@ export const bun = (): RepoPlugin => ({
     {
       signature: "verify.bun.test.passes(options?)",
       description:
-        "Runs `bun test` (optionally with extra CLI args) relative to the verify file directory and expects a zero exit code. Override cwd, env, or timeout via options.",
+        "Runs `bun test` (optionally with extra CLI args) relative to the verify file directory and expects a zero exit code. Override dir, env, or timeout via options.",
     },
   ],
   api() {
@@ -42,7 +42,7 @@ function scheduleBunTest(
   context: VerificationContext,
   options?: BunTestOptions,
 ) {
-  const cwd = options?.cwd ?? context.cwd;
+  const dir = options?.dir ?? context.dir;
   const extraArgs = options?.args ?? [];
   const bunArgs = ["test", ...extraArgs];
   const label = formatCommand(bunArgs);
@@ -50,7 +50,7 @@ function scheduleBunTest(
   context.register(`${label} should succeed`, async ({ pass, fail }) => {
     try {
       const result = await runBunCommand(bunArgs, {
-        cwd,
+        dir,
         env: options?.env,
         timeoutMs: options?.timeoutMs,
       });
@@ -74,7 +74,7 @@ function formatCommand(args: string[]) {
 }
 
 interface BunCommandOptions {
-  cwd: string;
+  dir: string;
   env?: NodeJS.ProcessEnv;
   timeoutMs?: number;
 }
@@ -91,7 +91,7 @@ function runBunCommand(
 ): Promise<BunCommandResult> {
   return new Promise((resolve, reject) => {
     const child = spawn("bun", args, {
-      cwd: options.cwd,
+      cwd: options.dir,
       env: { ...process.env, ...options.env },
       stdio: ["ignore", "pipe", "pipe"],
     });

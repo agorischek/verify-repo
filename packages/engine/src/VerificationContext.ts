@@ -17,8 +17,12 @@ export interface VerificationContextOptions {
 
 export class VerificationContext {
   public readonly pluginName: string;
+  /**
+   * Repository root directory. Rarely needed by plugins - use `dir` instead.
+   * Only exposed for edge cases like git operations that need repo-relative paths.
+   */
   public readonly root?: string;
-  public readonly baseDir?: string;
+  private readonly baseDir?: string;
 
   private readonly registerFn: (
     description: string,
@@ -62,7 +66,22 @@ export class VerificationContext {
     }
   }
 
-  public get cwd(): string {
+  /**
+   * Current working directory for path resolution.
+   * 
+   * This is the primary property plugins should use for resolving relative paths.
+   * It resolves to:
+   * 1. The directory containing the current verify file (if executing from a verify file)
+   * 2. The repository root (if set)
+   * 3. `process.cwd()` (fallback)
+   * 
+   * @example
+   * ```ts
+   * // In a plugin
+   * const filePath = path.resolve(context.dir, "package.json");
+   * ```
+   */
+  public get dir(): string {
     return this.baseDir ?? this.root ?? process.cwd();
   }
 
