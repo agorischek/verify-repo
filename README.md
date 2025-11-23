@@ -91,7 +91,7 @@ export const hello = () =>
     description: "A friendly plugin.",
     docs: [
       {
-        signature: 'verify.hello("name").greets()',
+        signature: 'verify.hello.greets("name")',
         description: "Checks that the hello greeting is received.",
       },
     ],
@@ -107,5 +107,3 @@ export const hello = () =>
     }),
   });
 ```
-
-Use `context.extend(meta)` inside call handlers to support selectors (e.g. `verify.hello("world").greets()`).
