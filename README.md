@@ -1,4 +1,4 @@
-<img src="static/logo.png" alt="verify-repo logo" width="300">
+<img src="https://raw.githubusercontent.com/agorischek/verify-repo/refs/heads/main/static/logo.png" alt="verify-repo logo" width="300">
 
 # verify-repo
 
@@ -83,24 +83,45 @@ configure({
 Plugins define methods that register verifications using `context.register`. You can use the `context.entry` helper to simplify wrapping methods:
 
 ```ts
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { plugin } from "verify-repo";
 
-export const hello = () =>
+const loadPackageJson = async (root: string) => {
+  const pkg = await readJson(resolvePath(root, "package.json"));
+  return pkg;
+};
+
+const readJson = async (filePath: string) => {
+  const contents = await readFile(filePath, "utf8");
+  return JSON.parse(contents);
+};
+
+const resolvePath = (root: string, file: string) => {
+  return path.join(root, file);
+};
+
+export const package = () =>
   plugin({
-    name: "Hello",
-    description: "A friendly plugin.",
+    name: "Package",
+    description: "Verify package.json properties.",
     docs: [
       {
-        signature: 'verify.hello.greets("name")',
-        description: "Checks that the hello greeting is received.",
+        signature: 'verify.package.hasProperty("key", "value")',
+        description: "Checks that package.json has a property with the specified key and value.",
       },
     ],
     api: ({ root }) => ({
-      hello: ({ entry, register }) =>
+      package: ({ entry, register }) =>
         entry({
-          greets: (name: string) => {
-            register(`says hello to ${name}`, async ({ pass }) => {
-              pass(`Hello, ${name}! (from ${root ?? process.cwd()})`);
+          hasProperty: (key: string, value: string) => {
+            register(`package.json has property "${key}" with value "${value}"`, async ({ pass, fail }) => {
+              const pkg = await loadPackageJson(root);
+              if (pkg[key] === value) {
+                pass(`package.json has "${key}" set to "${value}"`);
+              } else {
+                fail(`Expected "${key}" to be "${value}", but got "${pkg[key]}"`);
+              }
             });
           },
         }),
