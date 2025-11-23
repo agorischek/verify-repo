@@ -7,6 +7,53 @@ import { RepoVerifierConfig } from "./RepoVerifierConfig";
 import { configure, getVerifyInstance, normalizeRoot } from "./verify";
 import { RepoVerificationFailedError } from "./errors";
 
+// Detect if we're running in Bun
+function isBun(): boolean {
+  return typeof process !== "undefined" && "Bun" in globalThis && typeof (globalThis as any).Bun !== "undefined";
+}
+
+const TS_EXTENSIONS = new Set([".ts", ".tsx", ".mts", ".cts"]);
+
+function needsTypeScriptLoader(filePath: string) {
+  return TS_EXTENSIONS.has(path.extname(filePath));
+}
+
+let tsxRegistered = false;
+
+async function ensureTsxRegistered() {
+  if (tsxRegistered || isBun()) {
+    return;
+  }
+
+  try {
+    // Dynamically import tsx's loader registration
+    // @ts-expect-error - tsx is a runtime dependency, not available at type-check time
+    const { register } = await import("tsx/esm/api");
+    register({
+      cwd: process.cwd(),
+    });
+    tsxRegistered = true;
+  } catch (error) {
+    throw new Error(
+      `Failed to initialize the TypeScript loader: ${error instanceof Error ? error.message : String(error)}. ` +
+        `Ensure 'tsx' is installed as a dependency.`,
+      { cause: error },
+    );
+  }
+}
+
+async function importFile(filePath: string, cacheBust?: string) {
+  if (needsTypeScriptLoader(filePath)) {
+    await ensureTsxRegistered();
+  }
+
+  const fileUrl = pathToFileURL(filePath);
+  if (cacheBust) {
+    fileUrl.search = cacheBust;
+  }
+  await import(fileUrl.href);
+}
+
 const DEFAULT_PATTERN = "**/*?.verify.{js,ts}";
 const DEFAULT_IGNORE = ["**/node_modules/**", "**/dist/**", "**/build/**", "**/.git/**"];
 
@@ -26,8 +73,7 @@ async function loadConfigFile(root: string): Promise<void> {
     try {
       await access(configPath);
       // Config file exists, import it (which will execute configure() if it calls it)
-      const configUrl = pathToFileURL(configPath).href;
-      await import(configUrl);
+      await importFile(configPath);
       return; // Successfully loaded, exit
     } catch (error) {
       // If it's a file not found error, try next path
@@ -82,9 +128,8 @@ export async function run(options: RunOptions = {}) {
   for (const file of files) {
     await verifyInstance.withFileScope(file, async () => {
       try {
-        const fileUrl = pathToFileURL(file);
-        fileUrl.search = `?run=${runtimeTag}-${Math.random().toString(36).slice(2)}`;
-        await import(fileUrl.href);
+        const bust = `?run=${runtimeTag}-${Math.random().toString(36).slice(2)}`;
+        await importFile(file, bust);
       } catch (error) {
         throw new Error(`Failed to load verify file at ${relativePath(root, file)}`, { cause: error });
       }
