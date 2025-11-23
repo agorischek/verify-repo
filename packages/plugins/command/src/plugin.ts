@@ -1,6 +1,6 @@
 import {
   PluginContext,
-  createPluginEntry,
+  PluginEntry,
   type RepoPlugin,
   type VerificationBuilder,
 } from "@verify-repo/engine";
@@ -57,60 +57,60 @@ export const command = (): RepoPlugin => ({
   description:
     "Execute shell commands and assert on exit codes or streamed output.",
   docs: [
-      {
-        signature: 'verify.command("<cmd>").runs(options?)',
-        description:
-          "Runs the command and expects the configured exit code (default 0). Options support cwd, env, timeoutMs, and expectExitCode.",
-      },
-      {
-        signature: 'verify.command("<cmd>").outputs(/pattern/, options?)',
-        description:
-          "Streams stdout and resolves when the provided RegExp matches before the optional timeout (default 15s). Options support cwd, env, and timeoutMs.",
-      },
-      {
-        signature: 'verify.command.runs("<cmd>", options?)',
-        description:
-          "Shortcut that schedules a .runs() check without creating an intermediate chain.",
-      },
-      {
-        signature: 'verify.command.outputs("<cmd>", /pattern/, options?)',
-        description: "Shortcut that schedules an output check in one call.",
-      },
-      {
-        signature: 'verify.scripts("<script>").runs(options?)',
-        description:
-          "Runs the npm/yarn/pnpm/bun script and expects the configured exit code (default 0). Uses the packageManager configured in verify.config.ts (default npm). Options support cwd, env, timeoutMs, and expectExitCode.",
-      },
-      {
-        signature: 'verify.scripts("<script>").outputs(/pattern/, options?)',
-        description:
-          "Streams stdout from the npm/yarn/pnpm/bun script and resolves when the provided RegExp matches before the optional timeout (default 15s). Uses the packageManager configured in verify.config.ts (default npm). Options support cwd, env, and timeoutMs.",
-      },
-      {
-        signature: 'verify.scripts.runs("<script>", options?)',
-        description:
-          "Shortcut that schedules a .runs() check for a script without creating an intermediate chain.",
-      },
-      {
-        signature: 'verify.scripts.outputs("<script>", /pattern/, options?)',
-        description:
-          "Shortcut that schedules an output check for a script in one call.",
-      },
-    ],
+    {
+      signature: 'verify.command("<cmd>").runs(options?)',
+      description:
+        "Runs the command and expects the configured exit code (default 0). Options support cwd, env, timeoutMs, and expectExitCode.",
+    },
+    {
+      signature: 'verify.command("<cmd>").outputs(/pattern/, options?)',
+      description:
+        "Streams stdout and resolves when the provided RegExp matches before the optional timeout (default 15s). Options support cwd, env, and timeoutMs.",
+    },
+    {
+      signature: 'verify.command.runs("<cmd>", options?)',
+      description:
+        "Shortcut that schedules a .runs() check without creating an intermediate chain.",
+    },
+    {
+      signature: 'verify.command.outputs("<cmd>", /pattern/, options?)',
+      description: "Shortcut that schedules an output check in one call.",
+    },
+    {
+      signature: 'verify.scripts("<script>").runs(options?)',
+      description:
+        "Runs the npm/yarn/pnpm/bun script and expects the configured exit code (default 0). Uses the packageManager configured in verify.config.ts (default npm). Options support cwd, env, timeoutMs, and expectExitCode.",
+    },
+    {
+      signature: 'verify.scripts("<script>").outputs(/pattern/, options?)',
+      description:
+        "Streams stdout from the npm/yarn/pnpm/bun script and resolves when the provided RegExp matches before the optional timeout (default 15s). Uses the packageManager configured in verify.config.ts (default npm). Options support cwd, env, and timeoutMs.",
+    },
+    {
+      signature: 'verify.scripts.runs("<script>", options?)',
+      description:
+        "Shortcut that schedules a .runs() check for a script without creating an intermediate chain.",
+    },
+    {
+      signature: 'verify.scripts.outputs("<script>", /pattern/, options?)',
+      description:
+        "Shortcut that schedules an output check for a script in one call.",
+    },
+  ],
   api(context: PluginContext) {
     const buildEntry = (
       builder: VerificationBuilder,
       commandText?: string,
     ): CommandEntrypoint => {
       if (commandText) {
-        return createPluginEntry(
+        return new PluginEntry(
           builder,
           createCommandMethods(builder, commandText),
           undefined,
         ) as CommandLeaf;
       }
 
-      const baseEntry = createPluginEntry(
+      const baseEntry = new PluginEntry(
         builder,
         {},
         (parent: VerificationBuilder, cmd: string) =>
@@ -146,20 +146,20 @@ export const command = (): RepoPlugin => ({
           packageManager,
           scriptName,
         );
-        return createPluginEntry(
+        return new PluginEntry(
           builder,
           createCommandMethods(builder, commandText),
           undefined,
         ) as ScriptsLeaf;
       }
 
-      const baseEntry = createPluginEntry(
+      const baseEntry = new PluginEntry(
         builder,
         {},
         (parent: VerificationBuilder, script: string) => {
           const child = parent.createChild({ script });
           const commandText = getPackageManagerCommand(packageManager, script);
-          return createPluginEntry(
+          return new PluginEntry(
             child,
             createCommandMethods(child, commandText),
             undefined,
@@ -172,7 +172,7 @@ export const command = (): RepoPlugin => ({
           const commandText = getPackageManagerCommand(packageManager, script);
           const child = builder.createChild({ script });
           (
-            createPluginEntry(
+            new PluginEntry(
               child,
               createCommandMethods(child, commandText),
               undefined,
@@ -187,7 +187,7 @@ export const command = (): RepoPlugin => ({
           const commandText = getPackageManagerCommand(packageManager, script);
           const child = builder.createChild({ script });
           (
-            createPluginEntry(
+            new PluginEntry(
               child,
               createCommandMethods(child, commandText),
               undefined,

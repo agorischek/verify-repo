@@ -1,6 +1,6 @@
 import {
   PluginContext,
-  createPluginEntry,
+  PluginEntry,
   type RepoPlugin,
   type VerificationBuilder,
 } from "@verify-repo/engine";
@@ -23,7 +23,7 @@ export const eslint = (): RepoPlugin => ({
   api(_context: PluginContext) {
     return {
       eslint(builder: VerificationBuilder) {
-        return createPluginEntry(builder, {
+        return new PluginEntry(builder, {
           passes: (_builder: VerificationBuilder, options?: EslintOptions) =>
             scheduleEslint(_builder, options),
         }) as EslintPluginApi;

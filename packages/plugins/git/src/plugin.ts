@@ -1,6 +1,6 @@
 import {
   PluginContext,
-  createPluginEntry,
+  PluginEntry,
   type RepoPlugin,
   type VerificationBuilder,
 } from "@verify-repo/engine";
@@ -24,35 +24,35 @@ export const git = (): RepoPlugin => ({
   description:
     "Assert repository cleanliness, conflicts, branches, and staged files.",
   docs: [
-      {
-        signature: "verify.git.isClean()",
-        description:
-          "Fails if `git status` reports untracked, unstaged, or staged changes.",
-      },
-      {
-        signature: "verify.git.hasNoConflicts()",
-        description:
-          "Ensures there are no files listed in `git status --short` as conflicted.",
-      },
-      {
-        signature: 'verify.git.hasStaged("<path>")',
-        description:
-          "Asserts that the given file is staged (non-empty index status).",
-      },
-      {
-        signature: 'verify.git.isOnBranch("<branch>")',
-        description: "Checks that the current HEAD is on the expected branch.",
-      },
-      {
-        signature: 'verify.git.branch("<branch>").isClean()',
-        description:
-          "Asserts that the branch is checked out and has no dirty files.",
-      },
-      {
-        signature: 'verify.git.branch("<branch>").isCurrent()',
-        description: "Only verifies that the target branch is checked out.",
-      },
-    ],
+    {
+      signature: "verify.git.isClean()",
+      description:
+        "Fails if `git status` reports untracked, unstaged, or staged changes.",
+    },
+    {
+      signature: "verify.git.hasNoConflicts()",
+      description:
+        "Ensures there are no files listed in `git status --short` as conflicted.",
+    },
+    {
+      signature: 'verify.git.hasStaged("<path>")',
+      description:
+        "Asserts that the given file is staged (non-empty index status).",
+    },
+    {
+      signature: 'verify.git.isOnBranch("<branch>")',
+      description: "Checks that the current HEAD is on the expected branch.",
+    },
+    {
+      signature: 'verify.git.branch("<branch>").isClean()',
+      description:
+        "Asserts that the branch is checked out and has no dirty files.",
+    },
+    {
+      signature: 'verify.git.branch("<branch>").isCurrent()',
+      description: "Only verifies that the target branch is checked out.",
+    },
+  ],
   api({ root }: PluginContext) {
     let clientPromise: Promise<SimpleGit> | null = null;
 
@@ -83,7 +83,7 @@ export const git = (): RepoPlugin => ({
     };
 
     const buildEntry = (builder: VerificationBuilder): GitPluginApi => {
-      const entry = createPluginEntry(builder, {
+      const entry = new PluginEntry(builder, {
         isClean: () => scheduleClean(builder, getClient),
         hasNoConflicts: () => scheduleConflicts(builder, getClient),
         hasStaged: (_b: VerificationBuilder, filePath: string) => {
@@ -118,7 +118,7 @@ function createBranchEntry(
   getGit: () => Promise<SimpleGit>,
   branch: string,
 ): GitBranchPluginApi {
-  return createPluginEntry(builder, {
+  return new PluginEntry(builder, {
     isClean: () => scheduleBranchClean(builder, getGit, branch),
     isCurrent: () => scheduleIsOnBranch(builder, getGit, branch),
   }) as GitBranchPluginApi;

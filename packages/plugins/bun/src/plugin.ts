@@ -1,5 +1,5 @@
 import {
-  createPluginEntry,
+  PluginEntry,
   type PluginContext,
   type RepoPlugin,
   type VerificationBuilder,
@@ -27,14 +27,14 @@ export const bun = (): RepoPlugin => ({
 });
 
 function buildBunEntry(builder: VerificationBuilder): BunPluginApi {
-  const entry = createPluginEntry(builder, {});
+  const entry = new PluginEntry(builder, {});
   return Object.assign(entry, {
     test: createBunTestEntry(builder.createChild({ command: "bun test" })),
   }) as BunPluginApi;
 }
 
 function createBunTestEntry(builder: VerificationBuilder): BunTestApi {
-  return createPluginEntry(
+  return new PluginEntry(
     builder,
     {
       passes: (_builder: VerificationBuilder, options?: BunTestOptions) =>

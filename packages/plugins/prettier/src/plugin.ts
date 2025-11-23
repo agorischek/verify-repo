@@ -1,6 +1,6 @@
 import {
   PluginContext,
-  createPluginEntry,
+  PluginEntry,
   type RepoPlugin,
   type VerificationBuilder,
 } from "@verify-repo/engine";
@@ -36,27 +36,27 @@ export const prettier = (): RepoPlugin => ({
   description:
     "Validate that files are formatted according to the local Prettier config.",
   docs: [
-      {
-        signature: "verify.prettier.isFormatted()",
-        description:
-          "Runs Prettier against default file globs in the repo root and fails when any file would change.",
-      },
-      {
-        signature: 'verify.prettier("<glob>").isFormatted()',
-        description: "Checks only files that match the provided glob pattern.",
-      },
-      {
-        signature: 'verify.prettier.file("<path>").isFormatted()',
-        description: "Targets a single file relative to the verify file.",
-      },
-    ],
+    {
+      signature: "verify.prettier.isFormatted()",
+      description:
+        "Runs Prettier against default file globs in the repo root and fails when any file would change.",
+    },
+    {
+      signature: 'verify.prettier("<glob>").isFormatted()',
+      description: "Checks only files that match the provided glob pattern.",
+    },
+    {
+      signature: 'verify.prettier.file("<path>").isFormatted()',
+      description: "Targets a single file relative to the verify file.",
+    },
+  ],
   api(_context: PluginContext) {
     const buildEntry = (
       builder: VerificationBuilder,
       selection?: Selection,
     ): PrettierEntrypoint => {
       if (selection) {
-        return createPluginEntry(
+        return new PluginEntry(
           builder,
           {
             isFormatted: () => scheduleFormatting(builder, selection),
@@ -65,7 +65,7 @@ export const prettier = (): RepoPlugin => ({
         ) as PrettierLeaf;
       }
 
-      const baseEntry = createPluginEntry(
+      const baseEntry = new PluginEntry(
         builder,
         {
           isFormatted: () => scheduleFormatting(builder, selection),

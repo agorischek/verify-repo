@@ -24,26 +24,30 @@ type CallableEntry<
     ? ((...args: Args) => Result) & MethodWrappers<TMethods>
     : MethodWrappers<TMethods>;
 
-export function createPluginEntry<
+export class PluginEntry<
   TMethods extends Record<string, PluginMethod>,
   TCallable extends PluginCallHandler | undefined = undefined,
->(
-  builder: VerificationBuilder,
-  methods: TMethods,
-  callHandler?: TCallable,
-): CallableEntry<TMethods, TCallable> {
-  const target: Record<string, unknown> | ((...args: any[]) => unknown) =
-    typeof callHandler === "function"
-      ? (...args: any[]) => (callHandler as PluginCallHandler)(builder, ...args)
-      : {};
-  const targetObject = target as Record<string, unknown>;
+> {
+  constructor(
+    builder: VerificationBuilder,
+    methods: TMethods,
+    callHandler?: TCallable,
+  ) {
+    const target: Record<string, unknown> | ((...args: any[]) => unknown) =
+      typeof callHandler === "function"
+        ? (...args: any[]) =>
+            (callHandler as PluginCallHandler)(builder, ...args)
+        : {};
+    const targetObject = target as Record<string, unknown>;
 
-  for (const [name, method] of Object.entries(methods)) {
-    targetObject[name] = (...args: any[]) =>
-      builder.register(() =>
-        (method as PluginMethod)(builder, ...(args as any[])),
-      );
+    for (const [name, method] of Object.entries(methods)) {
+      targetObject[name] = (...args: any[]) =>
+        builder.register(() =>
+          (method as PluginMethod)(builder, ...(args as any[])),
+        );
+    }
+
+    // Return the target object instead of this instance
+    return target as CallableEntry<TMethods, TCallable>;
   }
-
-  return target as CallableEntry<TMethods, TCallable>;
 }

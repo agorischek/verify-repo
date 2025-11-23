@@ -1,6 +1,6 @@
 import {
   PluginContext,
-  createPluginEntry,
+  PluginEntry,
   type RepoPlugin,
   type VerificationBuilder,
 } from "@verify-repo/engine";
@@ -16,34 +16,34 @@ export const fs = (): RepoPlugin => ({
   description:
     "Assertions for files and directories relative to the verify file.",
   docs: [
-      {
-        signature: 'verify.file("<path>").exists()',
-        description:
-          "Passes when the target file exists relative to the current verify file (or repo root).",
-      },
-      {
-        signature: 'verify.file("<path>").contains(textOrPattern)',
-        description:
-          "Ensures the file contents include the provided string or satisfy the regular expression.",
-      },
-      {
-        signature: 'verify.file("<path>").not.exists()',
-        description: "Passes only when the file is missing.",
-      },
-      {
-        signature: 'verify.file("<path>").not.contains(textOrPattern)',
-        description:
-          "Fails if the file contains the provided string or matches the expression.",
-      },
-      {
-        signature: 'verify.dir("<path>").exists()',
-        description: "Ensures the directory exists.",
-      },
-      {
-        signature: 'verify.dir("<path>").not.exists()',
-        description: "Ensures the directory does not exist.",
-      },
-    ],
+    {
+      signature: 'verify.file("<path>").exists()',
+      description:
+        "Passes when the target file exists relative to the current verify file (or repo root).",
+    },
+    {
+      signature: 'verify.file("<path>").contains(textOrPattern)',
+      description:
+        "Ensures the file contents include the provided string or satisfy the regular expression.",
+    },
+    {
+      signature: 'verify.file("<path>").not.exists()',
+      description: "Passes only when the file is missing.",
+    },
+    {
+      signature: 'verify.file("<path>").not.contains(textOrPattern)',
+      description:
+        "Fails if the file contains the provided string or matches the expression.",
+    },
+    {
+      signature: 'verify.dir("<path>").exists()',
+      description: "Ensures the directory exists.",
+    },
+    {
+      signature: 'verify.dir("<path>").not.exists()',
+      description: "Ensures the directory does not exist.",
+    },
+  ],
   api(_context: PluginContext) {
     const buildFileEntry = (
       builder: VerificationBuilder,
@@ -51,13 +51,13 @@ export const fs = (): RepoPlugin => ({
     ): FileEntrypoint => {
       if (filePath) {
         const methods = createFileMethods(builder, filePath);
-        const api = createPluginEntry(builder, methods.positive, undefined);
-        const notApi = createPluginEntry(builder, methods.negative, undefined);
+        const api = new PluginEntry(builder, methods.positive, undefined);
+        const notApi = new PluginEntry(builder, methods.negative, undefined);
 
         return Object.assign(api, { not: notApi }) as unknown as FilePluginApi;
       }
 
-      return createPluginEntry(
+      return new PluginEntry(
         builder,
         {},
         (parent: VerificationBuilder, target: string) =>
@@ -74,13 +74,13 @@ export const fs = (): RepoPlugin => ({
     ): DirRoot | DirPluginApi => {
       if (dirPath) {
         const methods = createDirMethods(builder, dirPath);
-        const api = createPluginEntry(builder, methods.positive, undefined);
-        const notApi = createPluginEntry(builder, methods.negative, undefined);
+        const api = new PluginEntry(builder, methods.positive, undefined);
+        const notApi = new PluginEntry(builder, methods.negative, undefined);
 
         return Object.assign(api, { not: notApi }) as unknown as DirPluginApi;
       }
 
-      return createPluginEntry(
+      return new PluginEntry(
         builder,
         {},
         (parent: VerificationBuilder, target: string) =>

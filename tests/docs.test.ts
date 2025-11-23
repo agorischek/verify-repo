@@ -15,21 +15,20 @@ test("collectDocs returns built-in plugin documentation", () => {
 });
 
 test("collectDocs merges docs from custom plugins", () => {
-  const customPlugin: RepoPlugin = () => ({
-    custom() {
-      return {};
-    },
-  });
-
-  customPlugin.docs = {
+  const customPlugin: RepoPlugin = {
     name: "Custom plugin",
     description: "Project-specific helpers.",
-    entries: [
+    docs: [
       {
         signature: "verify.custom().ping()",
         description: "Example custom API.",
       },
     ],
+    api: () => ({
+      custom() {
+        return {};
+      },
+    }),
   };
 
   const docs = collectDocs({ plugins: [customPlugin] });

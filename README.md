@@ -79,12 +79,12 @@ configure({
 
 ## Authoring plugins
 
-Plugins use `createPluginEntry(builder, methods, callHandler?)`. Each method receives the active `VerificationBuilder` so you can mark the check as registered and call `builder.schedule(description, handler)`:
+Plugins use `new PluginEntry(builder, methods, callHandler?)`. Each method receives the active `VerificationBuilder` so you can mark the check as registered and call `builder.schedule(description, handler)`:
 
 ```ts
 import {
   PluginContext,
-  createPluginEntry,
+  PluginEntry,
   type RepoPlugin,
   type VerificationBuilder,
 } from "verify-repo";
@@ -100,7 +100,7 @@ export const hello = (): RepoPlugin => ({
   ],
   api: ({ root }: PluginContext) => ({
     hello(builder: VerificationBuilder) {
-        return createPluginEntry(builder, {
+        return new PluginEntry(builder, {
           greets: (_builder, name: string) => {
             builder.schedule(`says hello to ${name}`, async ({ pass }) => {
               pass(`Hello, ${name}! (from ${root ?? process.cwd()})`);

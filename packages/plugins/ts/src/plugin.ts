@@ -1,6 +1,6 @@
 import {
   PluginContext,
-  createPluginEntry,
+  PluginEntry,
   type RepoPlugin,
   type VerificationBuilder,
 } from "@verify-repo/engine";
@@ -14,24 +14,23 @@ export const ts = (): RepoPlugin => ({
   name: "TypeScript",
   description: "Run the TypeScript compiler in different modes.",
   docs: [
-      {
-        signature: "verify.ts.noErrors(options?)",
-        description: "Runs `tsc --noEmit` to confirm there are no type errors.",
-      },
-      {
-        signature: "verify.ts.builds(options?)",
-        description:
-          "Runs `tsc` with emit enabled to ensure the project builds.",
-      },
-      {
-        signature: 'verify.ts.buildsProject("<tsconfig>", options?)',
-        description: "Targets a specific tsconfig file via `tsc -p`.",
-      },
-    ],
+    {
+      signature: "verify.ts.noErrors(options?)",
+      description: "Runs `tsc --noEmit` to confirm there are no type errors.",
+    },
+    {
+      signature: "verify.ts.builds(options?)",
+      description: "Runs `tsc` with emit enabled to ensure the project builds.",
+    },
+    {
+      signature: 'verify.ts.buildsProject("<tsconfig>", options?)',
+      description: "Targets a specific tsconfig file via `tsc -p`.",
+    },
+  ],
   api(_context: PluginContext) {
     return {
       ts(builder: VerificationBuilder) {
-        return createPluginEntry(builder, {
+        return new PluginEntry(builder, {
           noErrors: (_builder: VerificationBuilder, options?: TsCheckOptions) =>
             scheduleTsc(
               _builder,
