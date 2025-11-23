@@ -1,6 +1,5 @@
 import {
-  PluginContext,
-  PluginEntry,
+  type PluginOptions,
   type RepoPlugin,
   type VerificationContext,
 } from "@verify-repo/engine";
@@ -23,10 +22,10 @@ export const docker = (): RepoPlugin => ({
         "Takes a full options object to describe the build and passes when `docker build` exits successfully.",
     },
   ],
-  api(_context: PluginContext) {
+  api() {
     return {
       docker(context: VerificationContext) {
-        return new PluginEntry(context, {
+        return context.entry({
           builds: (
             dockerfileOrOptions?: string | DockerBuildOptions,
             explicitOptions?: DockerBuildOptions,

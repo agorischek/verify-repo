@@ -1,6 +1,5 @@
 import {
-  PluginContext,
-  PluginEntry,
+  type PluginOptions,
   type RepoPlugin,
   type VerificationContext,
 } from "@verify-repo/engine";
@@ -20,10 +19,10 @@ export const eslint = (): RepoPlugin => ({
         "Runs the local ESLint binary. Options support files/globs, cwd, config, maxWarnings, fix, and timeoutMs.",
     },
   ],
-  api(_context: PluginContext) {
+  api() {
     return {
       eslint(context: VerificationContext) {
-        return new PluginEntry(context, {
+        return context.entry({
           passes: (options?: EslintOptions) => scheduleEslint(context, options),
         }) as EslintPluginApi;
       },

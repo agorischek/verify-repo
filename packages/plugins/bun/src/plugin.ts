@@ -1,6 +1,5 @@
 import {
-  PluginEntry,
-  type PluginContext,
+  type PluginOptions,
   type RepoPlugin,
   type VerificationContext,
 } from "@verify-repo/engine";
@@ -17,7 +16,7 @@ export const bun = (): RepoPlugin => ({
         "Runs `bun test` (optionally with extra CLI args) relative to the verify file directory and expects a zero exit code. Override cwd, env, or timeout via options.",
     },
   ],
-  api(_context: PluginContext) {
+  api() {
     return {
       bun(context: VerificationContext) {
         return buildBunEntry(context);
@@ -27,20 +26,16 @@ export const bun = (): RepoPlugin => ({
 });
 
 function buildBunEntry(context: VerificationContext): BunPluginApi {
-  const entry = new PluginEntry(context, {});
+  const entry = context.entry({});
   return Object.assign(entry, {
     test: createBunTestEntry(context.extend({ command: "bun test" })),
   }) as BunPluginApi;
 }
 
 function createBunTestEntry(context: VerificationContext): BunTestApi {
-  return new PluginEntry(
-    context,
-    {
-      passes: (options?: BunTestOptions) => scheduleBunTest(context, options),
-    },
-    undefined,
-  ) as BunTestApi;
+  return context.entry({
+    passes: (options?: BunTestOptions) => scheduleBunTest(context, options),
+  }) as BunTestApi;
 }
 
 function scheduleBunTest(

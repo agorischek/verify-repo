@@ -1,12 +1,13 @@
-import type {
-  PluginContext,
-  RepoTestHandler,
-  VerificationMetadata,
-} from "./types";
+import {
+  PluginEntry,
+  type PluginMethod,
+  type PluginCallHandler,
+} from "./PluginEntry";
+import type { RepoTestHandler, VerificationMetadata } from "./types";
 
 export interface VerificationContextOptions {
   pluginName: string;
-  register: PluginContext["register"];
+  register: (description: string, handler: RepoTestHandler) => void;
   root?: string;
   baseDir?: string;
   meta?: VerificationMetadata;
@@ -19,7 +20,10 @@ export class VerificationContext {
   public readonly root?: string;
   public readonly baseDir?: string;
 
-  private readonly registerFn: PluginContext["register"];
+  private readonly registerFn: (
+    description: string,
+    handler: RepoTestHandler,
+  ) => void;
   private readonly parent?: VerificationContext;
   private readonly children = new Set<VerificationContext>();
   private readonly meta: VerificationMetadata;
@@ -111,6 +115,13 @@ export class VerificationContext {
       autoFinalize: options?.autoFinalize ?? false,
       parent: this,
     });
+  }
+
+  public entry<TMethods extends Record<string, PluginMethod>>(
+    methods: TMethods,
+    callHandler?: PluginCallHandler,
+  ): PluginEntry<TMethods, PluginCallHandler | undefined> {
+    return new PluginEntry(this, methods, callHandler);
   }
 
   public register(description: string, handler: RepoTestHandler) {

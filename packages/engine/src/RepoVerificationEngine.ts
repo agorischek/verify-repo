@@ -1,10 +1,10 @@
 import { performance } from "node:perf_hooks";
 import path from "node:path";
 import {
-  PluginContext,
   PluginDocumentation,
   PluginDocumentationEntry,
   PluginEntrypointFactory,
+  PluginOptions,
   RepoPlugin,
   RepoPluginFactory,
   RepoTestDefinition,
@@ -51,13 +51,12 @@ export class RepoVerificationEngine {
     const { factory, name, description, docs } = this.resolvePlugin(plugin);
     this.recordPluginDocs(name, description, docs);
 
-    const context: PluginContext = {
+    const options: PluginOptions = {
       root: this.root,
-      register: (description, handler) => this.register(description, handler),
       packageManager: this.packageManager,
     };
 
-    const api = factory(context) || {};
+    const api = factory(options) || {};
     for (const [name, factory] of Object.entries(api)) {
       if (typeof factory !== "function") {
         throw new Error(

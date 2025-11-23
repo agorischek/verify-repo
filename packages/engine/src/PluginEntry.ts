@@ -1,4 +1,4 @@
-import { VerificationContext } from "./VerificationContext";
+import type { VerificationContext } from "./VerificationContext";
 
 export type PluginMethod<TArgs extends any[] = any[], TResult = unknown> = (
   ...args: TArgs

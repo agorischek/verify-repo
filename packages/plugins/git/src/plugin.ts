@@ -1,6 +1,5 @@
 import {
-  PluginContext,
-  PluginEntry,
+  type PluginOptions,
   type RepoPlugin,
   type VerificationContext,
 } from "@verify-repo/engine";
@@ -53,7 +52,7 @@ export const git = (): RepoPlugin => ({
       description: "Only verifies that the target branch is checked out.",
     },
   ],
-  api({ root }: PluginContext) {
+  api({ root }: PluginOptions) {
     let clientPromise: Promise<SimpleGit> | null = null;
 
     const getClient = async (): Promise<SimpleGit> => {
@@ -83,7 +82,7 @@ export const git = (): RepoPlugin => ({
     };
 
     const buildEntry = (context: VerificationContext): GitPluginApi => {
-      const entry = new PluginEntry(context, {
+      const entry = context.entry({
         isClean: () => scheduleClean(context, getClient),
         hasNoConflicts: () => scheduleConflicts(context, getClient),
         hasStaged: (filePath: string) => {
@@ -118,7 +117,7 @@ function createBranchEntry(
   getGit: () => Promise<SimpleGit>,
   branch: string,
 ): GitBranchPluginApi {
-  return new PluginEntry(context, {
+  return context.entry({
     isClean: () => scheduleBranchClean(context, getGit, branch),
     isCurrent: () => scheduleIsOnBranch(context, getGit, branch),
   }) as GitBranchPluginApi;

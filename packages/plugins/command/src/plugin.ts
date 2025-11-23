@@ -1,6 +1,6 @@
 import {
-  PluginContext,
   PluginEntry,
+  type PluginOptions,
   type RepoPlugin,
   type VerificationContext,
 } from "@verify-repo/engine";
@@ -97,21 +97,18 @@ export const command = (): RepoPlugin => ({
         "Shortcut that schedules an output check for a script in one call.",
     },
   ],
-  api(context: PluginContext) {
+  api({ packageManager }: PluginOptions) {
     const buildEntry = (
-      builder: VerificationContext,
+      context: VerificationContext,
       commandText?: string,
     ): CommandEntrypoint => {
       if (commandText) {
-        return new PluginEntry(
-          builder,
-          createCommandMethods(builder, commandText),
-          undefined,
+        return context.entry(
+          createCommandMethods(context, commandText),
         ) as CommandLeaf;
       }
 
-      const baseEntry = new PluginEntry(
-        builder,
+      const baseEntry = context.entry(
         {},
         (parent: VerificationContext, cmd: string) =>
           buildEntry(parent.extend({ command: cmd }), cmd) as CommandLeaf,
@@ -119,7 +116,7 @@ export const command = (): RepoPlugin => ({
 
       const rootEntry = Object.assign(baseEntry, {
         runs: (cmd: string, options?: CommandRunOptions) => {
-          const child = builder.extend({ command: cmd });
+          const child = context.extend({ command: cmd });
           (buildEntry(child, cmd) as CommandLeaf).runs(options);
         },
         outputs: (
@@ -127,7 +124,7 @@ export const command = (): RepoPlugin => ({
           regex: RegExp,
           options?: CommandOutputOptions,
         ) => {
-          const child = builder.extend({ command: cmd });
+          const child = context.extend({ command: cmd });
           (buildEntry(child, cmd) as CommandLeaf).outputs(regex, options);
         },
       });
@@ -136,33 +133,28 @@ export const command = (): RepoPlugin => ({
     };
 
     const buildScriptEntry = (
-      builder: VerificationContext,
+      context: VerificationContext,
       scriptName?: string,
     ): ScriptEntrypoint => {
-      const packageManager = context.packageManager ?? "npm";
+      const resolvedPackageManager = packageManager ?? "npm";
 
       if (scriptName) {
         const commandText = getPackageManagerCommand(
-          packageManager,
+          resolvedPackageManager,
           scriptName,
         );
-        return new PluginEntry(
-          builder,
-          createCommandMethods(builder, commandText, scriptName),
-          undefined,
+        return context.entry(
+          createCommandMethods(context, commandText, scriptName),
         ) as ScriptLeaf;
       }
 
-      const baseEntry = new PluginEntry(
-        builder,
+      const baseEntry = context.entry(
         {},
         (parent: VerificationContext, script: string) => {
           const child = parent.extend({ script });
           const commandText = getPackageManagerCommand(packageManager, script);
-          return new PluginEntry(
-            child,
+          return child.entry(
             createCommandMethods(child, commandText, script),
-            undefined,
           ) as ScriptLeaf;
         },
       );
@@ -170,12 +162,10 @@ export const command = (): RepoPlugin => ({
       const rootEntry = Object.assign(baseEntry, {
         runs: (script: string, options?: CommandRunOptions) => {
           const commandText = getPackageManagerCommand(packageManager, script);
-          const child = builder.extend({ script });
+          const child = context.extend({ script });
           (
-            new PluginEntry(
-              child,
+            child.entry(
               createCommandMethods(child, commandText, script),
-              undefined,
             ) as ScriptLeaf
           ).runs(options);
         },
@@ -185,12 +175,10 @@ export const command = (): RepoPlugin => ({
           options?: CommandOutputOptions,
         ) => {
           const commandText = getPackageManagerCommand(packageManager, script);
-          const child = builder.extend({ script });
+          const child = context.extend({ script });
           (
-            new PluginEntry(
-              child,
+            child.entry(
               createCommandMethods(child, commandText, script),
-              undefined,
             ) as ScriptLeaf
           ).outputs(regex, options);
         },
@@ -200,11 +188,11 @@ export const command = (): RepoPlugin => ({
     };
 
     return {
-      command(builder: VerificationContext) {
-        return buildEntry(builder);
+      command(context: VerificationContext) {
+        return buildEntry(context);
       },
-      script(builder: VerificationContext) {
-        return buildScriptEntry(builder);
+      script(context: VerificationContext) {
+        return buildScriptEntry(context);
       },
     };
   },

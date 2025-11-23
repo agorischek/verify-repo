@@ -39,9 +39,8 @@ export interface RepoTestRunSummary {
   results: RepoTestResult[];
 }
 
-export interface PluginContext {
+export interface PluginOptions {
   root?: string;
-  register: (description: string, handler: RepoTestHandler) => void;
   packageManager?: "npm" | "yarn" | "pnpm" | "bun";
 }
 
@@ -74,7 +73,7 @@ export interface RepoPluginMetadata {
 export interface RepoPluginFactory<
   T extends RepoPluginResult = RepoPluginResult,
 > extends RepoPluginMetadata {
-  (context: PluginContext): T;
+  (options: PluginOptions): T;
 }
 
 export interface RepoPluginDefinition<

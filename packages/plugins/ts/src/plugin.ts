@@ -1,6 +1,5 @@
 import {
-  PluginContext,
-  PluginEntry,
+  type PluginOptions,
   type RepoPlugin,
   type VerificationContext,
 } from "@verify-repo/engine";
@@ -27,10 +26,10 @@ export const ts = (): RepoPlugin => ({
       description: "Targets a specific tsconfig file via `tsc -p`.",
     },
   ],
-  api(_context: PluginContext) {
+  api() {
     return {
       ts(context: VerificationContext) {
-        return new PluginEntry(context, {
+        return context.entry({
           noErrors: (options?: TsCheckOptions) =>
             scheduleTsc(
               context,

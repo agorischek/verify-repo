@@ -1,6 +1,5 @@
 import {
-  PluginContext,
-  PluginEntry,
+  type PluginOptions,
   type RepoPlugin,
   type VerificationContext,
 } from "@verify-repo/engine";
@@ -44,21 +43,20 @@ export const fs = (): RepoPlugin => ({
       description: "Ensures the directory does not exist.",
     },
   ],
-  api(_context: PluginContext) {
+  api() {
     const buildFileEntry = (
       context: VerificationContext,
       filePath?: string,
     ): FileEntrypoint => {
       if (filePath) {
         const methods = createFileMethods(context, filePath);
-        const api = new PluginEntry(context, methods.positive, undefined);
-        const notApi = new PluginEntry(context, methods.negative, undefined);
+        const api = context.entry(methods.positive);
+        const notApi = context.entry(methods.negative);
 
         return Object.assign(api, { not: notApi }) as unknown as FilePluginApi;
       }
 
-      return new PluginEntry(
-        context,
+      return context.entry(
         {},
         (parent: VerificationContext, target: string) =>
           buildFileEntry(
@@ -74,14 +72,13 @@ export const fs = (): RepoPlugin => ({
     ): DirRoot | DirPluginApi => {
       if (dirPath) {
         const methods = createDirMethods(context, dirPath);
-        const api = new PluginEntry(context, methods.positive, undefined);
-        const notApi = new PluginEntry(context, methods.negative, undefined);
+        const api = context.entry(methods.positive);
+        const notApi = context.entry(methods.negative);
 
         return Object.assign(api, { not: notApi }) as unknown as DirPluginApi;
       }
 
-      return new PluginEntry(
-        context,
+      return context.entry(
         {},
         (parent: VerificationContext, target: string) =>
           buildDirEntry(parent.extend({ dir: target }), target) as DirPluginApi,

@@ -1,6 +1,6 @@
 import {
-  PluginContext,
   PluginEntry,
+  type PluginOptions,
   type RepoPlugin,
   type VerificationContext,
 } from "@verify-repo/engine";
@@ -50,14 +50,13 @@ export const prettier = (): RepoPlugin => ({
       description: "Targets a single file relative to the verify file.",
     },
   ],
-  api(_context: PluginContext) {
+  api() {
     const buildEntry = (
       context: VerificationContext,
       selection?: Selection,
     ): PrettierEntrypoint => {
       if (selection) {
-        return new PluginEntry(
-          context,
+        return context.entry(
           {
             isFormatted: () => scheduleFormatting(context, selection),
           },
