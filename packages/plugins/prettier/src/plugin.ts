@@ -1,8 +1,8 @@
 import {
-  PluginContext,
   PluginEntry,
+  type PluginOptions,
   type RepoPlugin,
-  type VerificationBuilder,
+  type VerificationContext,
 } from "@verify-repo/engine";
 import { glob } from "glob";
 import path from "node:path";
@@ -50,28 +50,27 @@ export const prettier = (): RepoPlugin => ({
       description: "Targets a single file relative to the verify file.",
     },
   ],
-  api(_context: PluginContext) {
+  api() {
     const buildEntry = (
-      builder: VerificationBuilder,
+      context: VerificationContext,
       selection?: Selection,
     ): PrettierEntrypoint => {
       if (selection) {
-        return new PluginEntry(
-          builder,
+        return context.entry(
           {
-            isFormatted: () => scheduleFormatting(builder, selection),
+            isFormatted: () => scheduleFormatting(context, selection),
           },
           undefined,
         ) as PrettierLeaf;
       }
 
       const baseEntry = new PluginEntry(
-        builder,
+        context,
         {
-          isFormatted: () => scheduleFormatting(builder, selection),
+          isFormatted: () => scheduleFormatting(context, selection),
         },
-        (parent: VerificationBuilder, pattern: string) =>
-          buildEntry(parent.createChild({ pattern }), {
+        (parent: VerificationContext, pattern: string) =>
+          buildEntry(parent.extend({ pattern }), {
             type: "pattern",
             value: pattern,
           }) as PrettierLeaf,
@@ -79,7 +78,7 @@ export const prettier = (): RepoPlugin => ({
 
       const rootEntry = Object.assign(baseEntry, {
         file: (filePath: string) =>
-          buildEntry(builder.createChild({ file: filePath }), {
+          buildEntry(context.extend({ file: filePath }), {
             type: "file",
             value: filePath,
           }) as PrettierLeaf,
@@ -89,8 +88,8 @@ export const prettier = (): RepoPlugin => ({
     };
 
     return {
-      prettier(builder: VerificationBuilder) {
-        return buildEntry(builder);
+      prettier(context: VerificationContext) {
+        return buildEntry(context);
       },
     };
   },
@@ -113,13 +112,13 @@ async function loadPrettier(cwd: string) {
 }
 
 function scheduleFormatting(
-  builder: VerificationBuilder,
+  context: VerificationContext,
   selection: Selection,
 ) {
   const description = getDescription(selection);
-  builder.schedule(description, async ({ pass, fail }) => {
+  context.register(description, async ({ pass, fail }) => {
     try {
-      const baseDir = builder.cwd;
+      const baseDir = context.cwd;
       const prettierModule = await loadPrettier(baseDir);
       const configFile = await prettierModule.resolveConfigFile(baseDir);
       const config = configFile

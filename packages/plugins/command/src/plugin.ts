@@ -1,8 +1,8 @@
 import {
-  PluginContext,
   PluginEntry,
+  type PluginOptions,
   type RepoPlugin,
-  type VerificationBuilder,
+  type VerificationContext,
 } from "@verify-repo/engine";
 import { checkOutputContainsLine } from "./checks";
 import {
@@ -97,29 +97,26 @@ export const command = (): RepoPlugin => ({
         "Shortcut that schedules an output check for a script in one call.",
     },
   ],
-  api(context: PluginContext) {
+  api({ packageManager }: PluginOptions) {
     const buildEntry = (
-      builder: VerificationBuilder,
+      context: VerificationContext,
       commandText?: string,
     ): CommandEntrypoint => {
       if (commandText) {
-        return new PluginEntry(
-          builder,
-          createCommandMethods(builder, commandText),
-          undefined,
+        return context.entry(
+          createCommandMethods(context, commandText),
         ) as CommandLeaf;
       }
 
-      const baseEntry = new PluginEntry(
-        builder,
+      const baseEntry = context.entry(
         {},
-        (parent: VerificationBuilder, cmd: string) =>
-          buildEntry(parent.createChild({ command: cmd }), cmd) as CommandLeaf,
+        (parent: VerificationContext, cmd: string) =>
+          buildEntry(parent.extend({ command: cmd }), cmd) as CommandLeaf,
       );
 
       const rootEntry = Object.assign(baseEntry, {
         runs: (cmd: string, options?: CommandRunOptions) => {
-          const child = builder.createChild({ command: cmd });
+          const child = context.extend({ command: cmd });
           (buildEntry(child, cmd) as CommandLeaf).runs(options);
         },
         outputs: (
@@ -127,7 +124,7 @@ export const command = (): RepoPlugin => ({
           regex: RegExp,
           options?: CommandOutputOptions,
         ) => {
-          const child = builder.createChild({ command: cmd });
+          const child = context.extend({ command: cmd });
           (buildEntry(child, cmd) as CommandLeaf).outputs(regex, options);
         },
       });
@@ -136,33 +133,28 @@ export const command = (): RepoPlugin => ({
     };
 
     const buildScriptEntry = (
-      builder: VerificationBuilder,
+      context: VerificationContext,
       scriptName?: string,
     ): ScriptEntrypoint => {
-      const packageManager = context.packageManager ?? "npm";
+      const resolvedPackageManager = packageManager ?? "npm";
 
       if (scriptName) {
         const commandText = getPackageManagerCommand(
-          packageManager,
+          resolvedPackageManager,
           scriptName,
         );
-        return new PluginEntry(
-          builder,
-          createCommandMethods(builder, commandText, scriptName),
-          undefined,
+        return context.entry(
+          createCommandMethods(context, commandText, scriptName),
         ) as ScriptLeaf;
       }
 
-      const baseEntry = new PluginEntry(
-        builder,
+      const baseEntry = context.entry(
         {},
-        (parent: VerificationBuilder, script: string) => {
-          const child = parent.createChild({ script });
+        (parent: VerificationContext, script: string) => {
+          const child = parent.extend({ script });
           const commandText = getPackageManagerCommand(packageManager, script);
-          return new PluginEntry(
-            child,
+          return child.entry(
             createCommandMethods(child, commandText, script),
-            undefined,
           ) as ScriptLeaf;
         },
       );
@@ -170,12 +162,10 @@ export const command = (): RepoPlugin => ({
       const rootEntry = Object.assign(baseEntry, {
         runs: (script: string, options?: CommandRunOptions) => {
           const commandText = getPackageManagerCommand(packageManager, script);
-          const child = builder.createChild({ script });
+          const child = context.extend({ script });
           (
-            new PluginEntry(
-              child,
+            child.entry(
               createCommandMethods(child, commandText, script),
-              undefined,
             ) as ScriptLeaf
           ).runs(options);
         },
@@ -185,12 +175,10 @@ export const command = (): RepoPlugin => ({
           options?: CommandOutputOptions,
         ) => {
           const commandText = getPackageManagerCommand(packageManager, script);
-          const child = builder.createChild({ script });
+          const child = context.extend({ script });
           (
-            new PluginEntry(
-              child,
+            child.entry(
               createCommandMethods(child, commandText, script),
-              undefined,
             ) as ScriptLeaf
           ).outputs(regex, options);
         },
@@ -200,18 +188,18 @@ export const command = (): RepoPlugin => ({
     };
 
     return {
-      command(builder: VerificationBuilder) {
-        return buildEntry(builder);
+      command(context: VerificationContext) {
+        return buildEntry(context);
       },
-      script(builder: VerificationBuilder) {
-        return buildScriptEntry(builder);
+      script(context: VerificationContext) {
+        return buildScriptEntry(context);
       },
     };
   },
 });
 
 function createCommandMethods(
-  builder: VerificationBuilder,
+  context: VerificationContext,
   commandText: string,
   scriptName?: string,
 ) {
@@ -220,13 +208,13 @@ function createCommandMethods(
   const entityType = isScript ? "Script" : "Command";
 
   return {
-    runs: (_builder: VerificationBuilder, options?: CommandRunOptions) => {
+    runs: (options?: CommandRunOptions) => {
       const description = `${entityType} "${displayName}" should run successfully`;
-      builder.schedule(description, async ({ pass, fail }) => {
+      context.register(description, async ({ pass, fail }) => {
         try {
           const result = await runCommand(
             commandText,
-            deriveRunOptions(builder.cwd, options),
+            deriveRunOptions(context.cwd, options),
           );
           const expected = options?.expectExitCode ?? 0;
           if (result.exitCode === expected) {
@@ -245,16 +233,12 @@ function createCommandMethods(
         }
       });
     },
-    outputs: (
-      _builder: VerificationBuilder,
-      regex: RegExp,
-      options?: CommandOutputOptions,
-    ) => {
+    outputs: (regex: RegExp, options?: CommandOutputOptions) => {
       const description = `${entityType} "${displayName}" output should match ${regex}`;
-      builder.schedule(description, async ({ pass, fail }) => {
+      context.register(description, async ({ pass, fail }) => {
         try {
           const { child, stdout } = await runCommandStreaming(commandText, {
-            cwd: options?.cwd ?? builder.cwd,
+            cwd: options?.cwd ?? context.cwd,
             env: options?.env,
           });
 

@@ -73,11 +73,11 @@ function createVerifyProxy(meta: VerificationMetadata = {}): RepoVerifier {
 
       const pluginFactory = tester.getPluginEntrypoint(prop);
       if (pluginFactory) {
-        const builder = tester.createVerificationBuilder(
+        const context = tester.createVerificationContext(
           String(prop),
           normalizedMeta,
         );
-        return pluginFactory(builder);
+        return pluginFactory(context);
       }
 
       const value = (tester as any)[prop];

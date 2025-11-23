@@ -80,38 +80,32 @@ configure({
 
 ## Authoring plugins
 
-Plugins use `new PluginEntry(builder, methods, callHandler?)`. Each method receives the active `VerificationBuilder` so you can mark the check as registered and call `builder.schedule(description, handler)`:
+Plugins define methods that register verifications using `context.register`. You can use the `context.entry` helper to simplify wrapping methods:
 
 ```ts
-import {
-  PluginContext,
-  PluginEntry,
-  type RepoPlugin,
-  type VerificationBuilder,
-} from "verify-repo";
+import { plugin } from "verify-repo";
 
-export const hello = (): RepoPlugin => ({
-  name: "Hello",
-  description: "A friendly plugin.",
-  docs: [
-    {
-      signature: 'verify.hello("name").greets()',
-      description: "Checks that the hello greeting is received.",
-    },
-  ],
-  api: ({ root }: PluginContext) => ({
-    hello(builder: VerificationBuilder) {
-        return new PluginEntry(builder, {
-          greets: (_builder, name: string) => {
-            builder.schedule(`says hello to ${name}`, async ({ pass }) => {
+export const hello = () =>
+  plugin({
+    name: "Hello",
+    description: "A friendly plugin.",
+    docs: [
+      {
+        signature: 'verify.hello("name").greets()',
+        description: "Checks that the hello greeting is received.",
+      },
+    ],
+    api: ({ root }) => ({
+      hello: ({ entry, register }) =>
+        entry({
+          greets: (name: string) => {
+            register(`says hello to ${name}`, async ({ pass }) => {
               pass(`Hello, ${name}! (from ${root ?? process.cwd()})`);
             });
           },
-        });
-      },
+        }),
     }),
-  },
-});
+  });
 ```
 
-Use `builder.createChild(meta)` inside call handlers to support selectors (e.g. `verify.hello("world").greets()`).
+Use `context.extend(meta)` inside call handlers to support selectors (e.g. `verify.hello("world").greets()`).

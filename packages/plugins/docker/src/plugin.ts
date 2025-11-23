@@ -1,8 +1,7 @@
 import {
-  PluginContext,
-  PluginEntry,
+  type PluginOptions,
   type RepoPlugin,
-  type VerificationBuilder,
+  type VerificationContext,
 } from "@verify-repo/engine";
 import { spawn } from "node:child_process";
 import type { DockerBuildOptions, DockerPluginApi } from "./types";
@@ -23,21 +22,20 @@ export const docker = (): RepoPlugin => ({
         "Takes a full options object to describe the build and passes when `docker build` exits successfully.",
     },
   ],
-  api(_context: PluginContext) {
+  api() {
     return {
-      docker(builder: VerificationBuilder) {
-        return new PluginEntry(builder, {
+      docker(context: VerificationContext) {
+        return context.entry({
           builds: (
-            _builder: VerificationBuilder,
             dockerfileOrOptions?: string | DockerBuildOptions,
             explicitOptions?: DockerBuildOptions,
           ) => {
             const normalized = normalizeOptions(
-              builder.cwd,
+              context.cwd,
               dockerfileOrOptions,
               explicitOptions,
             );
-            scheduleDockerBuild(_builder, normalized);
+            scheduleDockerBuild(context, normalized);
           },
         }) as DockerPluginApi;
       },
@@ -77,14 +75,14 @@ function normalizeOptions(
 }
 
 function scheduleDockerBuild(
-  builder: VerificationBuilder,
+  context: VerificationContext,
   options: NormalizedDockerOptions,
 ) {
   const description = options.dockerfile
     ? `Dockerfile "${options.dockerfile}" should build`
     : "Docker image should build";
 
-  builder.schedule(description, async ({ pass, fail }) => {
+  context.register(description, async ({ pass, fail }) => {
     const args = buildDockerArgs(options);
     try {
       const result = await runDockerBuild(args, {

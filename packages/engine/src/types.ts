@@ -39,9 +39,8 @@ export interface RepoTestRunSummary {
   results: RepoTestResult[];
 }
 
-export interface PluginContext {
+export interface PluginOptions {
   root?: string;
-  schedule: (description: string, handler: RepoTestHandler) => void;
   packageManager?: "npm" | "yarn" | "pnpm" | "bun";
 }
 
@@ -49,8 +48,8 @@ export type VerificationMetadata = Record<string, unknown>;
 
 export type PluginEntrypointFactory<
   TResult = unknown,
-  TBuilder = import("./VerificationBuilder").VerificationBuilder,
-> = (builder: TBuilder) => TResult;
+  TBuilder = import("./VerificationContext").VerificationContext,
+> = (context: TBuilder) => TResult;
 
 export type RepoPluginResult = Record<string, PluginEntrypointFactory>;
 
@@ -74,7 +73,7 @@ export interface RepoPluginMetadata {
 export interface RepoPluginFactory<
   T extends RepoPluginResult = RepoPluginResult,
 > extends RepoPluginMetadata {
-  (context: PluginContext): T;
+  (options: PluginOptions): T;
 }
 
 export interface RepoPluginDefinition<

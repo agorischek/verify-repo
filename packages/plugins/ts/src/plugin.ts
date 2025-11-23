@@ -1,8 +1,7 @@
 import {
-  PluginContext,
-  PluginEntry,
+  type PluginOptions,
   type RepoPlugin,
-  type VerificationBuilder,
+  type VerificationContext,
 } from "@verify-repo/engine";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
@@ -27,31 +26,27 @@ export const ts = (): RepoPlugin => ({
       description: "Targets a specific tsconfig file via `tsc -p`.",
     },
   ],
-  api(_context: PluginContext) {
+  api() {
     return {
-      ts(builder: VerificationBuilder) {
-        return new PluginEntry(builder, {
-          noErrors: (_builder: VerificationBuilder, options?: TsCheckOptions) =>
+      ts(context: VerificationContext) {
+        return context.entry({
+          noErrors: (options?: TsCheckOptions) =>
             scheduleTsc(
-              _builder,
+              context,
               ["--noEmit", "--pretty", "false"],
               "TypeScript should have no errors",
               options,
             ),
-          builds: (_builder: VerificationBuilder, options?: TsCheckOptions) =>
+          builds: (options?: TsCheckOptions) =>
             scheduleTsc(
-              _builder,
+              context,
               ["--pretty", "false"],
               "TypeScript project should build",
               options,
             ),
-          buildsProject: (
-            _builder: VerificationBuilder,
-            tsconfigPath: string,
-            options?: TsCheckOptions,
-          ) =>
+          buildsProject: (tsconfigPath: string, options?: TsCheckOptions) =>
             scheduleTsc(
-              _builder,
+              context,
               ["-p", tsconfigPath, "--pretty", "false"],
               `TypeScript project "${tsconfigPath}" should build`,
               options,
@@ -63,14 +58,14 @@ export const ts = (): RepoPlugin => ({
 });
 
 function scheduleTsc(
-  builder: VerificationBuilder,
+  context: VerificationContext,
   args: string[],
   description: string,
   options?: TsCheckOptions,
 ) {
-  builder.schedule(description, async ({ pass, fail }) => {
+  context.register(description, async ({ pass, fail }) => {
     try {
-      const cwd = options?.cwd ?? builder.cwd;
+      const cwd = options?.cwd ?? context.cwd;
       const result = await runTsc(args, { cwd, timeoutMs: options?.timeoutMs });
       if (result.exitCode === 0) {
         pass("TypeScript completed successfully.");
