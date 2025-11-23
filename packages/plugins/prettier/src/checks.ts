@@ -7,7 +7,7 @@ export async function checkPrettierFormatted(
   options: {
     config: Options | null;
     root: string;
-    prettierModule: typeof import("prettier").default;
+    prettierModule: typeof import("prettier");
   },
 ) {
   const { config, root, prettierModule } = options;

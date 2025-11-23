@@ -14,14 +14,6 @@
     "build": "tsdown"
   },
   "dependencies": {
-    "@verify-repo/engine": "workspace:*",
-    "@verify-repo/plugin-fs": "workspace:*",
-    "@verify-repo/plugin-command": "workspace:*",
-    "@verify-repo/plugin-prettier": "workspace:*",
-    "@verify-repo/plugin-git": "workspace:*",
-    "@verify-repo/plugin-ts": "workspace:*",
-    "@verify-repo/plugin-eslint": "workspace:*",
-    "@verify-repo/plugin-docker": "workspace:*",
     "glob": "^13.0.0"
   }
 }
