@@ -9,15 +9,30 @@
   ],
   "scripts": {
     "build": "cd packages/bundle && bun run build",
+    "check": "checks",
     "verify": "bun packages/bundle/src/bin.ts",
     "verify:docs": "bun packages/bundle/src/bin.ts --docs",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "check:format": "prettier --check ."
+  },
+  "checks": {
+    "runner": "bun",
+    "scripts": [
+      "typecheck",
+      "build",
+      {
+        "check": "check:format",
+        "fix": "format"
+      },
+      "test"
+    ]
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "bun-types": "latest",
+    "check-1-2": "^0.0.7",
     "prettier": "^3.6.2",
     "simple-git": "^3.30.0",
     "tsdown": "^0.9.0",
