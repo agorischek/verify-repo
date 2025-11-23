@@ -1,3 +1,5 @@
+<img src="static/logo.png" alt="verify-repo logo" width="200">
+
 # verify-repo
 
 Test the state of your repository. Great for letting coding agents prove they're done.
