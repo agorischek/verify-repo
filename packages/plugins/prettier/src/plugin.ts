@@ -6,9 +6,11 @@ import {
 } from "@verify-repo/engine";
 import { glob } from "glob";
 import path from "node:path";
-import prettierModule from "prettier";
+import { createRequire } from "node:module";
 import { checkPrettierFormatted } from "./checks";
 import type { PrettierPluginApi, PrettierSelectorApi } from "./types";
+
+const require = createRequire(import.meta.url);
 
 const DEFAULT_GLOBS = [
   "**/*.{js,jsx,ts,tsx,json,css,scss,less,html,md,mdx,yml,yaml,graphql,gql}",
@@ -96,6 +98,22 @@ export const prettier = (): RepoPlugin => ({
   },
 });
 
+async function loadPrettier(cwd: string) {
+  const searchPaths = [cwd, process.cwd()];
+  for (const base of searchPaths) {
+    try {
+      const prettierPath = require.resolve("prettier", { paths: [base] });
+      const prettierModule = await import(prettierPath);
+      return prettierModule.default || prettierModule;
+    } catch {
+      // continue
+    }
+  }
+  throw new Error(
+    'Could not find Prettier. Install "prettier" in your project to use this check.',
+  );
+}
+
 function scheduleFormatting(
   builder: VerificationBuilder,
   selection: Selection,
@@ -104,6 +122,7 @@ function scheduleFormatting(
   builder.schedule(description, async ({ pass, fail }) => {
     try {
       const baseDir = builder.cwd;
+      const prettierModule = await loadPrettier(baseDir);
       const configFile = await prettierModule.resolveConfigFile(baseDir);
       const config = configFile
         ? await prettierModule.resolveConfig(configFile)
@@ -113,6 +132,7 @@ function scheduleFormatting(
       const result = await checkPrettierFormatted(filesToCheck, {
         config,
         root: baseDir,
+        prettierModule,
       });
 
       if (result.pass) {

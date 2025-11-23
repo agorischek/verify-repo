@@ -44,7 +44,7 @@
       "@verify-repo/plugin-command": [
         "./packages/plugins/command/src/index.ts"
       ],
-      "@verify-repo/plugin-file": ["packages/plugins/fs/src/index.ts"],
+      "@verify-repo/plugin-fs": ["packages/plugins/fs/src/index.ts"],
       "@verify-repo/plugin-prettier": [
         "./packages/plugins/prettier/src/index.ts"
       ],

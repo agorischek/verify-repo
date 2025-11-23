@@ -5,8 +5,12 @@ import {
   type VerificationBuilder,
 } from "@verify-repo/engine";
 import path from "node:path";
-import simpleGit from "simple-git";
+import { createRequire } from "node:module";
 import type { GitBranchPluginApi, GitPluginApi } from "./types";
+
+const require = createRequire(import.meta.url);
+
+type SimpleGit = ReturnType<typeof import("simple-git").default>;
 
 const formatFiles = (
   files: { path: string; working: string; index: string }[],
@@ -52,26 +56,48 @@ export const git = (): RepoPlugin => ({
     ],
   },
   api({ root }: PluginContext) {
-    const client = simpleGit(root);
+    let clientPromise: Promise<SimpleGit> | null = null;
+
+    const getClient = async (): Promise<SimpleGit> => {
+      if (!clientPromise) {
+        clientPromise = (async () => {
+          const searchPaths = [root, process.cwd()];
+          for (const base of searchPaths) {
+            try {
+              const simpleGitPath = require.resolve("simple-git", { paths: [base] });
+              const simpleGitModule = await import(simpleGitPath);
+              const simpleGit = simpleGitModule.default || simpleGitModule;
+              return simpleGit(root);
+            } catch {
+              // continue
+            }
+          }
+          throw new Error(
+            'Could not find simple-git. Install "simple-git" in your project to use this check.',
+          );
+        })();
+      }
+      return clientPromise;
+    };
 
     const buildEntry = (builder: VerificationBuilder): GitPluginApi => {
       const entry = createPluginEntry(builder, {
-        isClean: () => scheduleClean(builder, client),
-        hasNoConflicts: () => scheduleConflicts(builder, client),
+        isClean: () => scheduleClean(builder, getClient),
+        hasNoConflicts: () => scheduleConflicts(builder, getClient),
         hasStaged: (_b: VerificationBuilder, filePath: string) => {
           const base = builder.cwd;
           const repoRoot = builder.root ?? process.cwd();
           const abs = path.resolve(base, filePath);
           const rel = path.relative(repoRoot, abs);
-          return scheduleHasStaged(builder, client, rel);
+          return scheduleHasStaged(builder, getClient, rel);
         },
         isOnBranch: (_b: VerificationBuilder, branch: string) =>
-          scheduleIsOnBranch(builder, client, branch),
+          scheduleIsOnBranch(builder, getClient, branch),
       }) as GitPluginApi;
 
       entry.branch = (branch: string) => {
         const child = builder.createChild({ branch });
-        return createBranchEntry(child, client, branch);
+        return createBranchEntry(child, getClient, branch);
       };
 
       return entry;
@@ -87,21 +113,22 @@ export const git = (): RepoPlugin => ({
 
 function createBranchEntry(
   builder: VerificationBuilder,
-  git: ReturnType<typeof simpleGit>,
+  getGit: () => Promise<SimpleGit>,
   branch: string,
 ): GitBranchPluginApi {
   return createPluginEntry(builder, {
-    isClean: () => scheduleBranchClean(builder, git, branch),
-    isCurrent: () => scheduleIsOnBranch(builder, git, branch),
+    isClean: () => scheduleBranchClean(builder, getGit, branch),
+    isCurrent: () => scheduleIsOnBranch(builder, getGit, branch),
   }) as GitBranchPluginApi;
 }
 
 function scheduleClean(
   builder: VerificationBuilder,
-  git: ReturnType<typeof simpleGit>,
+  getGit: () => Promise<SimpleGit>,
 ) {
   builder.schedule("git status should be clean", async ({ pass, fail }) => {
     try {
+      const git = await getGit();
       const status = await git.status();
       if (status.isClean()) {
         pass("repository is clean");
@@ -127,10 +154,11 @@ function scheduleClean(
 
 function scheduleConflicts(
   builder: VerificationBuilder,
-  git: ReturnType<typeof simpleGit>,
+  getGit: () => Promise<SimpleGit>,
 ) {
   builder.schedule("git should have no conflicts", async ({ pass, fail }) => {
     try {
+      const git = await getGit();
       const status = await git.status();
       if (status.conflicted.length === 0) {
         pass("no conflicted files");
@@ -145,13 +173,14 @@ function scheduleConflicts(
 
 function scheduleHasStaged(
   builder: VerificationBuilder,
-  git: ReturnType<typeof simpleGit>,
+  getGit: () => Promise<SimpleGit>,
   filePath: string,
 ) {
   builder.schedule(
     `git should have staged changes for "${filePath}"`,
     async ({ pass, fail }) => {
       try {
+        const git = await getGit();
         const status = await git.status();
         const file = status.files.find((f) => f.path === filePath);
 
@@ -174,13 +203,14 @@ function scheduleHasStaged(
 
 function scheduleIsOnBranch(
   builder: VerificationBuilder,
-  git: ReturnType<typeof simpleGit>,
+  getGit: () => Promise<SimpleGit>,
   branch: string,
 ) {
   builder.schedule(
     `git should be on branch "${branch}"`,
     async ({ pass, fail }) => {
       try {
+        const git = await getGit();
         const status = await git.status();
         if (status.current === branch) {
           pass(`checked-out branch is "${branch}".`);
@@ -198,13 +228,14 @@ function scheduleIsOnBranch(
 
 function scheduleBranchClean(
   builder: VerificationBuilder,
-  git: ReturnType<typeof simpleGit>,
+  getGit: () => Promise<SimpleGit>,
   branch: string,
 ) {
   builder.schedule(
     `branch "${branch}" should be current and clean`,
     async ({ pass, fail }) => {
       try {
+        const git = await getGit();
         const status = await git.status();
         if (status.current !== branch) {
           fail(

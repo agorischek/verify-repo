@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@verify-repo/engine": "workspace:*",
-    "@verify-repo/plugin-file": "workspace:*",
+    "@verify-repo/plugin-fs": "workspace:*",
     "@verify-repo/plugin-command": "workspace:*",
     "@verify-repo/plugin-prettier": "workspace:*",
     "@verify-repo/plugin-git": "workspace:*",

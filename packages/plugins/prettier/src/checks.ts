@@ -1,12 +1,16 @@
 import { readFile } from "fs/promises";
 import * as path from "path";
-import prettierModule from "prettier";
+import type { Options } from "prettier";
 
 export async function checkPrettierFormatted(
   files: string[],
-  options: { config: prettierModule.Options | null; root: string },
+  options: {
+    config: Options | null;
+    root: string;
+    prettierModule: typeof import("prettier").default;
+  },
 ) {
-  const { config, root } = options;
+  const { config, root, prettierModule } = options;
   const ignorePath = path.join(root, ".prettierignore");
 
   // Filter files that Prettier should format
