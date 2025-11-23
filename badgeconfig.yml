@@ -1,0 +1,18 @@
+badges:
+  - id: npm/v
+    about:
+      package: verify-repo
+  - github/actions/workflow/status
+  - github/license
+  - badge-roll
+
+settings:
+  separator: space
+  provider: shields
+  position: below-title
+
+about:
+  branch: main
+  workflow: .github/workflows/ci.yml
+  package: verify-repo
+
