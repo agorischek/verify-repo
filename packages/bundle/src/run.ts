@@ -27,11 +27,8 @@ async function ensureTsxRegistered() {
 
   try {
     // Dynamically import tsx's loader registration
-    // @ts-expect-error - tsx is a runtime dependency, not available at type-check time
     const { register } = await import("tsx/esm/api");
-    register({
-      cwd: process.cwd(),
-    });
+    register();
     tsxRegistered = true;
   } catch (error) {
     throw new Error(
