@@ -18,10 +18,12 @@
     "README.md"
   ],
   "scripts": {
+    "badge": "badge-roll affix",
     "build": "tsdown",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "glob": "^13.0.0"
+    "glob": "^13.0.0",
+    "tsx": "^4.19.2"
   }
 }

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { RepoVerificationFailedError } from "./errors";
 import { printDocs } from "./docs";
 import { run } from "./run";
