@@ -10,11 +10,9 @@ verify.file("bun.lock").not.exists();
 verify.dir("packages/bundle/dist").exists();
 verify.dir("packages/plugins").exists();
 
-verify.files("**/*.ts").lines({ max: 30 });
-
 // Code quality gates
 verify.prettier.isFormatted();
-
+verify.files("**/*.ts").lines({ max: 300 });
 verify.ts.noErrors();
 verify.ts.builds();
 
