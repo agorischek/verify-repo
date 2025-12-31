@@ -95,7 +95,8 @@ function scheduleFormatting(context: VerificationContext, selection: Selection) 
     try {
       const baseDir = context.dir;
       const prettierModule = await loadPrettier(baseDir);
-      const configFile = await prettierModule.resolveConfigFile(baseDir);
+      // resolveConfigFile requires a file path, not a directory
+      const configFile = await prettierModule.resolveConfigFile(path.join(baseDir, "package.json"));
       const config = configFile ? await prettierModule.resolveConfig(configFile) : null;
 
       const filesToCheck = await resolveFiles(baseDir, selection);
