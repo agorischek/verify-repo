@@ -245,32 +245,17 @@ export class RepoVerificationEngine {
       durationMs: 0,
     };
 
-    let settled = false;
-
-    const settle = (status: "passed" | "failed", message?: string, error?: unknown) => {
-      if (settled) {
-        return;
-      }
-      settled = true;
-      result.status = status;
-      result.message = message ?? definition.description;
-      if (status === "failed" && error !== undefined) {
-        result.error = this.serializeError(error);
-      }
-    };
-
-    const controls = {
-      pass: (message: string) => settle("passed", message),
-      fail: (message: string, error?: unknown) => settle("failed", message, error),
-    };
-
     try {
-      await definition.handler(controls);
-      if (!settled) {
-        settle("failed", `Test "${definition.description}" completed without calling pass() or fail().`);
+      const checkResult = await definition.handler();
+      result.status = checkResult.pass ? "passed" : "failed";
+      result.message = checkResult.message;
+      if (!checkResult.pass && checkResult.error !== undefined) {
+        result.error = this.serializeError(checkResult.error);
       }
     } catch (error) {
-      settle("failed", `Test "${definition.description}" threw an error.`, error);
+      result.status = "failed";
+      result.message = `Test "${definition.description}" threw an error.`;
+      result.error = this.serializeError(error);
     } finally {
       result.durationMs = performance.now() - startedAt;
     }

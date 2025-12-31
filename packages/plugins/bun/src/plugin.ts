@@ -40,7 +40,7 @@ function scheduleBunTest(context: VerificationContext, options?: BunTestOptions)
   const bunArgs = ["test", ...extraArgs];
   const label = formatCommand(bunArgs);
 
-  context.register(`${label} should succeed`, async ({ pass, fail }) => {
+  context.register(`${label} should succeed`, async () => {
     try {
       const result = await runBunCommand(bunArgs, {
         dir,
@@ -49,13 +49,15 @@ function scheduleBunTest(context: VerificationContext, options?: BunTestOptions)
       });
 
       if (result.exitCode === 0) {
-        pass(`"${label}" completed successfully.`);
-        return;
+        return { pass: true, message: `"${label}" completed successfully.` };
       }
 
-      fail(`"${label}" exited with ${result.exitCode}.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
+      return {
+        pass: false,
+        message: `"${label}" exited with ${result.exitCode}.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
+      };
     } catch (error) {
-      fail(`Failed to run "${label}".`, error);
+      return { pass: false, message: `Failed to run "${label}".`, error };
     }
   });
 }

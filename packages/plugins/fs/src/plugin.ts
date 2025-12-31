@@ -106,47 +106,39 @@ function createFileMethods(context: VerificationContext, filePath: string) {
     positive: {
       exists: async () => {
         const description = `File "${filePath}" should exist`;
-        context.register(description, async ({ pass, fail }) => {
+        context.register(description, async () => {
           const result = await checkFileExists(filePath, context.dir);
-          if (result.pass) {
-            pass(result.message());
-          } else {
-            fail(result.message());
-          }
+          return { pass: result.pass, message: result.message() };
         });
       },
       contains: async (needle: string | RegExp) => {
         const description = `File "${filePath}" should contain ${String(needle)}`;
-        context.register(description, async ({ pass, fail }) => {
+        context.register(description, async () => {
           const result = await checkFileContains(filePath, needle, context.dir);
-          if (result.pass) {
-            pass(result.message());
-          } else {
-            fail(result.message());
-          }
+          return { pass: result.pass, message: result.message() };
         });
       },
     },
     negative: {
       exists: async () => {
         const description = `File "${filePath}" should not exist`;
-        context.register(description, async ({ pass, fail }) => {
+        context.register(description, async () => {
           const result = await checkFileExists(filePath, context.dir);
           if (!result.pass) {
-            pass(`File "${filePath}" does not exist.`);
+            return { pass: true, message: `File "${filePath}" does not exist.` };
           } else {
-            fail(`Expected file "${filePath}" to not exist, but it does.`);
+            return { pass: false, message: `Expected file "${filePath}" to not exist, but it does.` };
           }
         });
       },
       contains: async (needle: string | RegExp) => {
         const description = `File "${filePath}" should not contain ${String(needle)}`;
-        context.register(description, async ({ pass, fail }) => {
+        context.register(description, async () => {
           const result = await checkFileContains(filePath, needle, context.dir);
           if (!result.pass) {
-            pass(`File "${filePath}" does not contain ${String(needle)}.`);
+            return { pass: true, message: `File "${filePath}" does not contain ${String(needle)}.` };
           } else {
-            fail(`Expected file "${filePath}" to not contain ${String(needle)}, but it does.`);
+            return { pass: false, message: `Expected file "${filePath}" to not contain ${String(needle)}, but it does.` };
           }
         });
       },
@@ -159,25 +151,21 @@ function createDirMethods(context: VerificationContext, dirPath: string) {
     positive: {
       exists: async () => {
         const description = `Directory "${dirPath}" should exist`;
-        context.register(description, async ({ pass, fail }) => {
+        context.register(description, async () => {
           const result = await checkDirExists(dirPath, context.dir);
-          if (result.pass) {
-            pass(result.message());
-          } else {
-            fail(result.message());
-          }
+          return { pass: result.pass, message: result.message() };
         });
       },
     },
     negative: {
       exists: async () => {
         const description = `Directory "${dirPath}" should not exist`;
-        context.register(description, async ({ pass, fail }) => {
+        context.register(description, async () => {
           const result = await checkDirExists(dirPath, context.dir);
           if (!result.pass) {
-            pass(`Directory "${dirPath}" does not exist.`);
+            return { pass: true, message: `Directory "${dirPath}" does not exist.` };
           } else {
-            fail(`Expected directory "${dirPath}" to not exist, but it does.`);
+            return { pass: false, message: `Expected directory "${dirPath}" to not exist, but it does.` };
           }
         });
       },
@@ -196,13 +184,9 @@ function createFilesMethods(context: VerificationContext, pattern: GlobPattern) 
         .join(", ");
       const description = `Files matching "${pattern}" should have line count within ${bounds}`;
 
-      context.register(description, async ({ pass, fail }) => {
+      context.register(description, async () => {
         const result = await checkFilesLineCount(pattern, options, context.dir);
-        if (result.pass) {
-          pass(result.message());
-        } else {
-          fail(result.message());
-        }
+        return { pass: result.pass, message: result.message() };
       });
     },
   };

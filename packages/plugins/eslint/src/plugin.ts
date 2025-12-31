@@ -31,7 +31,7 @@ function scheduleEslint(context: VerificationContext, options?: EslintOptions) {
   const description =
     files.length === 1 && files[0] === "." ? "ESLint should pass" : `ESLint should pass for ${files.join(", ")}`;
 
-  context.register(description, async ({ pass, fail }) => {
+  context.register(description, async () => {
     try {
       const dir = options?.dir ?? context.dir;
       const args = buildEslintArgs(files, options);
@@ -40,12 +40,15 @@ function scheduleEslint(context: VerificationContext, options?: EslintOptions) {
         timeoutMs: options?.timeoutMs,
       });
       if (result.exitCode === 0) {
-        pass("ESLint reported no errors.");
+        return { pass: true, message: "ESLint reported no errors." };
       } else {
-        fail(`ESLint exited with ${result.exitCode}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
+        return {
+          pass: false,
+          message: `ESLint exited with ${result.exitCode}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
+        };
       }
     } catch (error) {
-      fail("Failed to run ESLint.", error);
+      return { pass: false, message: "Failed to run ESLint.", error };
     }
   });
 }

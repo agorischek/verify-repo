@@ -91,7 +91,7 @@ async function loadPrettier(dir: string) {
 
 function scheduleFormatting(context: VerificationContext, selection: Selection) {
   const description = getDescription(selection);
-  context.register(description, async ({ pass, fail }) => {
+  context.register(description, async () => {
     try {
       const baseDir = context.dir;
       const prettierModule = await loadPrettier(baseDir);
@@ -106,13 +106,9 @@ function scheduleFormatting(context: VerificationContext, selection: Selection) 
         prettierModule,
       });
 
-      if (result.pass) {
-        pass(result.message());
-      } else {
-        fail(result.message());
-      }
+      return { pass: result.pass, message: result.message() };
     } catch (error) {
-      fail("Failed to verify Prettier formatting.", error);
+      return { pass: false, message: "Failed to verify Prettier formatting.", error };
     }
   });
 }

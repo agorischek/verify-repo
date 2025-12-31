@@ -88,7 +88,7 @@ You can extend `verify-repo` with custom checks by creating a plugin.
 - **`docs`**: Documentation for the checks provided by the plugin (shown in `--docs`).
 - **`api`**: A function that returns the API extensions. It receives a `VerificationContext` containing:
   - `dir`: The current working directory for the check.
-  - `register`: A function to register a new check.
+  - `register(description, handler)`: Register a check. The handler must return `{ pass: boolean, message: string }`.
   - `entry`: A helper to create a chainable API (e.g. `verify.myPlugin.check(...)`).
 
 Here is an example of a custom plugin that checks for content in the `README.md` file:
@@ -108,10 +108,13 @@ export const readme = () =>
       readme: ({ dir, entry, register }) =>
         entry({
           contains: (content: string) => {
-            register(`README contains ${content}`, async ({ pass, fail }) => {
+            register(`README contains ${content}`, async () => {
               const file = await readFile(path.join(dir, "README.md"));
-              if (file.includes(content)) pass(`README contains "${content}"`);
-              else fail(`README does not contain "${content}"`);
+              if (file.includes(content)) {
+                return { pass: true, message: `README contains "${content}"` };
+              } else {
+                return { pass: false, message: `README does not contain "${content}"` };
+              }
             });
           },
         }),

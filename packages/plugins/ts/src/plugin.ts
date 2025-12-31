@@ -44,17 +44,20 @@ export const ts = (): RepoPlugin => ({
 });
 
 function scheduleTsc(context: VerificationContext, args: string[], description: string, options?: TsCheckOptions) {
-  context.register(description, async ({ pass, fail }) => {
+  context.register(description, async () => {
     try {
       const dir = options?.dir ?? context.dir;
       const result = await runTsc(args, { dir, timeoutMs: options?.timeoutMs });
       if (result.exitCode === 0) {
-        pass("TypeScript completed successfully.");
+        return { pass: true, message: "TypeScript completed successfully." };
       } else {
-        fail(`tsc exited with ${result.exitCode}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
+        return {
+          pass: false,
+          message: `tsc exited with ${result.exitCode}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
+        };
       }
     } catch (error) {
-      fail("Failed to run the TypeScript compiler.", error);
+      return { pass: false, message: "Failed to run the TypeScript compiler.", error };
     }
   });
 }

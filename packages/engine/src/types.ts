@@ -1,14 +1,32 @@
 export type MaybePromise<T> = T | Promise<T>;
 
-export type PassHandler = (message: string) => void;
-export type FailHandler = (message: string, error?: unknown) => void;
-
-export interface RepoTestControls {
-  pass: PassHandler;
-  fail: FailHandler;
+/**
+ * The result returned by a check handler.
+ *
+ * @example
+ * ```ts
+ * register("my check", async () => {
+ *   if (success) {
+ *     return { pass: true, message: "Check passed" };
+ *   } else {
+ *     return { pass: false, message: "Check failed", error: someError };
+ *   }
+ * });
+ * ```
+ */
+export interface CheckResult {
+  /** Whether the check passed. */
+  pass: boolean;
+  /** A human-readable message describing the result. */
+  message: string;
+  /** Optional error details when the check fails. */
+  error?: unknown;
 }
 
-export type RepoTestHandler = (controls: RepoTestControls) => MaybePromise<void>;
+/**
+ * A function that performs a verification check and returns its result.
+ */
+export type RepoTestHandler = () => MaybePromise<CheckResult>;
 
 export interface RepoTestDefinition {
   id: number;

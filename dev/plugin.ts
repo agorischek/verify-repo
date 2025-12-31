@@ -16,10 +16,13 @@ export const readme = () =>
       readme: ({ dir, entry, register }) =>
         entry({
           contains: (content: string) => {
-            register(`README contains ${content}`, async ({ pass, fail }) => {
+            register(`README contains ${content}`, async () => {
               const file = await readFile(path.join(dir, "README.md"));
-              if (file.includes(content)) pass(`README contains "${content}"`);
-              else fail(`README does not contain "${content}"`);
+              if (file.includes(content)) {
+                return { pass: true, message: `README contains "${content}"` };
+              } else {
+                return { pass: false, message: `README does not contain "${content}"` };
+              }
             });
           },
         }),

@@ -67,7 +67,7 @@ function scheduleDockerBuild(context: VerificationContext, options: NormalizedDo
     ? `Dockerfile "${options.dockerfile}" should build`
     : "Docker image should build";
 
-  context.register(description, async ({ pass, fail }) => {
+  context.register(description, async () => {
     const args = buildDockerArgs(options);
     try {
       const result = await runDockerBuild(args, {
@@ -75,12 +75,15 @@ function scheduleDockerBuild(context: VerificationContext, options: NormalizedDo
         timeoutMs: options.timeoutMs,
       });
       if (result.exitCode === 0) {
-        pass("Docker build completed successfully.");
+        return { pass: true, message: "Docker build completed successfully." };
       } else {
-        fail(`docker build exited with ${result.exitCode}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
+        return {
+          pass: false,
+          message: `docker build exited with ${result.exitCode}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
+        };
       }
     } catch (error) {
-      fail("Failed to run docker build.", error);
+      return { pass: false, message: "Failed to run docker build.", error };
     }
   });
 }

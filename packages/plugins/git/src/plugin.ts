@@ -106,13 +106,12 @@ function createBranchEntry(
 }
 
 function scheduleClean(context: VerificationContext, getGit: () => Promise<SimpleGit>) {
-  context.register("git status should be clean", async ({ pass, fail }) => {
+  context.register("git status should be clean", async () => {
     try {
       const git = await getGit();
       const status = await git.status();
       if (status.isClean()) {
-        pass("repository is clean");
-        return;
+        return { pass: true, message: "repository is clean" };
       }
       const dirty = formatFiles(
         status.files.map((f) => ({
@@ -121,79 +120,80 @@ function scheduleClean(context: VerificationContext, getGit: () => Promise<Simpl
           index: f.index || " ",
         })),
       );
-      fail(dirty.length ? `repository has dirty files:\n${dirty}` : "repository has untracked changes");
+      return {
+        pass: false,
+        message: dirty.length ? `repository has dirty files:\n${dirty}` : "repository has untracked changes",
+      };
     } catch (error) {
-      fail("Failed to determine git status.", error);
+      return { pass: false, message: "Failed to determine git status.", error };
     }
   });
 }
 
 function scheduleConflicts(context: VerificationContext, getGit: () => Promise<SimpleGit>) {
-  context.register("git should have no conflicts", async ({ pass, fail }) => {
+  context.register("git should have no conflicts", async () => {
     try {
       const git = await getGit();
       const status = await git.status();
       if (status.conflicted.length === 0) {
-        pass("no conflicted files");
+        return { pass: true, message: "no conflicted files" };
       } else {
-        fail(`conflicted files detected:\n${status.conflicted.join("\n")}`);
+        return { pass: false, message: `conflicted files detected:\n${status.conflicted.join("\n")}` };
       }
     } catch (error) {
-      fail("Failed to inspect git conflicts.", error);
+      return { pass: false, message: "Failed to inspect git conflicts.", error };
     }
   });
 }
 
 function scheduleHasStaged(context: VerificationContext, getGit: () => Promise<SimpleGit>, filePath: string) {
-  context.register(`git should have staged changes for "${filePath}"`, async ({ pass, fail }) => {
+  context.register(`git should have staged changes for "${filePath}"`, async () => {
     try {
       const git = await getGit();
       const status = await git.status();
       const file = status.files.find((f) => f.path === filePath);
 
       if (!file) {
-        fail(`File "${filePath}" not found in git status output.`);
-        return;
+        return { pass: false, message: `File "${filePath}" not found in git status output.` };
       }
 
       if (file.index && file.index !== " " && file.index !== "?") {
-        pass(`"${filePath}" is staged with status ${file.index}.`);
+        return { pass: true, message: `"${filePath}" is staged with status ${file.index}.` };
       } else {
-        fail(`"${filePath}" is not staged (index status: "${file.index}").`);
+        return { pass: false, message: `"${filePath}" is not staged (index status: "${file.index}").` };
       }
     } catch (error) {
-      fail(`Failed to inspect staged status for "${filePath}".`, error);
+      return { pass: false, message: `Failed to inspect staged status for "${filePath}".`, error };
     }
   });
 }
 
 function scheduleIsOnBranch(context: VerificationContext, getGit: () => Promise<SimpleGit>, branch: string) {
-  context.register(`git should be on branch "${branch}"`, async ({ pass, fail }) => {
+  context.register(`git should be on branch "${branch}"`, async () => {
     try {
       const git = await getGit();
       const status = await git.status();
       if (status.current === branch) {
-        pass(`checked-out branch is "${branch}".`);
+        return { pass: true, message: `checked-out branch is "${branch}".` };
       } else {
-        fail(`expected branch "${branch}" but was on "${status.current ?? "unknown"}".`);
+        return { pass: false, message: `expected branch "${branch}" but was on "${status.current ?? "unknown"}".` };
       }
     } catch (error) {
-      fail("Failed to read current git branch.", error);
+      return { pass: false, message: "Failed to read current git branch.", error };
     }
   });
 }
 
 function scheduleBranchClean(context: VerificationContext, getGit: () => Promise<SimpleGit>, branch: string) {
-  context.register(`branch "${branch}" should be current and clean`, async ({ pass, fail }) => {
+  context.register(`branch "${branch}" should be current and clean`, async () => {
     try {
       const git = await getGit();
       const status = await git.status();
       if (status.current !== branch) {
-        fail(`expected branch "${branch}" but was on "${status.current ?? "unknown"}".`);
-        return;
+        return { pass: false, message: `expected branch "${branch}" but was on "${status.current ?? "unknown"}".` };
       }
       if (status.isClean()) {
-        pass(`branch "${branch}" is clean.`);
+        return { pass: true, message: `branch "${branch}" is clean.` };
       } else {
         const dirty = formatFiles(
           status.files.map((f) => ({
@@ -202,12 +202,15 @@ function scheduleBranchClean(context: VerificationContext, getGit: () => Promise
             index: f.index || " ",
           })),
         );
-        fail(
-          dirty.length ? `branch "${branch}" has dirty files:\n${dirty}` : `branch "${branch}" has untracked changes`,
-        );
+        return {
+          pass: false,
+          message: dirty.length
+            ? `branch "${branch}" has dirty files:\n${dirty}`
+            : `branch "${branch}" has untracked changes`,
+        };
       }
     } catch (error) {
-      fail(`Failed to inspect cleanliness of branch "${branch}".`, error);
+      return { pass: false, message: `Failed to inspect cleanliness of branch "${branch}".`, error };
     }
   });
 }
