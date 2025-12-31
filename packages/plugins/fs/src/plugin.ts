@@ -138,7 +138,10 @@ function createFileMethods(context: VerificationContext, filePath: string) {
           if (!result.pass) {
             return { pass: true, message: `File "${filePath}" does not contain ${String(needle)}.` };
           } else {
-            return { pass: false, message: `Expected file "${filePath}" to not contain ${String(needle)}, but it does.` };
+            return {
+              pass: false,
+              message: `Expected file "${filePath}" to not contain ${String(needle)}, but it does.`,
+            };
           }
         });
       },

@@ -1,0 +1,21 @@
+---
+name: verify-repo
+description: Run verifications of repo state
+alwaysApply: true
+---
+
+# Overview
+
+This requires verifying codebase health, both before and after changes.
+
+## Checking initial health
+
+Before starting code work, run `bun verify` from the repo root and make sure everything passes.
+
+## Adding task-specific checks
+
+For more complex tasks, you should add repo verification checks before beginning code work, and run them to show that they fail. Run `bun verify:docs` to learn about APIs available. Checks should be defined in `task.verify.ts` files. These can be located anywhere in the repo.
+
+## Completing work
+
+Before you complete your work, you should also run `bun verify`, and fix any issues it discovers.
