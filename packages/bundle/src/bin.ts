@@ -10,12 +10,16 @@ async function main() {
     return;
   }
 
-  await run();
+  const verbose = args.includes("--verbose") || args.includes("-v");
+
+  await run({ verbose });
 }
 
 main().catch((error) => {
   if (error instanceof RepoVerificationFailedError) {
-    console.error(error.message);
+    // Don't print error message - reporter already showed failures
+    // Only print in verbose mode (but we don't have access to verbose flag here)
+    // So we'll just suppress it since reporter handles it
   } else if (error instanceof Error) {
     console.error(error.stack ?? error.message);
   } else {

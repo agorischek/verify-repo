@@ -17,6 +17,10 @@ export interface RunOptions extends RepoVerifierConfig {
    * Provide a custom reporter. Set to false to silence output.
    */
   reporter?: false | ((summary: RepoTestRunSummary) => void);
+  /**
+   * Enable verbose output. When false (default), only shows failures or a success message.
+   */
+  verbose?: boolean;
 }
 
 async function loadConfigFile(root: string): Promise<void> {
@@ -76,7 +80,10 @@ export async function run(options: RunOptions = {}) {
   }
 
   const files = await discoverVerifyFiles(root, options.pattern, options.ignore);
-  console.log(`verify-repo: discovered ${files.length} verify file${files.length === 1 ? "" : "s"}`);
+  const verbose = options.verbose ?? false;
+  if (verbose) {
+    console.log(`verify-repo: discovered ${files.length} verify file${files.length === 1 ? "" : "s"}`);
+  }
   const runtimeTag = Date.now().toString(36);
 
   for (const file of files) {
@@ -92,7 +99,9 @@ export async function run(options: RunOptions = {}) {
   }
 
   const verificationCount = verifyInstance.plannedTests;
-  console.log(`verify-repo: registered ${verificationCount} verification${verificationCount === 1 ? "" : "s"}`);
+  if (verbose) {
+    console.log(`verify-repo: registered ${verificationCount} verification${verificationCount === 1 ? "" : "s"}`);
+  }
 
   // Convert boolean concurrency to number: true = unlimited (Infinity), false = sequential (1)
   const runConcurrency: number | undefined =
@@ -107,7 +116,7 @@ export async function run(options: RunOptions = {}) {
   });
 
   const reporter =
-    options.reporter === false ? null : (options.reporter ?? ((result) => defaultReporter(result, root)));
+    options.reporter === false ? null : (options.reporter ?? ((result) => defaultReporter(result, root, verbose)));
   reporter?.(summary);
 
   if (summary.failed > 0) {
@@ -134,33 +143,55 @@ async function discoverVerifyFiles(root: string, pattern?: string | string[], ig
   return [...new Set(matches.flat())].sort();
 }
 
-function defaultReporter(summary: RepoTestRunSummary, root: string) {
+function defaultReporter(summary: RepoTestRunSummary, root: string, verbose: boolean = false) {
   if (summary.total === 0) {
     console.log("verify-repo: no checks were scheduled.");
     return;
   }
 
-  for (const result of summary.results) {
-    const location = result.source ? relativePath(root, result.source) : "";
-    const prefix = result.status === "passed" ? "[PASS]" : "[FAIL]";
-    const duration = formatDuration(result.durationMs);
-    const line = location
-      ? `${prefix} ${location} — ${result.message ?? result.description} (${duration})`
-      : `${prefix} ${result.message ?? result.description} (${duration})`;
+  if (verbose) {
+    // Verbose mode: show all checks
+    for (const result of summary.results) {
+      const location = result.source ? relativePath(root, result.source) : "";
+      const prefix = result.status === "passed" ? "[PASS]" : "[FAIL]";
+      const duration = formatDuration(result.durationMs);
+      const line = location
+        ? `${prefix} ${location} — ${result.message ?? result.description} (${duration})`
+        : `${prefix} ${result.message ?? result.description} (${duration})`;
 
-    if (result.status === "passed") {
-      console.log(line);
+      if (result.status === "passed") {
+        console.log(line);
+      } else {
+        console.error(line);
+        if (result.error) {
+          console.error(indent(result.error, 2));
+        }
+      }
+    }
+
+    console.log(
+      `verify-repo: ${summary.passed}/${summary.total} passed, ${summary.failed} failed in ${formatDuration(summary.durationMs)}`,
+    );
+  } else {
+    // Non-verbose mode: concise output
+    if (summary.failed === 0) {
+      console.log("All checks passed.");
     } else {
-      console.error(line);
-      if (result.error) {
-        console.error(indent(result.error, 2));
+      console.error(`${summary.failed} check${summary.failed === 1 ? "" : "s"} failed:`);
+      for (const result of summary.results) {
+        if (result.status === "failed") {
+          const location = result.source ? relativePath(root, result.source) : "";
+          const line = location
+            ? `${location} — ${result.message ?? result.description}`
+            : (result.message ?? result.description);
+          console.error(`  ${line}`);
+          if (result.error) {
+            console.error(indent(result.error, 4));
+          }
+        }
       }
     }
   }
-
-  console.log(
-    `verify-repo: ${summary.passed}/${summary.total} passed, ${summary.failed} failed in ${formatDuration(summary.durationMs)}`,
-  );
 }
 
 function relativePath(root: string, target: string) {
