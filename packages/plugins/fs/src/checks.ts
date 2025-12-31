@@ -1,5 +1,7 @@
-import { access, readFile, readdir, stat } from "node:fs/promises";
+import { access, readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { glob } from "glob";
+import type { FileLineCountOptions } from "./types";
 
 export async function checkFileExists(filePath: string, root?: string) {
   const baseDir = root || process.cwd();
@@ -65,70 +67,15 @@ export async function checkDirExists(dirPath: string, root?: string) {
   }
 }
 
-export interface FileLineLengthOptions {
-  min?: number;
-  max?: number;
-}
-
-type LineLengthViolation = {
-  file: string; // repo-relative, posix-style
-  line: number; // 1-based
-  length: number;
+type FileLineCountViolation = {
+  file: string;
+  lineCount: number;
 };
 
-const DEFAULT_IGNORED_DIRS = new Set([
-  ".git",
-  "node_modules",
-  "dist",
-  "build",
-  "coverage",
-  ".next",
-  ".turbo",
-  ".cache",
-  "out",
-  "target",
-]);
+const DEFAULT_IGNORE = ["**/node_modules/**", "**/.git/**", "**/dist/**", "**/build/**", "**/coverage/**"];
 
-function toPosixPath(p: string) {
-  return p.split(path.sep).join("/");
-}
-
-async function walkFiles(rootDir: string, dir: string, onFile: (relativePosixPath: string) => void | Promise<void>) {
-  const entries = await readdir(dir, { withFileTypes: true });
-  await Promise.all(
-    entries.map(async (entry) => {
-      const full = path.join(dir, entry.name);
-
-      if (entry.isDirectory()) {
-        if (DEFAULT_IGNORED_DIRS.has(entry.name)) {
-          return;
-        }
-        await walkFiles(rootDir, full, onFile);
-        return;
-      }
-
-      if (!entry.isFile()) {
-        return;
-      }
-
-      const rel = path.relative(rootDir, full);
-      // If outside root, ignore (shouldn't happen, but be defensive).
-      if (rel.startsWith("..")) {
-        return;
-      }
-      await onFile(toPosixPath(rel));
-    }),
-  );
-}
-
-export async function checkFilesLineLengths(pattern: RegExp, options: FileLineLengthOptions, rootDir: string) {
+export async function checkFilesLineCount(pattern: string, options: FileLineCountOptions, rootDir: string) {
   const { min, max } = options;
-  if (min === undefined && max === undefined) {
-    return {
-      pass: false,
-      message: () => `lines() requires at least one of { min, max }.`,
-    };
-  }
   if (min !== undefined && (!Number.isFinite(min) || min < 0)) {
     return {
       pass: false,
@@ -148,21 +95,20 @@ export async function checkFilesLineLengths(pattern: RegExp, options: FileLineLe
     };
   }
 
-  const matchedFiles: string[] = [];
-  await walkFiles(rootDir, rootDir, async (rel) => {
-    if (pattern.test(rel)) {
-      matchedFiles.push(rel);
-    }
+  const matchedFiles = await glob(pattern, {
+    cwd: rootDir,
+    nodir: true,
+    ignore: DEFAULT_IGNORE,
   });
 
   if (matchedFiles.length === 0) {
     return {
       pass: false,
-      message: () => `No files matched ${pattern.toString()} under ${rootDir}.`,
+      message: () => `No files matched "${pattern}" under ${rootDir}.`,
     };
   }
 
-  const violations: LineLengthViolation[] = [];
+  const violations: FileLineCountViolation[] = [];
   for (const file of matchedFiles) {
     const fullPath = path.join(rootDir, file);
     let contents: string;
@@ -175,28 +121,16 @@ export async function checkFilesLineLengths(pattern: RegExp, options: FileLineLe
       };
     }
 
-    const lines = contents.split("\n");
-    for (let i = 0; i < lines.length; i++) {
-      const raw = lines[i] ?? "";
-      const lineText = raw.endsWith("\r") ? raw.slice(0, -1) : raw;
-      const length = lineText.length;
-      if ((min !== undefined && length < min) || (max !== undefined && length > max)) {
-        violations.push({ file, line: i + 1, length });
-        // Keep scanning to collect a few more violations, but don’t explode memory.
-        if (violations.length >= 50) {
-          break;
-        }
-      }
-    }
-    if (violations.length >= 50) {
-      break;
+    const lineCount = contents.split("\n").length;
+    const tooFew = min !== undefined && lineCount < min;
+    const tooMany = max !== undefined && lineCount > max;
+
+    if (tooFew || tooMany) {
+      violations.push({ file, lineCount });
     }
   }
 
-  const bounds = [
-    min !== undefined ? `min=${min}` : null,
-    max !== undefined ? `max=${max}` : null,
-  ]
+  const bounds = [min !== undefined ? `min=${min}` : null, max !== undefined ? `max=${max}` : null]
     .filter(Boolean)
     .join(", ");
 
@@ -204,19 +138,15 @@ export async function checkFilesLineLengths(pattern: RegExp, options: FileLineLe
     return {
       pass: true,
       message: () =>
-        `All lines in ${matchedFiles.length} file${matchedFiles.length === 1 ? "" : "s"} matched by ${pattern.toString()} satisfy ${bounds}.`,
+        `All ${matchedFiles.length} file${matchedFiles.length === 1 ? "" : "s"} matched by "${pattern}" have line counts within ${bounds}.`,
     };
   }
 
-  const preview = violations
-    .slice(0, 10)
-    .map((v) => `${v.file}:${v.line} (len=${v.length})`)
-    .join(", ");
+  const violationList = violations.map((v) => `  - ${v.file} (${v.lineCount} lines)`).join("\n");
 
   return {
     pass: false,
     message: () =>
-      `Found ${violations.length} line length violation${violations.length === 1 ? "" : "s"} for ${pattern.toString()} (${bounds}). ` +
-      `Examples: ${preview}`,
+      `Found ${violations.length} file${violations.length === 1 ? "" : "s"} with line count outside ${bounds} for "${pattern}":\n${violationList}`,
   };
 }

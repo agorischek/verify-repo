@@ -1,9 +1,11 @@
 import { type PluginOptions, type RepoPlugin, type VerificationContext } from "@verify-repo/engine";
-import { checkFileContains, checkFileExists, checkDirExists } from "./checks";
-import type { FilePluginApi, DirPluginApi } from "./types";
+import { checkFileContains, checkFileExists, checkDirExists, checkFilesLineCount } from "./checks";
+import type { FilePluginApi, DirPluginApi, FilesPluginApi, FileLineCountOptions, GlobPattern } from "./types";
 
 type FileRoot = (filePath: string) => FilePluginApi;
 type FileEntrypoint = FileRoot | FilePluginApi;
+type FilesRoot = (pattern: GlobPattern) => FilesPluginApi;
+type FilesEntrypoint = FilesRoot | FilesPluginApi;
 type DirRoot = (dirPath: string) => DirPluginApi;
 
 export const fs = (): RepoPlugin => ({
@@ -33,6 +35,10 @@ export const fs = (): RepoPlugin => ({
     {
       signature: 'verify.dir("<path>").not.exists()',
       description: "Ensures the directory does not exist.",
+    },
+    {
+      signature: 'verify.files("<glob>").lines({ min?, max? })',
+      description: "Ensures every file matching the glob pattern has a line count between min and max (inclusive).",
     },
   ],
   api() {
@@ -68,9 +74,25 @@ export const fs = (): RepoPlugin => ({
       ) as DirRoot;
     };
 
+    const buildFilesEntry = (context: VerificationContext, pattern?: GlobPattern): FilesEntrypoint => {
+      if (pattern) {
+        const methods = createFilesMethods(context, pattern);
+        return context.entry(methods) as unknown as FilesPluginApi;
+      }
+
+      return context.entry(
+        {},
+        (parent: VerificationContext, target: GlobPattern) =>
+          buildFilesEntry(parent.extend({ pattern: target }), target) as FilesPluginApi,
+      ) as FilesRoot;
+    };
+
     return {
       file(context: VerificationContext) {
         return buildFileEntry(context);
+      },
+      files(context: VerificationContext) {
+        return buildFilesEntry(context);
       },
       dir(context: VerificationContext) {
         return buildDirEntry(context);
@@ -159,6 +181,29 @@ function createDirMethods(context: VerificationContext, dirPath: string) {
           }
         });
       },
+    },
+  };
+}
+
+function createFilesMethods(context: VerificationContext, pattern: GlobPattern) {
+  return {
+    lines: (options: FileLineCountOptions) => {
+      const bounds = [
+        options.min !== undefined ? `min=${options.min}` : null,
+        options.max !== undefined ? `max=${options.max}` : null,
+      ]
+        .filter(Boolean)
+        .join(", ");
+      const description = `Files matching "${pattern}" should have line count within ${bounds}`;
+
+      context.register(description, async ({ pass, fail }) => {
+        const result = await checkFilesLineCount(pattern, options, context.dir);
+        if (result.pass) {
+          pass(result.message());
+        } else {
+          fail(result.message());
+        }
+      });
     },
   };
 }

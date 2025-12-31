@@ -10,6 +10,9 @@
   "peerDependencies": {
     "@verify-repo/engine": "*"
   },
+  "dependencies": {
+    "glob": "^13.0.0"
+  },
   "devDependencies": {
     "@verify-repo/engine": "workspace:*"
   }
