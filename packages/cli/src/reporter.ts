@@ -6,6 +6,153 @@ export function defaultReporter(
   root: string,
   verbose: boolean = false,
   totalDurationMs?: number,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 ) {
   // Use total CLI duration if available, otherwise fall back to test execution duration
   const durationMs = totalDurationMs ?? summary.durationMs;
@@ -47,10 +194,9 @@ export function defaultReporter(
       for (const result of summary.results) {
         if (result.status === "failed") {
           const location = result.source ? relativePath(root, result.source) : "";
-          const line = location
-            ? `${location} — ${result.message ?? result.description}`
-            : (result.message ?? result.description);
-          console.error(`  ${line}`);
+          const message = result.message ?? result.description;
+          const header = location ? `${location} — ` : "";
+          console.error(indent(`${header}${message}`, 2));
           if (result.error) {
             console.error(indent(result.error, 4));
           }
