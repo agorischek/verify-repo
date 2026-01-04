@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+const cliStartTime = performance.now();
+
 import { run as runCli } from "@drizzle-team/brocli";
 import { RepoVerificationFailedError, run, printDocs } from "./index";
 import { command, boolean } from "@drizzle-team/brocli";
@@ -10,7 +12,7 @@ const runCommand = command({
     verbose: boolean().desc("Enable verbose output"),
   },
   handler: async (options) => {
-    await run({ verbose: options.verbose });
+    await run({ verbose: options.verbose, startTime: cliStartTime });
   },
 });
 

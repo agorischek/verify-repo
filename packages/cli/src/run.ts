@@ -1,6 +1,7 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { access } from "node:fs/promises";
+import { performance } from "node:perf_hooks";
 import { glob } from "glob";
 import type { RepoTestRunSummary } from "@verify-repo/engine";
 import { RepoVerifierConfig } from "./RepoVerifierConfig";
@@ -21,6 +22,10 @@ export interface RunOptions extends RepoVerifierConfig {
    * Enable verbose output. When false (default), only shows failures or a success message.
    */
   verbose?: boolean;
+  /**
+   * Start time from performance.now() for measuring total CLI duration.
+   */
+  startTime?: number;
 }
 
 async function loadConfigFile(root: string): Promise<void> {
@@ -115,8 +120,11 @@ export async function run(options: RunOptions = {}) {
     concurrency: runConcurrency,
   });
 
+  const totalDurationMs = options.startTime !== undefined ? performance.now() - options.startTime : undefined;
   const reporter =
-    options.reporter === false ? null : (options.reporter ?? ((result) => defaultReporter(result, root, verbose)));
+    options.reporter === false
+      ? null
+      : (options.reporter ?? ((result) => defaultReporter(result, root, verbose, totalDurationMs)));
   reporter?.(summary);
 
   if (summary.failed > 0) {
@@ -143,7 +151,15 @@ async function discoverVerifyFiles(root: string, pattern?: string | string[], ig
   return [...new Set(matches.flat())].sort();
 }
 
-function defaultReporter(summary: RepoTestRunSummary, root: string, verbose: boolean = false) {
+function defaultReporter(
+  summary: RepoTestRunSummary,
+  root: string,
+  verbose: boolean = false,
+  totalDurationMs?: number,
+) {
+  // Use total CLI duration if available, otherwise fall back to test execution duration
+  const durationMs = totalDurationMs ?? summary.durationMs;
+
   if (summary.total === 0) {
     console.log("verify-repo: no checks were scheduled.");
     return;
@@ -170,12 +186,12 @@ function defaultReporter(summary: RepoTestRunSummary, root: string, verbose: boo
     }
 
     console.log(
-      `verify-repo: ${summary.passed}/${summary.total} passed, ${summary.failed} failed in ${formatDuration(summary.durationMs)}`,
+      `verify-repo: ${summary.passed}/${summary.total} passed, ${summary.failed} failed in ${formatDuration(durationMs)}`,
     );
   } else {
     // Non-verbose mode: concise output
     if (summary.failed === 0) {
-      console.log("All checks passed.");
+      console.log(`All checks passed in ${formatDuration(durationMs)}.`);
     } else {
       console.error(`${summary.failed} check${summary.failed === 1 ? "" : "s"} failed:`);
       for (const result of summary.results) {
