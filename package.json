@@ -10,13 +10,14 @@
   "workspaces": [
     "packages/engine",
     "packages/plugins/*",
+    "packages/cli",
     "packages/bundle"
   ],
   "scripts": {
     "build": "cd packages/bundle && bun run build",
     "check": "checks",
     "verify": "bun packages/bundle/src/bin.ts",
-    "verify:docs": "bun packages/bundle/src/bin.ts --docs",
+    "verify:docs": "bun packages/bundle/src/bin.ts docs",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",

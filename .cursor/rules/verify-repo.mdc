@@ -1,9 +1,7 @@
 ---
-name: verify-repo
 description: Run verifications of repo state
-alwaysApply: true
+alwaysApply: false
 ---
-
 # Overview
 
 You must author task-specific checks before beginning work, and you must run all checks before completing your work.

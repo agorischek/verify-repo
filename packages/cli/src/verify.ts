@@ -1,18 +1,32 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { type RepoVerification, type VerificationMetadata } from "@verify-repo/engine";
-import { RepoVerificationRuntime } from "./RepoVerificationRuntime";
+import { RepoVerificationRuntimeBase } from "./RepoVerificationRuntimeBase";
 import type { RepoVerifierConfig } from "./RepoVerifierConfig";
 
 export type RepoVerifier = RepoVerification & {
   with(meta: VerificationMetadata): RepoVerifier;
 };
 
-let verifyInstance: RepoVerificationRuntime | null = null;
+/**
+ * Factory function type for creating runtime instances.
+ * Bundle provides this with all built-in plugins.
+ */
+export type RuntimeFactory = (config?: RepoVerifierConfig) => RepoVerificationRuntimeBase;
+
+let verifyInstance: RepoVerificationRuntimeBase | null = null;
+let runtimeFactory: RuntimeFactory = (config) => new RepoVerificationRuntimeBase(config);
+
+/**
+ * Set the runtime factory. Called by bundle to provide a factory that includes all plugins.
+ */
+export const setRuntimeFactory = (factory: RuntimeFactory) => {
+  runtimeFactory = factory;
+};
 
 const ensureInstance = () => {
   if (!verifyInstance) {
-    verifyInstance = new RepoVerificationRuntime();
+    verifyInstance = runtimeFactory();
   }
   return verifyInstance;
 };
@@ -41,7 +55,7 @@ export const configure = (config: RepoVerifierConfig = {}) => {
     ...config,
     root: normalizeRoot(config.root),
   };
-  verifyInstance = new RepoVerificationRuntime(normalizedConfig);
+  verifyInstance = runtimeFactory(normalizedConfig);
   return verifyInstance;
 };
 

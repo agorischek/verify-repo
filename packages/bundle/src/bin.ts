@@ -1,25 +1,36 @@
-import { RepoVerificationFailedError } from "./errors";
-import { printDocs } from "./docs";
-import { run } from "./run";
+#!/usr/bin/env node
+import { run as runCli } from "@drizzle-team/brocli";
+import { RepoVerificationFailedError, run, printDocs } from "./index";
+import { command, boolean } from "@drizzle-team/brocli";
 
-async function main() {
-  const args = process.argv.slice(2);
+const runCommand = command({
+  name: "run",
+  desc: "Run repository verification checks",
+  options: {
+    verbose: boolean().desc("Enable verbose output"),
+  },
+  handler: async (options) => {
+    await run({ verbose: options.verbose });
+  },
+});
 
-  if (args.includes("--docs") || args.includes("-d")) {
-    await Promise.resolve(printDocs());
-    return;
-  }
+const docsCommand = command({
+  name: "docs",
+  desc: "Print available plugin APIs",
+  options: {
+    json: boolean().desc("Output documentation as JSON"),
+  },
+  handler: async () => {
+    await printDocs();
+  },
+});
 
-  const verbose = args.includes("--verbose") || args.includes("-v");
-
-  await run({ verbose });
-}
-
-main().catch((error) => {
+runCli([runCommand, docsCommand], {
+  name: "verify-repo",
+  version: "0.0.1",
+}).catch((error) => {
   if (error instanceof RepoVerificationFailedError) {
     // Don't print error message - reporter already showed failures
-    // Only print in verbose mode (but we don't have access to verbose flag here)
-    // So we'll just suppress it since reporter handles it
   } else if (error instanceof Error) {
     console.error(error.stack ?? error.message);
   } else {

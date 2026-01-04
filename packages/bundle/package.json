@@ -22,6 +22,22 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@drizzle-team/brocli": "^0.11.0",
     "glob": "^13.0.0"
+  },
+  "peerDependencies": {
+    "@verify-repo/cli": "*",
+    "@verify-repo/engine": "*"
+  },
+  "devDependencies": {
+    "@verify-repo/cli": "workspace:*",
+    "@verify-repo/engine": "workspace:*",
+    "@verify-repo/plugin-bun": "workspace:*",
+    "@verify-repo/plugin-command": "workspace:*",
+    "@verify-repo/plugin-docker": "workspace:*",
+    "@verify-repo/plugin-eslint": "workspace:*",
+    "@verify-repo/plugin-git": "workspace:*",
+    "@verify-repo/plugin-prettier": "workspace:*",
+    "@verify-repo/plugin-ts": "workspace:*"
   }
 }

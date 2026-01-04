@@ -1,29 +1,18 @@
 import { collectDocs as engineCollectDocs, type PluginDocumentation, type RepoPlugin } from "@verify-repo/engine";
-import type { RepoVerifierConfig, DocsOptions } from "@verify-repo/cli";
-import { fs } from "packages/plugins/fs/src";
-import { command } from "@verify-repo/plugin-command";
-import { prettier } from "@verify-repo/plugin-prettier";
-import { git } from "@verify-repo/plugin-git";
-import { ts as tsPlugin } from "@verify-repo/plugin-ts";
-import { eslint as eslintPlugin } from "@verify-repo/plugin-eslint";
-import { bun as bunPlugin } from "@verify-repo/plugin-bun";
-import { docker } from "@verify-repo/plugin-docker";
+import type { RepoVerifierConfig } from "./RepoVerifierConfig";
 
-const builtInPlugins: RepoPlugin[] = [
-  fs(),
-  command(),
-  prettier(),
-  git(),
-  tsPlugin(),
-  eslintPlugin(),
-  bunPlugin(),
-  docker(),
-];
+export interface DocsOptions extends RepoVerifierConfig {
+  writer?: (line: string) => void;
+}
 
+/**
+ * Collect documentation from plugins.
+ * In CLI, this only uses plugins passed in config.
+ * Bundle overrides this to include built-in plugins.
+ */
 export function collectDocs(config: RepoVerifierConfig = {}): PluginDocumentation[] {
   const { plugins = [] } = config;
-  const allPlugins = [...builtInPlugins, ...plugins];
-  return engineCollectDocs(allPlugins);
+  return engineCollectDocs(plugins);
 }
 
 export function printDocs(options: DocsOptions = {}) {

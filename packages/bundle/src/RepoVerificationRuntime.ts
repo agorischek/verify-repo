@@ -1,4 +1,5 @@
-import { RepoVerificationEngine, RepoPlugin } from "@verify-repo/engine";
+import { RepoVerificationRuntimeBase, type RepoVerifierConfig } from "@verify-repo/cli";
+import type { RepoPlugin } from "@verify-repo/engine";
 import { fs } from "packages/plugins/fs/src";
 import { command } from "@verify-repo/plugin-command";
 import { prettier } from "@verify-repo/plugin-prettier";
@@ -7,53 +8,31 @@ import { ts as tsPlugin } from "@verify-repo/plugin-ts";
 import { eslint as eslintPlugin } from "@verify-repo/plugin-eslint";
 import { bun as bunPlugin } from "@verify-repo/plugin-bun";
 import { docker } from "@verify-repo/plugin-docker";
-import { RepoVerifierConfig } from "./RepoVerifierConfig";
 
-export class RepoVerificationRuntime extends RepoVerificationEngine {
-  private readonly _plugins: RepoPlugin[];
+const builtInPlugins: RepoPlugin[] = [
+  fs(),
+  command(),
+  prettier(),
+  git(),
+  tsPlugin(),
+  eslintPlugin(),
+  bunPlugin(),
+  docker(),
+];
 
+export class RepoVerificationRuntime extends RepoVerificationRuntimeBase {
   constructor(config: RepoVerifierConfig = {}) {
-    const { plugins = [], root, concurrency, packageManager = "npm" } = config;
-
-    const builtIns: RepoPlugin[] = [
-      fs(),
-      command(),
-      prettier(),
-      git(),
-      tsPlugin(),
-      eslintPlugin(),
-      bunPlugin(),
-      docker(),
-    ];
-    const allPlugins = [...builtIns, ...plugins];
-
-    // Convert boolean concurrency to number: true = unlimited (Infinity), false = sequential (1)
-    const defaultConcurrency: number | undefined =
-      typeof concurrency === "boolean" ? (concurrency ? Number.POSITIVE_INFINITY : 1) : concurrency;
-
+    const { plugins = [], ...rest } = config;
     super({
-      plugins: allPlugins,
-      root,
-      defaultConcurrency,
-      packageManager,
+      ...rest,
+      plugins: [...builtInPlugins, ...plugins],
     });
-
-    this._plugins = allPlugins;
   }
+}
 
-  /**
-   * Extend this runtime instance with additional plugins.
-   * This mutates the instance in place by adding new methods from the plugins.
-   */
-  extend(...plugins: RepoPlugin[]): this {
-    for (const plugin of plugins) {
-      this._plugins.push(plugin);
-      this.applyPlugin(plugin);
-    }
-    return this;
-  }
-
-  get plugins(): readonly RepoPlugin[] {
-    return this._plugins;
-  }
+/**
+ * Factory function for creating runtime instances with built-in plugins.
+ */
+export function createRuntime(config?: RepoVerifierConfig): RepoVerificationRuntime {
+  return new RepoVerificationRuntime(config);
 }
