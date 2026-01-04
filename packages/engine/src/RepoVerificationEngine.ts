@@ -1,4 +1,3 @@
-import { performance } from "node:perf_hooks";
 import path from "node:path";
 import {
   PluginDocumentation,
@@ -9,13 +8,13 @@ import {
   RepoPluginFactory,
   RepoTestDefinition,
   RepoTestHandler,
-  RepoTestResult,
   RepoTestRunSummary,
   RepoVerification,
   RepoVerificationEngineConfig,
   VerificationMetadata,
 } from "./types";
 import { VerificationContext } from "./VerificationContext";
+import { executeTests } from "./execution";
 
 // Use declaration merging to mix in extensions defined by plugins.
 export interface RepoVerificationEngine extends RepoVerification {}
@@ -185,95 +184,6 @@ export class RepoVerificationEngine {
   }
 
   public async run(options?: { concurrency?: number }): Promise<RepoTestRunSummary> {
-    const plan = [...this.tests];
-    const total = plan.length;
-
-    if (total === 0) {
-      return {
-        total: 0,
-        passed: 0,
-        failed: 0,
-        durationMs: 0,
-        results: [],
-      };
-    }
-
-    const resolvedConcurrency = options?.concurrency ?? this.defaultConcurrency ?? Number.POSITIVE_INFINITY;
-
-    const workerCount = Math.max(
-      1,
-      Math.min(total, Number.isFinite(resolvedConcurrency) ? resolvedConcurrency : total),
-    );
-
-    const results: RepoTestResult[] = new Array(total);
-    let cursor = 0;
-    const startedAt = performance.now();
-
-    const worker = async () => {
-      while (true) {
-        const index = cursor++;
-        const definition = plan[index];
-        if (!definition) {
-          break;
-        }
-        results[index] = await this.execute(definition);
-      }
-    };
-
-    await Promise.all(Array.from({ length: workerCount }, () => worker()));
-
-    const durationMs = performance.now() - startedAt;
-    const passed = results.filter((r) => r.status === "passed").length;
-    const failed = results.filter((r) => r.status === "failed").length;
-
-    return {
-      total,
-      passed,
-      failed,
-      durationMs,
-      results,
-    };
-  }
-
-  private async execute(definition: RepoTestDefinition): Promise<RepoTestResult> {
-    const startedAt = performance.now();
-    const result: RepoTestResult = {
-      id: definition.id,
-      description: definition.description,
-      source: definition.source,
-      status: "pending",
-      durationMs: 0,
-    };
-
-    try {
-      const checkResult = await definition.handler();
-      result.status = checkResult.pass ? "passed" : "failed";
-      result.message = checkResult.message;
-      if (!checkResult.pass && checkResult.error !== undefined) {
-        result.error = this.serializeError(checkResult.error);
-      }
-    } catch (error) {
-      result.status = "failed";
-      result.message = `Test "${definition.description}" threw an error.`;
-      result.error = this.serializeError(error);
-    } finally {
-      result.durationMs = performance.now() - startedAt;
-    }
-
-    return result;
-  }
-
-  private serializeError(error: unknown): string {
-    if (error instanceof Error) {
-      return error.stack || error.message;
-    }
-    if (typeof error === "string") {
-      return error;
-    }
-    try {
-      return JSON.stringify(error);
-    } catch {
-      return String(error);
-    }
+    return executeTests([...this.tests], this.defaultConcurrency, options);
   }
 }

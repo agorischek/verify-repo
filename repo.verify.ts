@@ -12,7 +12,7 @@ verify.dir("packages/plugins").exists();
 
 // Code quality gates
 verify.prettier.isFormatted();
-verify.files("**/*.ts").lines({ max: 300 });
+verify.files("**/*.ts").lines({ max: 200 });
 verify.ts.noErrors();
 verify.ts.builds();
 

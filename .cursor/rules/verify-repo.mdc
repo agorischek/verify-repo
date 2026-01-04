@@ -12,7 +12,7 @@ Before starting code work, run `bun verify` from the repo root and make sure eve
 
 ## Adding task-specific checks
 
-Before making code changes, you must add repo verification checks. You and run them to show that they fail (because the code work isn't done). Run `bun verify:docs` to learn about APIs available. Checks should be defined in files with the *exact* filename `task.verify.ts`. These can be located anywhere in the repo.
+Before making large code changes (new features, big refactors), you must add repo verification checks. You and run them to show that they fail (because the code work isn't done). Run `bun verify:docs` to learn about APIs available. Checks should be defined in files with the *exact* filename `task.verify.ts`. These can be located anywhere in the repo.
 
 ## Completing work
 
