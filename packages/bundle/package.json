@@ -37,6 +37,7 @@
     "@verify-repo/plugin-docker": "workspace:*",
     "@verify-repo/plugin-eslint": "workspace:*",
     "@verify-repo/plugin-git": "workspace:*",
+    "@verify-repo/plugin-package": "workspace:*",
     "@verify-repo/plugin-prettier": "workspace:*",
     "@verify-repo/plugin-ts": "workspace:*"
   }
