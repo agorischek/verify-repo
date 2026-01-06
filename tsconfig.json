@@ -49,6 +49,7 @@
       "@verify-repo/plugin-eslint": ["./packages/plugins/eslint/src/index.ts"],
       "@verify-repo/plugin-bun": ["./packages/plugins/bun/src/index.ts"],
       "@verify-repo/plugin-docker": ["./packages/plugins/docker/src/index.ts"],
+      "@verify-repo/plugin-package": ["./packages/plugins/package/src/index.ts"],
       "verify-repo": ["./packages/bundle/src/index.ts"],
       "verify-repo/*": ["./packages/bundle/src/*"]
     }

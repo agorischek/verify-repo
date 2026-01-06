@@ -4,10 +4,22 @@ import { writeFile, rm } from "node:fs/promises";
 import { run, RepoVerificationFailedError } from "../packages/bundle/src";
 
 const fixtureRoot = path.join(import.meta.dir, "fixtures/my-app");
+const monorepoFixtureRoot = path.join(import.meta.dir, "fixtures/monorepo");
 
 test("runs repo verify files and succeeds", async () => {
   const summary = await run({
     root: fixtureRoot,
+    pattern: ["repo.verify.ts"],
+    reporter: false,
+  });
+
+  expect(summary.failed).toBe(0);
+  expect(summary.passed).toBeGreaterThan(0);
+});
+
+test("runs repo verify files in a workspaces monorepo fixture and succeeds", async () => {
+  const summary = await run({
+    root: monorepoFixtureRoot,
     pattern: ["repo.verify.ts"],
     reporter: false,
   });

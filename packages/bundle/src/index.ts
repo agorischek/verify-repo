@@ -38,6 +38,7 @@ export * from "@verify-repo/plugin-ts";
 export * from "@verify-repo/plugin-eslint";
 export * from "@verify-repo/plugin-bun";
 export * from "@verify-repo/plugin-docker";
+export * from "@verify-repo/plugin-package";
 
 // Bundle-specific exports
 export { RepoVerificationRuntime, createRuntime };

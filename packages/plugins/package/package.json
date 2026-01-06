@@ -1,0 +1,19 @@
+{
+  "name": "@verify-repo/plugin-package",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "peerDependencies": {
+    "@verify-repo/engine": "*"
+  },
+  "dependencies": {
+    "glob": "^13.0.0"
+  },
+  "devDependencies": {
+    "@verify-repo/engine": "workspace:*"
+  }
+}
