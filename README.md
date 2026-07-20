@@ -18,3 +18,11 @@ verify.prettier("src/**/*.ts").isFormatted();
 ```
 
 See [package README](./packages/bundle/README.md) for details.
+
+## Releasing
+
+Releases are built, tested, and published from GitHub Actions with npm trusted
+publishing. After merging a version bump to `main`, push the matching tag (for
+example, `v0.0.3`). The publish workflow verifies that the tag matches the
+package version, publishes `verify-repo` with provenance, and creates the
+corresponding GitHub release.
