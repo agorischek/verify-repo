@@ -19,3 +19,6 @@ jobs:
 
       - name: Run checks
         run: bun run check
+
+      - name: Test packed consumer install
+        run: bun run test:package

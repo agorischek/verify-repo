@@ -16,6 +16,7 @@
   "scripts": {
     "build": "cd packages/bundle && bun run build",
     "check": "checks",
+    "test:package": "bun run build && node scripts/test-package.mjs",
     "verify": "bun packages/bundle/src/bin.ts run",
     "verify:docs": "bun packages/bundle/src/bin.ts docs",
     "test": "bun test",
