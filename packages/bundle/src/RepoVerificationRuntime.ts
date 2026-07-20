@@ -8,6 +8,7 @@ import { ts as tsPlugin } from "@verify-repo/plugin-ts";
 import { eslint as eslintPlugin } from "@verify-repo/plugin-eslint";
 import { bun as bunPlugin } from "@verify-repo/plugin-bun";
 import { docker } from "@verify-repo/plugin-docker";
+import { pkg } from "@verify-repo/plugin-package";
 
 const builtInPlugins: RepoPlugin[] = [
   fs(),
@@ -18,6 +19,7 @@ const builtInPlugins: RepoPlugin[] = [
   eslintPlugin(),
   bunPlugin(),
   docker(),
+  pkg(),
 ];
 
 export class RepoVerificationRuntime extends RepoVerificationRuntimeBase {
