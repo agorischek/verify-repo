@@ -1,0 +1,96 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release tag to create, for example v0.1.0
+        required: true
+        type: string
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: prepare-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: main
+
+      - name: Inspect release state
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if ! printf '%s' "$VERSION" | grep -Eq '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'; then
+            echo "version must match vMAJOR.MINOR.PATCH" >&2
+            exit 1
+          fi
+
+          tag_exists=false
+          if git show-ref --verify --quiet "refs/tags/$VERSION" || \
+             git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1; then
+            tag_exists=true
+          fi
+          echo "tag_exists=$tag_exists" >> "$GITHUB_OUTPUT"
+
+          set +e
+          release_json="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERSION" 2>&1)"
+          release_status=$?
+          set -e
+
+          release_exists=false
+          if [ "$release_status" -eq 0 ]; then
+            if [ "$(jq -r '.draft or .prerelease' <<<"$release_json")" = false ]; then
+              release_exists=true
+              echo "::notice::Release $VERSION is already published; nothing to do."
+            else
+              echo "::notice::Release $VERSION is still a draft or prerelease; retrying publication."
+            fi
+          elif grep -q 'HTTP 404' <<<"$release_json"; then
+            echo "::notice::Release $VERSION has not been published yet."
+          else
+            printf '%s\n' "$release_json" >&2
+            exit "$release_status"
+          fi
+          echo "release_exists=$release_exists" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag
+        if: steps.release.outputs.tag_exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          tag_sha="$(
+            gh api "repos/$GITHUB_REPOSITORY/git/tags" \
+              --method POST \
+              -f tag="$VERSION" \
+              -f message="Release $VERSION" \
+              -f object="$(git rev-parse HEAD)" \
+              -f type=commit \
+              --jq .sha
+          )"
+          gh api "repos/$GITHUB_REPOSITORY/git/refs" \
+            --method POST \
+            -f ref="refs/tags/$VERSION" \
+            -f sha="$tag_sha"
+
+      - name: Retry an unpublished existing tag
+        if: steps.release.outputs.tag_exists == 'true' && steps.release.outputs.release_exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: gh workflow run publish.yml --ref main -f version="$VERSION"
