@@ -88,8 +88,8 @@ jobs:
             -f ref="refs/tags/$VERSION" \
             -f sha="$tag_sha"
 
-      - name: Retry an unpublished existing tag
-        if: steps.release.outputs.tag_exists == 'true' && steps.release.outputs.release_exists != 'true'
+      - name: Dispatch publication
+        if: steps.release.outputs.release_exists != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ inputs.version }}
