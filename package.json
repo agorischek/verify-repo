@@ -43,7 +43,7 @@
     "check-1-2": "^0.0.7",
     "prettier": "^3.6.2",
     "simple-git": "^3.30.0",
-    "tsdown": "^0.9.0",
+    "tsdown": "^0.22.13",
     "typescript": "^5.0.0"
   },
   "dependencies": {
