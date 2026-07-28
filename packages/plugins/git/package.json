@@ -8,7 +8,7 @@
     "dist"
   ],
   "dependencies": {
-    "simple-git": "^3.24.0"
+    "simple-git": "^3.36.0"
   },
   "peerDependencies": {
     "@verify-repo/engine": "*"
