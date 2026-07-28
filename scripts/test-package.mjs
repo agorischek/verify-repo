@@ -78,6 +78,7 @@ try {
     process.platform === "win32" ? "verify-repo.cmd" : "verify-repo",
   );
   run(executable, ["--help"]);
+  assert.equal(run(executable, ["--version"], { capture: true }).stdout.trim(), installedManifest.version);
 } finally {
   await rm(temporaryDirectory, { recursive: true, force: true });
 }

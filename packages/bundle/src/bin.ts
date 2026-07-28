@@ -4,6 +4,7 @@ const cliStartTime = performance.now();
 import { run as runCli } from "@drizzle-team/brocli";
 import { RepoVerificationFailedError, run, printDocs } from "./index";
 import { command, boolean } from "@drizzle-team/brocli";
+import packageMetadata from "../package.json";
 
 const runCommand = command({
   name: "run",
@@ -29,7 +30,7 @@ const docsCommand = command({
 
 runCli([runCommand, docsCommand], {
   name: "verify-repo",
-  version: "0.0.1",
+  version: packageMetadata.version,
 }).catch((error) => {
   if (error instanceof RepoVerificationFailedError) {
     // Don't print error message - reporter already showed failures
