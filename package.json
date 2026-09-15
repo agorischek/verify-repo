@@ -37,16 +37,16 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "^26.4.0",
+    "@types/node": "^26.5.0",
     "badge-roll": "^0.1.0",
     "bun-types": "latest",
     "check-1-2": "^0.0.8",
     "prettier": "^3.9.6",
     "simple-git": "^3.36.0",
-    "tsdown": "^0.22.13",
+    "tsdown": "^0.23.0",
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@types/bun": "^1.4.0"
+    "@types/bun": "^1.4.1"
   }
 }
