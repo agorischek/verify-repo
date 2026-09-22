@@ -37,7 +37,7 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "^26.5.0",
+    "@types/node": "^26.5.1",
     "badge-roll": "^0.1.0",
     "bun-types": "latest",
     "check-1-2": "^0.0.8",
@@ -47,6 +47,6 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@types/bun": "^1.4.1"
+    "@types/bun": "^1.4.2"
   }
 }
