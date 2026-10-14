@@ -16,6 +16,6 @@
   },
   "devDependencies": {
     "@verify-repo/engine": "workspace:*",
-    "prettier": "^3.9.6"
+    "prettier": "^3.9.8"
   }
 }
