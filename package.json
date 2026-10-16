@@ -42,7 +42,7 @@
     "bun-types": "latest",
     "check-1-2": "^0.0.8",
     "prettier": "^3.9.6",
-    "simple-git": "^3.36.0",
+    "simple-git": "^4.0.2",
     "tsdown": "^0.23.0",
     "typescript": "^7.0.2"
   },

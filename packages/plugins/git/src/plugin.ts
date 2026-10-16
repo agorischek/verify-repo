@@ -12,7 +12,7 @@ import {
 
 const require = createRequire(import.meta.url);
 
-type SimpleGit = ReturnType<typeof import("simple-git").default>;
+type SimpleGit = ReturnType<typeof import("simple-git").simpleGit>;
 
 export const git = (): RepoPlugin => ({
   name: "Git",
@@ -55,8 +55,7 @@ export const git = (): RepoPlugin => ({
               const simpleGitPath = require.resolve("simple-git", {
                 paths: [base],
               });
-              const simpleGitModule = await import(simpleGitPath);
-              const simpleGit = simpleGitModule.default || simpleGitModule;
+              const { simpleGit } = await import(simpleGitPath);
               return simpleGit(root ?? process.cwd());
             } catch {
               // continue
