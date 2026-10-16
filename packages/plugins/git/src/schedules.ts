@@ -1,6 +1,6 @@
 import type { VerificationContext } from "@verify-repo/engine";
 
-type SimpleGit = ReturnType<typeof import("simple-git").default>;
+type SimpleGit = ReturnType<typeof import("simple-git").simpleGit>;
 
 const formatFiles = (files: { path: string; working: string; index: string }[]) =>
   files.map((file) => `${file.index}${file.working} ${file.path}`.trim()).join("\n");
